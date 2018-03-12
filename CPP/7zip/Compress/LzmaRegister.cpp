@@ -1,0 +1,19 @@
+// LzmaRegister.cpp
+
+#include "../../Common/Common.h"
+#include "../Common/RegisterCodec.h"
+
+#include "LzmaDecoder.h"
+
+#ifndef EXTRACT_ONLY
+#include "LzmaEncoder.h"
+#endif
+
+namespace NCompress {
+  namespace NLzma {
+    REGISTER_CODEC_E(LZMA,
+                     CDecoder(),
+                     0x30101,
+                     "LZMA")
+  }
+}
