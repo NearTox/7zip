@@ -7,21 +7,21 @@
 #include "../Common/MyTypes.h"
 
 namespace NWindows {
-  namespace NFile {
-    namespace NSystem {
-      bool MyGetVolumeInformation(
-        CFSTR rootPath,
-        UString &volumeName,
-        LPDWORD volumeSerialNumber,
-        LPDWORD maximumComponentLength,
-        LPDWORD fileSystemFlags,
-        UString &fileSystemName);
+namespace NFile {
+namespace NSystem {
 
-      UINT MyGetDriveType(CFSTR pathName);
+bool MyGetVolumeInformation(
+    CFSTR rootPath  ,
+    UString &volumeName,
+    LPDWORD volumeSerialNumber,
+    LPDWORD maximumComponentLength,
+    LPDWORD fileSystemFlags,
+    UString &fileSystemName);
 
-      bool MyGetDiskFreeSpace(CFSTR rootPath, UInt64 &clusterSize, UInt64 &totalSize, UInt64 &freeSize);
-    }
-  }
-}
+UINT MyGetDriveType(CFSTR pathName);
+
+bool MyGetDiskFreeSpace(CFSTR rootPath, UInt64 &clusterSize, UInt64 &totalSize, UInt64 &freeSize);
+
+}}}
 
 #endif

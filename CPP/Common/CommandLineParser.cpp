@@ -1,20 +1,8 @@
 // CommandLineParser.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "CommandLineParser.h"
-
-static bool IsString1PrefixedByString2_NoCase(const wchar_t *u, const char *a) {
-  for(;;) {
-    char c = *a;
-    if(c == 0)
-      return true;
-    if((unsigned char)MyCharLower_Ascii(c) != MyCharLower_Ascii(*u))
-      return false;
-    a++;
-    u++;
-  }
-}
 
 namespace NCommandLineParser {
   bool SplitCommandLine(const UString &src, UString &dest1, UString &dest2) {
@@ -37,7 +25,7 @@ namespace NCommandLineParser {
   }
 
   void SplitCommandLine(const UString &s, UStringVector &parts) {
-    UString sTemp = s;
+    UString sTemp(s);
     sTemp.Trim();
     parts.Clear();
     for(;;) {
@@ -50,17 +38,15 @@ namespace NCommandLineParser {
     }
   }
 
-  static const char *kStopSwitchParsing = "--";
+  static const char * const kStopSwitchParsing = "--";
 
   static bool inline IsItSwitchChar(wchar_t c) {
     return (c == '-');
   }
 
-  CParser::CParser(unsigned numSwitches) :
-    _numSwitches(numSwitches),
-    _switches(0) {
-    _switches = new CSwitchResult[numSwitches];
-  }
+  CParser::CParser() :
+    _switches(nullptr),
+    StopSwitchIndex(-1) {}
 
   CParser::~CParser() {
     delete[]_switches;
@@ -68,7 +54,7 @@ namespace NCommandLineParser {
 
   // if (s) contains switch then function updates switch structures
   // out: true, if (s) is a switch
-  bool CParser::ParseString(const UString &s, const CSwitchForm *switchForms) {
+  bool CParser::ParseString(const UString &s, const CSwitchForm *switchForms, unsigned numSwitches) {
     if(s.IsEmpty() || !IsItSwitchChar(s[0]))
       return false;
 
@@ -76,12 +62,12 @@ namespace NCommandLineParser {
     unsigned switchIndex = 0;
     int maxLen = -1;
 
-    for(unsigned i = 0; i < _numSwitches; i++) {
-      const char *key = switchForms[i].Key;
+    for(unsigned i = 0; i < numSwitches; i++) {
+      const char * const key = switchForms[i].Key;
       unsigned switchLen = MyStringLen(key);
       if((int)switchLen <= maxLen || pos + switchLen > s.Len())
         continue;
-      if(IsString1PrefixedByString2_NoCase((const wchar_t *)s + pos, key)) {
+      if(IsString1PrefixedByString2_NoCase_Ascii((const wchar_t *)s + pos, key)) {
         switchIndex = i;
         maxLen = switchLen;
       }
@@ -138,8 +124,10 @@ namespace NCommandLineParser {
         break;
 
       case NSwitchType::kString:
-        sw.PostStrings.Add((const wchar_t *)s + pos);
+      {
+        sw.PostStrings.Add(s.Ptr(pos));
         return true;
+      }
     }
 
     if(pos != s.Len()) {
@@ -149,18 +137,24 @@ namespace NCommandLineParser {
     return true;
   }
 
-  bool CParser::ParseStrings(const CSwitchForm *switchForms, const UStringVector &commandStrings) {
+  bool CParser::ParseStrings(const CSwitchForm *switchForms, unsigned numSwitches, const UStringVector &commandStrings) {
+    StopSwitchIndex = -1;
+    ErrorMessage.Empty();
     ErrorLine.Empty();
-    bool stopSwitch = false;
+    NonSwitchStrings.Clear();
+    delete[]_switches;
+    _switches = nullptr;
+    _switches = new CSwitchResult[numSwitches];
+
     FOR_VECTOR(i, commandStrings) {
       const UString &s = commandStrings[i];
-      if(!stopSwitch) {
+      if(StopSwitchIndex < 0) {
         if(s.IsEqualTo(kStopSwitchParsing)) {
-          stopSwitch = true;
+          StopSwitchIndex = NonSwitchStrings.Size();
           continue;
         }
         if(!s.IsEmpty() && IsItSwitchChar(s[0])) {
-          if(ParseString(s, switchForms))
+          if(ParseString(s, switchForms, numSwitches))
             continue;
           ErrorLine = s;
           return false;

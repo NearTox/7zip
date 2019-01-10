@@ -1,6 +1,6 @@
 // StreamObjects.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include <stdlib.h>
 

@@ -1,14 +1,26 @@
 // Deflate64Register.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../Common/RegisterCodec.h"
 
 #include "DeflateDecoder.h"
 
+#if !defined(EXTRACT_ONLY) && !defined(DEFLATE_EXTRACT_ONLY)
+#include "DeflateEncoder.h"
+#endif
+
 namespace NCompress {
-  namespace NDeflate {
-    REGISTER_CODEC_CREATE(CreateDec, NDecoder::CCOMCoder64())
-      REGISTER_CODEC_2(Deflate64, CreateDec, 0x40109, "Deflate64")
-  }
-}
+namespace NDeflate {
+
+REGISTER_CODEC_CREATE(CreateDec, NDecoder::CCOMCoder64())
+
+#if !defined(EXTRACT_ONLY) && !defined(DEFLATE_EXTRACT_ONLY)
+REGISTER_CODEC_CREATE(CreateEnc, NEncoder::CCOMCoder64())
+#else
+#define CreateEnc nullptr
+#endif
+
+REGISTER_CODEC_2(Deflate64, CreateDec, CreateEnc, 0x40109, "Deflate64")
+
+}}

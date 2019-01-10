@@ -1,6 +1,6 @@
 // StreamBinder.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../Common/MyCom.h"
 
@@ -13,9 +13,7 @@ class CBinderInStream :
 public:
   MY_UNKNOWN_IMP1(ISequentialInStream)
     STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
-  ~CBinderInStream() {
-    _binder->CloseRead();
-  }
+  ~CBinderInStream() { _binder->CloseRead(); }
   CBinderInStream(CStreamBinder *binder) : _binder(binder) {}
 };
 
@@ -30,9 +28,7 @@ class CBinderOutStream :
 public:
   MY_UNKNOWN_IMP1(ISequentialOutStream)
     STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
-  ~CBinderOutStream() {
-    _binder->CloseWrite();
-  }
+  ~CBinderOutStream() { _binder->CloseWrite(); }
   CBinderOutStream(CStreamBinder *binder) : _binder(binder) {}
 };
 

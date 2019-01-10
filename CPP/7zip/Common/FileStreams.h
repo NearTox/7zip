@@ -127,9 +127,7 @@ public:
   bool SetTime(const FILETIME *cTime, const FILETIME *aTime, const FILETIME *mTime) {
     return File.SetTime(cTime, aTime, mTime);
   }
-  bool SetMTime(const FILETIME *mTime) {
-    return File.SetMTime(mTime);
-  }
+  bool SetMTime(const FILETIME *mTime) { return File.SetMTime(mTime); }
 #endif
 
   MY_UNKNOWN_IMP1(IOutStream)
@@ -148,9 +146,7 @@ class CStdOutFileStream :
 public:
   MY_UNKNOWN_IMP
 
-    UInt64 GetSize() const {
-    return _size;
-  }
+    UInt64 GetSize() const { return _size; }
   CStdOutFileStream() : _size(0) {}
   virtual ~CStdOutFileStream() {}
   STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);

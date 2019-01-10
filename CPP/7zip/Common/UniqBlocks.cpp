@@ -1,6 +1,6 @@
 // UniqBlocks.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include <string.h>
 

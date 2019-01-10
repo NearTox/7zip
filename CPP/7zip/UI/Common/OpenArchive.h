@@ -10,7 +10,9 @@
 #include "Property.h"
 
 #ifndef _SFX
+
 #define SUPPORT_ALT_STREAMS
+
 #endif
 
 HRESULT Archive_GetItemBoolProp(IInArchive *arc, UInt32 index, PROPID propID, bool &result) throw();
@@ -23,15 +25,28 @@ HRESULT Archive_IsItem_Deleted(IInArchive *arc, UInt32 index, bool &deleted) thr
 int FindAltStreamColon_in_Path(const wchar_t *path);
 #endif
 
+/*
+struct COptionalOpenProperties
+{
+  UString FormatName;
+  CObjectVector<CProperty> Props;
+};
+*/
+
+#ifdef _SFX
+#define OPEN_PROPS_DECL
+#else
+#define OPEN_PROPS_DECL const CObjectVector<CProperty> *props;
+// #define OPEN_PROPS_DECL , const CObjectVector<COptionalOpenProperties> *props
+#endif
+
 struct COpenSpecFlags {
   // bool CanReturnFull;
   bool CanReturnFrontal;
   bool CanReturnTail;
   bool CanReturnMid;
 
-  bool CanReturn_NonStart() const {
-    return CanReturnTail || CanReturnMid;
-  }
+  bool CanReturn_NonStart() const { return CanReturnTail || CanReturnMid; }
 
   COpenSpecFlags() :
     // CanReturnFull(true),
@@ -101,11 +116,21 @@ struct COpenOptions {
   ISequentialInStream *seqStream;
   IArchiveOpenCallback *callback;
   COpenCallbackImp *callbackSpec;
+  OPEN_PROPS_DECL
   // bool openOnlySpecifiedByExtension,
 
+    bool stdInMode;
   UString filePath;
 
-  COpenOptions() : codecs(nullptr), types(nullptr), excludedFormats(nullptr), stream(nullptr), seqStream(nullptr), callback(nullptr), callbackSpec(nullptr) {}
+  COpenOptions() :
+    codecs(nullptr),
+    types(nullptr),
+    excludedFormats(nullptr),
+    stream(nullptr),
+    seqStream(nullptr),
+    callback(nullptr),
+    callbackSpec(nullptr),
+    stdInMode(false) {}
 };
 
 UInt32 GetOpenArcErrorFlags(const NWindows::NCOM::CPropVariant &prop, bool *isDefinedProp = nullptr);
@@ -161,16 +186,10 @@ struct CArcErrorInfo {
       || !WarningMessage.IsEmpty();
   }
 
-  bool AreThereErrors() const {
-    return ErrorFlags != 0 || UnexpecedEnd;
-  }
-  bool AreThereWarnings() const {
-    return WarningFlags != 0 || NeedTailWarning();
-  }
+  bool AreThereErrors() const { return ErrorFlags != 0 || UnexpecedEnd; }
+  bool AreThereWarnings() const { return WarningFlags != 0 || NeedTailWarning(); }
 
-  bool NeedTailWarning() const {
-    return !IgnoreTail && ThereIsTail;
-  }
+  bool NeedTailWarning() const { return !IgnoreTail && ThereIsTail; }
 
   UInt32 GetWarningFlags() const {
     UInt32 a = WarningFlags;
@@ -193,10 +212,11 @@ struct CReadArcItem {
 
 #ifdef SUPPORT_ALT_STREAMS
   UString MainPath;
-  /* MainPath = Path for non-AltStream,
-     MainPath = Path of parent, if there is parent for AltStream. */
+                /* MainPath = Path for non-AltStream,
+                   MainPath = Path of parent, if there is parent for AltStream. */
   UString AltStreamName;
   bool IsAltStream;
+  bool WriteToAltStreamIfColon;
 #endif
 
   bool IsDir;
@@ -209,6 +229,10 @@ struct CReadArcItem {
 #endif
 
   CReadArcItem() {
+#ifdef SUPPORT_ALT_STREAMS
+    WriteToAltStreamIfColon = false;
+#endif
+
 #ifndef _SFX
     _use_baseParentFolder_mode = false;
     _baseParentFolder = -1;
@@ -222,16 +246,16 @@ class CArc {
   HRESULT OpenStream2(const COpenOptions &options);
 
 #ifndef _SFX
-  // parts.Back() can contain alt stream name "nams:AltName"
+// parts.Back() can contain alt stream name "nams:AltName"
   HRESULT GetItemPathToParent(UInt32 index, UInt32 parent, UStringVector &parts) const;
 #endif
 
 public:
   CMyComPtr<IInArchive> Archive;
   CMyComPtr<IInStream> InStream;
-  // we use InStream in 2 cases (ArcStreamOffset != 0):
-  // 1) if we use additional cache stream
-  // 2) we reopen sfx archive with CTailInStream
+          // we use InStream in 2 cases (ArcStreamOffset != 0):
+          // 1) if we use additional cache stream
+          // 2) we reopen sfx archive with CTailInStream
 
   CMyComPtr<IArchiveGetRawProps> GetRawProps;
   CMyComPtr<IArchiveGetRootProps> GetRootProps;
@@ -256,16 +280,12 @@ public:
   UInt64 AvailPhySize; // PhySize, but it's reduced if exceed end of file
   // bool offsetDefined;
 
-  UInt64 GetEstmatedPhySize() const {
-    return PhySizeDefined ? PhySize : FileSize;
-  }
+  UInt64 GetEstmatedPhySize() const { return PhySizeDefined ? PhySize : FileSize; }
 
   UInt64 ArcStreamOffset; // offset of stream that is open by Archive Handler
-  Int64 GetGlobalOffset() const {
-    return ArcStreamOffset + Offset;
-  } // it's global offset of archive
+  Int64 GetGlobalOffset() const { return ArcStreamOffset + Offset; } // it's global offset of archive
 
-// AString ErrorFlagsText;
+  // AString ErrorFlagsText;
 
   bool IsParseArc;
 
@@ -347,28 +367,43 @@ struct CArchiveLink {
   void KeepModeForNextOpen();
   HRESULT Close();
   void Release();
-  ~CArchiveLink() {
-    Release();
-  }
+  ~CArchiveLink() { Release(); }
 
-  const CArc *GetArc() const {
-    return &Arcs.Back();
-  }
-  IInArchive *GetArchive() const {
-    return Arcs.Back().Archive;
-  }
-  IArchiveGetRawProps *GetArchiveGetRawProps() const {
-    return Arcs.Back().GetRawProps;
-  }
-  IArchiveGetRootProps *GetArchiveGetRootProps() const {
-    return Arcs.Back().GetRootProps;
-  }
+  const CArc *GetArc() const { return &Arcs.Back(); }
+  IInArchive *GetArchive() const { return Arcs.Back().Archive; }
+  IArchiveGetRawProps *GetArchiveGetRawProps() const { return Arcs.Back().GetRawProps; }
+  IArchiveGetRootProps *GetArchiveGetRootProps() const { return Arcs.Back().GetRootProps; }
 
   HRESULT Open(COpenOptions &options);
   HRESULT Open2(COpenOptions &options, IOpenCallbackUI *callbackUI);
   HRESULT Open3(COpenOptions &options, IOpenCallbackUI *callbackUI);
 
+  HRESULT Open_Strict(COpenOptions &options, IOpenCallbackUI *callbackUI) {
+    HRESULT result = Open3(options, callbackUI);
+    if(result == S_OK && NonOpen_ErrorInfo.ErrorFormatIndex >= 0)
+      result = S_FALSE;
+    return result;
+  }
+
   HRESULT ReOpen(COpenOptions &options);
+};
+
+bool ParseOpenTypes(CCodecs &codecs, const UString &s, CObjectVector<COpenType> &types);
+
+struct CDirPathSortPair {
+  unsigned Len;
+  unsigned Index;
+
+  void SetNumSlashes(const FChar *s);
+
+  int Compare(const CDirPathSortPair &a) const {
+    // We need sorting order where parent items will be after child items
+    if(Len < a.Len) return 1;
+    if(Len > a.Len) return -1;
+    if(Index < a.Index) return -1;
+    if(Index > a.Index) return 1;
+    return 0;
+  }
 };
 
 #endif

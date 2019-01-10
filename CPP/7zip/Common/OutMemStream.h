@@ -7,9 +7,10 @@
 
 #include "MemBlocks.h"
 
-class COutMemStream :
+class COutMemStream:
   public IOutStream,
-  public CMyUnknownImp {
+  public CMyUnknownImp
+{
   CMemBlockManagerMt *_memManager;
   unsigned _curBlockIndex;
   size_t _curBlockPos;
@@ -23,40 +24,40 @@ class COutMemStream :
   HRESULT StopWriteResult;
   CMemLockBlocks Blocks;
 
-  UInt64 GetPos() const {
-    return (UInt64)_curBlockIndex * _memManager->GetBlockSize() + _curBlockPos;
-  }
+  UInt64 GetPos() const { return (UInt64)_curBlockIndex * _memManager->GetBlockSize() + _curBlockPos; }
 
   CMyComPtr<ISequentialOutStream> OutSeqStream;
   CMyComPtr<IOutStream> OutStream;
 
 public:
 
-  HRes CreateEvents() {
+  HRes CreateEvents()
+  {
     RINOK(StopWritingEvent.CreateIfNotCreated());
     return WriteToRealStreamEvent.CreateIfNotCreated();
   }
 
-  void SetOutStream(IOutStream *outStream) {
+  void SetOutStream(IOutStream *outStream)
+  {
     OutStream = outStream;
     OutSeqStream = outStream;
   }
 
-  void SetSeqOutStream(ISequentialOutStream *outStream) {
+  void SetSeqOutStream(ISequentialOutStream *outStream)
+  {
     OutStream = nullptr;
     OutSeqStream = outStream;
   }
 
-  void ReleaseOutStream() {
+  void ReleaseOutStream()
+  {
     OutStream.Release();
     OutSeqStream.Release();
   }
 
-  COutMemStream(CMemBlockManagerMt *memManager) : _memManager(memManager) {}
+  COutMemStream(CMemBlockManagerMt *memManager): _memManager(memManager)  { }
 
-  ~COutMemStream() {
-    Free();
-  }
+  ~COutMemStream() { Free(); }
   void Free();
 
   void Init();
@@ -64,11 +65,10 @@ public:
 
   void DetachData(CMemLockBlocks &blocks);
 
-  bool WasUnlockEventSent() const {
-    return _unlockEventWasSent;
-  }
+  bool WasUnlockEventSent() const { return _unlockEventWasSent; }
 
-  void SetRealStreamMode() {
+  void SetRealStreamMode()
+  {
     _unlockEventWasSent = true;
     WriteToRealStreamEvent.Set();
   }
@@ -81,14 +81,15 @@ public:
   }
   */
 
-  void StopWriting(HRESULT res) {
+  void StopWriting(HRESULT res)
+  {
     StopWriteResult = res;
     StopWritingEvent.Set();
   }
 
   MY_UNKNOWN_IMP
 
-    STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
+  STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
   STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
   STDMETHOD(SetSize)(UInt64 newSize);
 };

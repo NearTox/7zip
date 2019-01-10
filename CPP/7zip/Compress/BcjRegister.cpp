@@ -1,6 +1,6 @@
 // BcjRegister.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../Common/RegisterCodec.h"
 
@@ -8,6 +8,9 @@
 
 namespace NCompress {
   namespace NBcj {
-    REGISTER_FILTER_E(BCJ, CCoder(false), 0x3030103, "BCJ")
+    REGISTER_FILTER_E(BCJ,
+      CCoder(false),
+      CCoder(true),
+      0x3030103, "BCJ")
   }
 }

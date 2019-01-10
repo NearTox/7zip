@@ -1,6 +1,6 @@
 // Windows/ErrorMsg.h
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #ifndef _UNICODE
 #include "../Common/StringConvert.h"
@@ -19,16 +19,16 @@ namespace NWindows {
 #ifndef _UNICODE
       if(!g_IsNT) {
         if(::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                           FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                           nullptr, errorCode, 0, (LPTSTR)&msgBuf, 0, nullptr) == 0)
+          FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+          nullptr, errorCode, 0, (LPTSTR)&msgBuf, 0, nullptr) == 0)
           return false;
         message = GetUnicodeString((LPCTSTR)msgBuf);
       } else
 #endif
       {
         if(::FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                            nullptr, errorCode, 0, (LPWSTR)&msgBuf, 0, nullptr) == 0)
+          FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+          nullptr, errorCode, 0, (LPWSTR)&msgBuf, 0, nullptr) == 0)
           return false;
         message = (LPCWSTR)msgBuf;
       }
@@ -46,11 +46,11 @@ namespace NWindows {
           s[7 - i] = (char)((t < 10) ? ('0' + t) : ('A' + (t - 10)));
         }
         s[8] = 0;
-        m.AddAscii("Error #");
-        m.AddAscii(s);
+        m += "Error #";
+        m += s;
       } else if(m.Len() >= 2
-                 && m[m.Len() - 1] == 0x0A
-                 && m[m.Len() - 2] == 0x0D)
+        && m[m.Len() - 1] == 0x0A
+        && m[m.Len() - 2] == 0x0D)
         m.DeleteFrom(m.Len() - 2);
       return m;
     }

@@ -1,6 +1,6 @@
 // InBuffer.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../C/Alloc.h"
 
@@ -87,20 +87,46 @@ Byte CInBufferBase::ReadByte_FromNewBlock() {
 }
 
 size_t CInBufferBase::ReadBytes(Byte *buf, size_t size) {
-  if((size_t)(_bufLim - _buf) >= size) {
+  size_t num = 0;
+  for(;;) {
+    const size_t rem = _bufLim - _buf;
+    if(size <= rem) {
+      if(size != 0) {
+        memcpy(buf, _buf, size);
+        _buf += size;
+        num += size;
+      }
+      return num;
+    }
+    if(rem != 0) {
+      memcpy(buf, _buf, rem);
+      _buf += rem;
+      buf += rem;
+      num += rem;
+      size -= rem;
+    }
+    if(!ReadBlock())
+      return num;
+  }
+
+  /*
+  if ((size_t)(_bufLim - _buf) >= size)
+  {
     const Byte *src = _buf;
-    for(size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < size; i++)
       buf[i] = src[i];
     _buf += size;
     return size;
   }
-  for(size_t i = 0; i < size; i++) {
-    if(_buf >= _bufLim)
-      if(!ReadBlock())
+  for (size_t i = 0; i < size; i++)
+  {
+    if (_buf >= _bufLim)
+      if (!ReadBlock())
         return i;
     buf[i] = *_buf++;
   }
   return size;
+  */
 }
 
 size_t CInBufferBase::Skip(size_t size) {

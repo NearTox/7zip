@@ -5,13 +5,14 @@
 
 #include "../../../C/Sha256.h"
 
-class CRandomGenerator {
+class CRandomGenerator
+{
   Byte _buff[SHA256_DIGEST_SIZE];
   bool _needInit;
 
   void Init();
 public:
-  CRandomGenerator() : _needInit(true) {};
+  CRandomGenerator(): _needInit(true) {};
   void Generate(Byte *data, unsigned size);
 };
 

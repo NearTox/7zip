@@ -1,6 +1,6 @@
 // 7zIn.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #ifdef _WIN32
 #include <wchar.h>
@@ -31,6 +31,19 @@ using namespace NCOM;
 
 namespace NArchive {
   namespace N7z {
+    unsigned BoolVector_CountSum(const CBoolVector &v) {
+      unsigned sum = 0;
+      const unsigned size = v.Size();
+      for(unsigned i = 0; i < size; i++)
+        if(v[i])
+          sum++;
+      return sum;
+    }
+
+    static inline bool BoolVector_Item_IsValidAndTrue(const CBoolVector &v, unsigned i) {
+      return (i < v.Size() ? v[i] : false);
+    }
+
     static void BoolVector_Fill_False(CBoolVector &v, unsigned size) {
       v.ClearAndSetSize(size);
       bool *p = &v[0];
@@ -41,18 +54,10 @@ namespace NArchive {
     class CInArchiveException {};
     class CUnsupportedFeatureException : public CInArchiveException {};
 
-    static void ThrowException() {
-      throw CInArchiveException();
-    }
-    static inline void ThrowEndOfData() {
-      ThrowException();
-    }
-    static inline void ThrowUnsupported() {
-      throw CUnsupportedFeatureException();
-    }
-    static inline void ThrowIncorrect() {
-      ThrowException();
-    }
+    static void ThrowException() { throw CInArchiveException(); }
+    static inline void ThrowEndOfData() { ThrowException(); }
+    static inline void ThrowUnsupported() { throw CUnsupportedFeatureException(); }
+    static inline void ThrowIncorrect() { ThrowException(); }
 
     class CStreamSwitch {
       CInArchive *_archive;
@@ -60,9 +65,7 @@ namespace NArchive {
       bool _needUpdatePos;
     public:
       CStreamSwitch() : _needRemove(false), _needUpdatePos(false) {}
-      ~CStreamSwitch() {
-        Remove();
-      }
+      ~CStreamSwitch() { Remove(); }
       void Remove();
       void Set(CInArchive *archive, const Byte *data, size_t size, bool needUpdatePos);
       void Set(CInArchive *archive, const CByteBuffer &byteBuffer);
@@ -278,15 +281,9 @@ namespace NArchive {
           const Byte *lim = buf + processed;
           for(; p <= lim; p += 4) {
             if(p[0] == '7') break;
-            if(p[1] == '7') {
-              p += 1; break;
-            }
-            if(p[2] == '7') {
-              p += 2; break;
-            }
-            if(p[3] == '7') {
-              p += 3; break;
-            }
+            if(p[1] == '7') { p += 1; break; }
+            if(p[2] == '7') { p += 2; break; }
+            if(p[3] == '7') { p += 3; break; }
           };
           if(p > lim)
             break;
@@ -525,17 +522,22 @@ namespace NArchive {
       }
     }
 
+    void CInArchive::Read_UInt32_Vector(CUInt32DefVector &v) {
+      unsigned numItems = v.Defs.Size();
+      v.Vals.ClearAndSetSize(numItems);
+      UInt32 *p = &v.Vals[0];
+      const bool *defs = &v.Defs[0];
+      for(unsigned i = 0; i < numItems; i++) {
+        UInt32 a = 0;
+        if(defs[i])
+          a = ReadUInt32();
+        p[i] = a;
+      }
+    }
+
     void CInArchive::ReadHashDigests(unsigned numItems, CUInt32DefVector &crcs) {
       ReadBoolVector2(numItems, crcs.Defs);
-      crcs.Vals.ClearAndSetSize(numItems);
-      UInt32 *p = &crcs.Vals[0];
-      const bool *defs = &crcs.Defs[0];
-      for(unsigned i = 0; i < numItems; i++) {
-        UInt32 crc = 0;
-        if(defs[i])
-          crc = ReadUInt32();
-        p[i] = crc;
-      }
+      Read_UInt32_Vector(crcs);
     }
 
 #define k_Scan_NumCoders_MAX 64
@@ -884,8 +886,8 @@ namespace NArchive {
         folders.NumUnpackStreamsVector.Alloc(folders.NumFolders);
         /* If digests.Defs.Size() == 0, it means that there are no crcs.
            So we don't need to fill digests with values. */
-           // digests.Vals.ClearAndSetSize(folders.NumFolders);
-           // BoolVector_Fill_False(digests.Defs, folders.NumFolders);
+        // digests.Vals.ClearAndSetSize(folders.NumFolders);
+        // BoolVector_Fill_False(digests.Defs, folders.NumFolders);
         for(CNum i = 0; i < folders.NumFolders; i++) {
           folders.NumUnpackStreamsVector[i] = 1;
           unpackSizes.Add(folders.GetFolderUnpackSize(i));
@@ -925,7 +927,7 @@ namespace NArchive {
     }
 
     void CInArchive::ReadUInt64DefVector(const CObjectVector<CByteBuffer> &dataVector,
-                                         CUInt64DefVector &v, unsigned numItems) {
+      CUInt64DefVector &v, unsigned numItems) {
       ReadBoolVector2(numItems, v.Defs);
 
       CStreamSwitch streamSwitch;
@@ -944,7 +946,7 @@ namespace NArchive {
     }
 
     HRESULT CInArchive::ReadAndDecodePackedStreams(
-      
+      DECL_EXTERNAL_CODECS_LOC_VARS
       UInt64 baseOffset,
       UInt64 &dataOffset, CObjectVector<CByteBuffer> &dataVector
       _7Z_DECODER_CRYPRO_VARS_DECL
@@ -954,10 +956,10 @@ namespace NArchive {
       CUInt32DefVector  digests;
 
       ReadStreamsInfo(nullptr,
-                      dataOffset,
-                      folders,
-                      unpackSizes,
-                      digests);
+        dataOffset,
+        folders,
+        unpackSizes,
+        digests);
 
       CDecoder decoder(_useMixerMT);
 
@@ -973,23 +975,32 @@ namespace NArchive {
         CMyComPtr<ISequentialOutStream> outStream = outStreamSpec;
         outStreamSpec->Init(data, unpackSize);
 
+        bool dataAfterEnd_Error = false;
+
         HRESULT result = decoder.Decode(
-          
+          EXTERNAL_CODECS_LOC_VARS
           _stream, baseOffset + dataOffset,
           folders, i,
           nullptr, // *unpackSize
 
           outStream,
           nullptr, // *compressProgress
+
           nullptr  // **inStreamMainRes
+          , dataAfterEnd_Error
 
           _7Z_DECODER_CRYPRO_VARS
-#if !defined(_7ZIP_ST) && !defined(_SFX)
+#if !defined(_7ZIP_ST)
           , false // mtMode
           , 1     // numThreads
+          , 0     // memUsage
 #endif
         );
+
         RINOK(result);
+
+        if(dataAfterEnd_Error)
+          ThereIsHeaderError = true;
 
         if(folders.FolderCRCs.ValidAndDefined(i))
           if(CrcCalc(data, unpackSize) != folders.FolderCRCs.Vals[i])
@@ -1003,7 +1014,7 @@ namespace NArchive {
     }
 
     HRESULT CInArchive::ReadHeader(
-      
+      DECL_EXTERNAL_CODECS_LOC_VARS
       CDbEx &db
       _7Z_DECODER_CRYPRO_VARS_DECL
     ) {
@@ -1018,7 +1029,7 @@ namespace NArchive {
 
       if(type == NID::kAdditionalStreamsInfo) {
         HRESULT result = ReadAndDecodePackedStreams(
-          
+          EXTERNAL_CODECS_LOC_VARS
           db.ArcInfo.StartPositionAfterHeader,
           db.ArcInfo.DataStartPosition2,
           dataVector
@@ -1034,25 +1045,16 @@ namespace NArchive {
 
       if(type == NID::kMainStreamsInfo) {
         ReadStreamsInfo(&dataVector,
-                        db.ArcInfo.DataStartPosition,
-                        (CFolders &)db,
-                        unpackSizes,
-                        digests);
+          db.ArcInfo.DataStartPosition,
+          (CFolders &)db,
+          unpackSizes,
+          digests);
         db.ArcInfo.DataStartPosition += db.ArcInfo.StartPositionAfterHeader;
         type = ReadID();
       }
 
-      db.Files.Clear();
-
       if(type == NID::kFilesInfo) {
         const CNum numFiles = ReadNum();
-        db.Files.ClearAndSetSize(numFiles);
-        /*
-        db.Files.Reserve(numFiles);
-        CNum i;
-        for (i = 0; i < numFiles; i++)
-          db.Files.Add(CFileItem());
-        */
 
         db.ArcInfo.FileInfoPopIDs.Add(NID::kSize);
         // if (!db.PackSizes.IsEmpty())
@@ -1061,7 +1063,6 @@ namespace NArchive {
           db.ArcInfo.FileInfoPopIDs.Add(NID::kCRC);
 
         CBoolVector emptyStreamVector;
-        BoolVector_Fill_False(emptyStreamVector, (unsigned)numFiles);
         CBoolVector emptyFileVector;
         CBoolVector antiFileVector;
         CNum numEmptyStreams = 0;
@@ -1087,10 +1088,10 @@ namespace NArchive {
               size_t rem = _inByteBack->GetRem();
               db.NamesBuf.Alloc(rem);
               ReadBytes(db.NamesBuf, rem);
-              db.NameOffsets.Alloc(db.Files.Size() + 1);
+              db.NameOffsets.Alloc(numFiles + 1);
               size_t pos = 0;
               unsigned i;
-              for(i = 0; i < db.Files.Size(); i++) {
+              for(i = 0; i < numFiles; i++) {
                 size_t curRem = (rem - pos) / 2;
                 const UInt16 *buf = (const UInt16 *)(db.NamesBuf + pos);
                 size_t j;
@@ -1105,35 +1106,31 @@ namespace NArchive {
                 ThereIsHeaderError = true;
               break;
             }
+
             case NID::kWinAttrib:
             {
-              CBoolVector boolVector;
-              ReadBoolVector2(db.Files.Size(), boolVector);
+              ReadBoolVector2(numFiles, db.Attrib.Defs);
               CStreamSwitch streamSwitch;
               streamSwitch.Set(this, &dataVector);
-              for(CNum i = 0; i < numFiles; i++) {
-                CFileItem &file = db.Files[i];
-                file.AttribDefined = boolVector[i];
-                if(file.AttribDefined)
-                  file.Attrib = ReadUInt32();
-              }
+              Read_UInt32_Vector(db.Attrib);
               break;
             }
+
             /*
             case NID::kIsAux:
             {
-              ReadBoolVector(db.Files.Size(), db.IsAux);
+              ReadBoolVector(numFiles, db.IsAux);
               break;
             }
             case NID::kParent:
             {
               db.IsTree = true;
               // CBoolVector boolVector;
-              // ReadBoolVector2(db.Files.Size(), boolVector);
+              // ReadBoolVector2(numFiles, boolVector);
               // CStreamSwitch streamSwitch;
               // streamSwitch.Set(this, &dataVector);
               CBoolVector boolVector;
-              ReadBoolVector2(db.Files.Size(), boolVector);
+              ReadBoolVector2(numFiles, boolVector);
 
               db.ThereAreAltStreams = false;
               for (i = 0; i < numFiles; i++)
@@ -1152,14 +1149,9 @@ namespace NArchive {
             case NID::kEmptyStream:
             {
               ReadBoolVector(numFiles, emptyStreamVector);
-              numEmptyStreams = 0;
-              for(CNum i = 0; i < (CNum)emptyStreamVector.Size(); i++)
-                if(emptyStreamVector[i])
-                  numEmptyStreams++;
-
-              BoolVector_Fill_False(emptyFileVector, numEmptyStreams);
-              BoolVector_Fill_False(antiFileVector, numEmptyStreams);
-
+              numEmptyStreams = BoolVector_CountSum(emptyStreamVector);
+              emptyFileVector.Clear();
+              antiFileVector.Clear();
               break;
             }
             case NID::kEmptyFile:  ReadBoolVector(numEmptyStreams, emptyFileVector); break;
@@ -1202,7 +1194,7 @@ namespace NArchive {
                     ReadBytes(db.SecureBuf + offset, db.SecureOffsets[i + 1] - offset);
                   }
                   db.SecureIDs.Clear();
-                  for (unsigned i = 0; i < db.Files.Size(); i++)
+                  for (unsigned i = 0; i < numFiles; i++)
                   {
                     db.SecureIDs.Add(ReadNum());
                     // db.SecureIDs.Add(ReadUInt32());
@@ -1244,20 +1236,19 @@ namespace NArchive {
         CNum emptyFileIndex = 0;
         CNum sizeIndex = 0;
 
-        CNum numAntiItems = 0;
+        const CNum numAntiItems = BoolVector_CountSum(antiFileVector);
 
-        CNum i;
+        if(numAntiItems != 0)
+          db.IsAnti.ClearAndSetSize(numFiles);
 
-        for(i = 0; i < numEmptyStreams; i++)
-          if(antiFileVector[i])
-            numAntiItems++;
+        db.Files.ClearAndSetSize(numFiles);
 
-        for(i = 0; i < numFiles; i++) {
+        for(CNum i = 0; i < numFiles; i++) {
           CFileItem &file = db.Files[i];
           bool isAnti;
-          file.HasStream = !emptyStreamVector[i];
           file.Crc = 0;
-          if(file.HasStream) {
+          if(!BoolVector_Item_IsValidAndTrue(emptyStreamVector, i)) {
+            file.HasStream = true;
             file.IsDir = false;
             isAnti = false;
             file.Size = unpackSizes[sizeIndex];
@@ -1266,23 +1257,25 @@ namespace NArchive {
               file.Crc = digests.Vals[sizeIndex];
             sizeIndex++;
           } else {
-            file.IsDir = !emptyFileVector[emptyFileIndex];
-            isAnti = antiFileVector[emptyFileIndex];
+            file.HasStream = false;
+            file.IsDir = !BoolVector_Item_IsValidAndTrue(emptyFileVector, emptyFileIndex);
+            isAnti = BoolVector_Item_IsValidAndTrue(antiFileVector, emptyFileIndex);
             emptyFileIndex++;
             file.Size = 0;
             file.CrcDefined = false;
           }
           if(numAntiItems != 0)
-            db.IsAnti.Add(isAnti);
+            db.IsAnti[i] = isAnti;
         }
       }
+
       db.FillLinks();
-      /*
-      if (type != NID::kEnd)
-        ThrowIncorrect();
-      if (_inByteBack->GetRem() != 0)
-        ThrowIncorrect();
-      */
+
+      if(type != NID::kEnd || _inByteBack->GetRem() != 0) {
+        db.UnsupportedFeatureWarning = true;
+        // ThrowIncorrect();
+      }
+
       return S_OK;
     }
 
@@ -1341,7 +1334,7 @@ namespace NArchive {
     }
 
     HRESULT CInArchive::ReadDatabase2(
-      
+      DECL_EXTERNAL_CODECS_LOC_VARS
       CDbEx &db
       _7Z_DECODER_CRYPRO_VARS_DECL
     ) {
@@ -1383,7 +1376,7 @@ namespace NArchive {
         unsigned i;
         for(i = checkSize - 2;; i--) {
           if(buf[i] == NID::kEncodedHeader && buf[i + 1] == NID::kPackInfo ||
-             buf[i] == NID::kHeader && buf[i + 1] == NID::kMainStreamsInfo)
+            buf[i] == NID::kHeader && buf[i + 1] == NID::kMainStreamsInfo)
             break;
           if(i == 0)
             return S_FALSE;
@@ -1405,7 +1398,7 @@ namespace NArchive {
 
       db.IsArc = false;
       if((Int64)nextHeaderOffset < 0 ||
-         nextHeaderSize >((UInt64)1 << 62))
+        nextHeaderSize >((UInt64)1 << 62))
         return S_FALSE;
       if(nextHeaderSize == 0) {
         if(nextHeaderOffset != 0)
@@ -1448,7 +1441,7 @@ namespace NArchive {
         if(type != NID::kEncodedHeader)
           ThrowIncorrect();
         HRESULT result = ReadAndDecodePackedStreams(
-          
+          EXTERNAL_CODECS_LOC_VARS
           db.ArcInfo.StartPositionAfterHeader,
           db.ArcInfo.DataStartPosition2,
           dataVector
@@ -1470,20 +1463,20 @@ namespace NArchive {
       db.HeadersSize = HeadersSize;
 
       return ReadHeader(
-        
+        EXTERNAL_CODECS_LOC_VARS
         db
         _7Z_DECODER_CRYPRO_VARS
       );
     }
 
     HRESULT CInArchive::ReadDatabase(
-      
+      DECL_EXTERNAL_CODECS_LOC_VARS
       CDbEx &db
       _7Z_DECODER_CRYPRO_VARS_DECL
     ) {
       try {
         HRESULT res = ReadDatabase2(
-           db
+          EXTERNAL_CODECS_LOC_VARS db
           _7Z_DECODER_CRYPRO_VARS
         );
         if(ThereIsHeaderError)

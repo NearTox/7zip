@@ -22,9 +22,7 @@ struct CAlignedMidBuffer {
   Byte *_buf;
 
   CAlignedMidBuffer() : _buf(nullptr) {}
-  ~CAlignedMidBuffer() {
-    ::MidFree(_buf);
-  }
+  ~CAlignedMidBuffer() { ::MidFree(_buf); }
 
   void AllocAlignedMask(size_t size, size_t) {
     ::MidFree(_buf);
@@ -37,9 +35,7 @@ struct CAlignedMidBuffer {
   Byte *_buf;
 
   CAlignedMidBuffer() : _bufBase(nullptr), _buf(nullptr) {}
-  ~CAlignedMidBuffer() {
-    ::MidFree(_bufBase);
-  }
+  ~CAlignedMidBuffer() { ::MidFree(_bufBase); }
 
   void AllocAlignedMask(size_t size, size_t alignMask) {
     ::MidFree(_bufBase);
@@ -136,20 +132,23 @@ public:
 
   class C_InStream_Releaser {
   public:
-    CFilterCoder *FilterCoder;
+    CFilterCoder * FilterCoder;
     C_InStream_Releaser() : FilterCoder(nullptr) {}
-    ~C_InStream_Releaser() {
-      if(FilterCoder) FilterCoder->ReleaseInStream();
-    }
+    ~C_InStream_Releaser() { if(FilterCoder) FilterCoder->ReleaseInStream(); }
   };
 
   class C_OutStream_Releaser {
   public:
-    CFilterCoder *FilterCoder;
+    CFilterCoder * FilterCoder;
     C_OutStream_Releaser() : FilterCoder(nullptr) {}
-    ~C_OutStream_Releaser() {
-      if(FilterCoder) FilterCoder->ReleaseOutStream();
-    }
+    ~C_OutStream_Releaser() { if(FilterCoder) FilterCoder->ReleaseOutStream(); }
+  };
+
+  class C_Filter_Releaser {
+  public:
+    CFilterCoder * FilterCoder;
+    C_Filter_Releaser() : FilterCoder(nullptr) {}
+    ~C_Filter_Releaser() { if(FilterCoder) FilterCoder->Filter.Release(); }
   };
 
   MY_QUERYINTERFACE_BEGIN2(ICompressCoder)
@@ -183,7 +182,7 @@ public:
     MY_ADDREF_RELEASE
 
     STDMETHOD(Code)(ISequentialInStream *inStream, ISequentialOutStream *outStream,
-                    const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
+      const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
 
   STDMETHOD(SetOutStreamSize)(const UInt64 *outSize);
   STDMETHOD(InitEncoder)();
@@ -209,7 +208,7 @@ public:
 
 #ifndef EXTRACT_ONLY
   STDMETHOD(SetCoderProperties)(const PROPID *propIDs,
-                                const PROPVARIANT *properties, UInt32 numProperties);
+    const PROPVARIANT *properties, UInt32 numProperties);
   STDMETHOD(WriteCoderProperties)(ISequentialOutStream *outStream);
   // STDMETHOD(ResetSalt)();
   STDMETHOD(ResetInitVector)();

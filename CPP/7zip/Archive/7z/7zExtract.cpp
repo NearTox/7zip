@@ -1,6 +1,6 @@
 // 7zExtract.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../../C/7zCrc.h"
 
@@ -54,9 +54,7 @@ namespace NArchive {
       HRESULT Init(unsigned startIndex, const UInt32 *indexes, unsigned numFiles);
       HRESULT FlushCorrupted(Int32 callbackOperationResult);
 
-      bool WasWritingFinished() const {
-        return _numFiles == 0;
-      }
+      bool WasWritingFinished() const { return _numFiles == 0; }
     };
 
     HRESULT CFolderOutStream::Init(unsigned startIndex, const UInt32 *indexes, unsigned numFiles) {
@@ -75,14 +73,14 @@ namespace NArchive {
       UInt32 nextFileIndex = (_indexes ? *_indexes : _fileIndex);
       Int32 askMode = (_fileIndex == nextFileIndex) ?
         (TestMode ?
-         NExtract::NAskMode::kTest :
-         NExtract::NAskMode::kExtract) :
+          NExtract::NAskMode::kTest :
+          NExtract::NAskMode::kExtract) :
         NExtract::NAskMode::kSkip;
 
       if(isCorrupted
-         && askMode == NExtract::NAskMode::kExtract
-         && !_db->IsItemAnti(_fileIndex)
-         && !fi.IsDir)
+        && askMode == NExtract::NAskMode::kExtract
+        && !_db->IsItemAnti(_fileIndex)
+        && !fi.IsDir)
         askMode = NExtract::NAskMode::kTest;
 
       CMyComPtr<ISequentialOutStream> realOutStream;
@@ -96,9 +94,9 @@ namespace NArchive {
       _rem = fi.Size;
 
       if(askMode == NExtract::NAskMode::kExtract
-         && !realOutStream
-         && !_db->IsItemAnti(_fileIndex)
-         && !fi.IsDir)
+        && !realOutStream
+        && !_db->IsItemAnti(_fileIndex)
+        && !fi.IsDir)
         askMode = NExtract::NAskMode::kSkip;
       return ExtractCallback->PrepareOperation(askMode);
     }
@@ -121,8 +119,8 @@ namespace NArchive {
     HRESULT CFolderOutStream::CloseFile() {
       const CFileItem &fi = _db->Files[_fileIndex];
       return CloseFile_and_SetResult((!_calcCrc || fi.Crc == CRC_GET_DIGEST(_crc)) ?
-                                     NExtract::NOperationResult::kOK :
-                                     NExtract::NOperationResult::kCRCError);
+        NExtract::NOperationResult::kOK :
+        NExtract::NOperationResult::kCRCError);
     }
 
     HRESULT CFolderOutStream::ProcessEmptyFiles() {
@@ -140,6 +138,11 @@ namespace NArchive {
       while(size != 0) {
         if(_fileIsOpen) {
           UInt32 cur = (size < _rem ? size : (UInt32)_rem);
+          if(_calcCrc) {
+            const UInt32 k_Step = (UInt32)1 << 20;
+            if(cur > k_Step)
+              cur = k_Step;
+          }
           HRESULT result = S_OK;
           if(_stream)
             result = _stream->Write(data, cur, &cur);
@@ -190,7 +193,7 @@ namespace NArchive {
     }
 
     STDMETHODIMP CHandler::Extract(const UInt32 *indices, UInt32 numItems,
-                                   Int32 testModeSpec, IArchiveExtractCallback *extractCallbackSpec) {
+      Int32 testModeSpec, IArchiveExtractCallback *extractCallbackSpec) {
       COM_TRY_BEGIN
 
         CMyComPtr<IArchiveExtractCallback> extractCallback = extractCallbackSpec;
@@ -284,7 +287,7 @@ namespace NArchive {
           for(k = i + 1; k < numItems; k++) {
             UInt32 fileIndex2 = allFilesMode ? k : indices[k];
             if(_db.FileIndexToFolderIndexMap[fileIndex2] != folderIndex
-               || fileIndex2 < nextFile)
+              || fileIndex2 < nextFile)
               break;
             nextFile = fileIndex2 + 1;
           }
@@ -297,8 +300,8 @@ namespace NArchive {
 
         {
           HRESULT result = folderOutStream->Init(fileIndex,
-                                                 allFilesMode ? nullptr : indices + i,
-                                                 numSolidFiles);
+            allFilesMode ? nullptr : indices + i,
+            numSolidFiles);
 
           i += numSolidFiles;
 
@@ -322,8 +325,10 @@ namespace NArchive {
           UString password;
 #endif
 
-          HRESULT result = decoder.Decode(
+          bool dataAfterEnd_Error = false;
 
+          HRESULT result = decoder.Decode(
+            EXTERNAL_CODECS_VARS
             _inStream,
             _db.ArcInfo.DataStartPosition,
             _db, folderIndex,
@@ -332,19 +337,25 @@ namespace NArchive {
             outStream,
             progress,
             nullptr // *inStreamMainRes
+            , dataAfterEnd_Error
 
             _7Z_DECODER_CRYPRO_VARS
-#if !defined(_7ZIP_ST) && !defined(_SFX)
-            , true, _numThreads
+#if !defined(_7ZIP_ST)
+            , true, _numThreads, _memUsage
 #endif
           );
 
-          if(result == S_FALSE || result == E_NOTIMPL) {
+          if(result == S_FALSE || result == E_NOTIMPL || dataAfterEnd_Error) {
             bool wasFinished = folderOutStream->WasWritingFinished();
 
-            int resOp = (result == S_FALSE ?
-                         NExtract::NOperationResult::kDataError :
-                         NExtract::NOperationResult::kUnsupportedMethod);
+            int resOp = NExtract::NOperationResult::kDataError;
+
+            if(result != S_FALSE) {
+              if(result == E_NOTIMPL)
+                resOp = NExtract::NOperationResult::kUnsupportedMethod;
+              else if(wasFinished && dataAfterEnd_Error)
+                resOp = NExtract::NOperationResult::kDataAfterEnd;
+            }
 
             RINOK(folderOutStream->FlushCorrupted(resOp));
 

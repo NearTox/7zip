@@ -8,30 +8,22 @@ namespace NWindows {
   protected:
     HANDLE _handle;
   public:
-    operator HANDLE() {
-      return _handle;
-    }
-    CHandle() : _handle(nullptr) {}
-    ~CHandle() {
-      Close();
-    }
-    bool IsCreated() const {
-      return (_handle != nullptr);
-    }
+    operator HANDLE() { return _handle; }
+    CHandle() : _handle(NULL) {}
+    ~CHandle() { Close(); }
+    bool IsCreated() const { return (_handle != NULL); }
     bool Close() {
-      if(_handle == nullptr)
+      if(_handle == NULL)
         return true;
       if(!::CloseHandle(_handle))
         return false;
-      _handle = nullptr;
+      _handle = NULL;
       return true;
     }
-    void Attach(HANDLE handle) {
-      _handle = handle;
-    }
+    void Attach(HANDLE handle) { _handle = handle; }
     HANDLE Detach() {
       HANDLE handle = _handle;
-      _handle = nullptr;
+      _handle = NULL;
       return handle;
     }
   };

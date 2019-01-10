@@ -1,24 +1,35 @@
 // MainAr.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
+
 #include "../../../Common/MyException.h"
 #include "../../../Common/StdOutStream.h"
+
 #include "../../../Windows/ErrorMsg.h"
 #include "../../../Windows/NtCheck.h"
+
 #include "../Common/ArchiveCommandLine.h"
 #include "../Common/ExitCode.h"
+
+#include "ConsoleClose.h"
+
+using namespace NWindows;
 
 CStdOutStream *g_StdStream = nullptr;
 CStdOutStream *g_ErrStream = nullptr;
 
-int _7zExtractorCMD_2(const wchar_t *args);
+extern int Main2(
+#ifndef _WIN32
+  int numArgs, char *args[]
+#endif
+);
 
-static const char *kException_CmdLine_Error_Message = "Command Line Error:";
-static const char *kExceptionErrorMessage = "ERROR:";
-static const char *kUserBreakMessage = "Break signaled";
-static const char *kMemoryExceptionMessage = "ERROR: Can't allocate required memory!";
-static const char *kUnknownExceptionMessage = "Unknown Error";
-static const char *kInternalExceptionMessage = "\n\nInternal Error #";
+static const char * const kException_CmdLine_Error_Message = "Command Line Error:";
+static const char * const kExceptionErrorMessage = "ERROR:";
+static const char * const kUserBreakMessage = "Break signaled";
+static const char * const kMemoryExceptionMessage = "ERROR: Can't allocate required memory!";
+static const char * const kUnknownExceptionMessage = "Unknown Error";
+static const char * const kInternalExceptionMessage = "\n\nInternal Error #";
 
 static void FlushStreams() {
   if(g_StdStream)
@@ -33,28 +44,32 @@ static void PrintError(const char *message) {
 
 #define NT_CHECK_FAIL_ACTION *g_StdStream << "Unsupported Windows version"; return NExitCode::kFatalError;
 
-#ifdef useMain
-int _7zExtractorCMD(const wchar_t *args);
-int MY_CDECL main(
+int MY_CDECL main
+(
 #ifndef _WIN32
   int numArgs, char *args[]
 #endif
 ) {
-  return _7zExtractorCMD(GetCommandLineW());
-}
-#endif
-int _7zExtractorCMD(const wchar_t *args) {
   g_ErrStream = &g_StdErr;
   g_StdStream = &g_StdOut;
 
   NT_CHECK
-    int res = 0;
+
+    NConsoleClose::CCtrlHandlerSetter ctrlHandlerSetter;
+  int res = 0;
 
   try {
-    res = _7zExtractorCMD_2(args);
+    res = Main2(
+#ifndef _WIN32
+      numArgs, args
+#endif
+    );
   } catch(const CNewException &) {
     PrintError(kMemoryExceptionMessage);
     return (NExitCode::kMemoryError);
+  } catch(const NConsoleClose::CCtrlBreakException &) {
+    PrintError(kUserBreakMessage);
+    return (NExitCode::kUserBreak);
   } catch(const CArcCmdLineException &e) {
     PrintError(kException_CmdLine_Error_Message);
     if(g_ErrStream)
@@ -71,7 +86,7 @@ int _7zExtractorCMD(const wchar_t *args) {
     }
     if(g_ErrStream) {
       PrintError("System ERROR:");
-      *g_ErrStream << NWindows::NError::MyFormatMessage(systemError.ErrorCode) << endl;
+      *g_ErrStream << NError::MyFormatMessage(systemError.ErrorCode) << endl;
     }
     return (NExitCode::kFatalError);
   } catch(NExitCode::EEnum &exitCode) {

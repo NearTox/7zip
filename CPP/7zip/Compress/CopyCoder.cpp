@@ -1,6 +1,7 @@
 // Compress/CopyCoder.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
+
 #include "../../../C/Alloc.h"
 
 #include "CopyCoder.h"
@@ -12,10 +13,14 @@ namespace NCompress {
     ::MidFree(_buf);
   }
 
+  STDMETHODIMP CCopyCoder::SetFinishMode(UInt32 /* finishMode */) {
+    return S_OK;
+  }
+
   STDMETHODIMP CCopyCoder::Code(ISequentialInStream *inStream,
-                                ISequentialOutStream *outStream,
-                                const UInt64 * /* inSize */, const UInt64 *outSize,
-                                ICompressProgressInfo *progress) {
+    ISequentialOutStream *outStream,
+    const UInt64 * /* inSize */, const UInt64 *outSize,
+    ICompressProgressInfo *progress) {
     if(!_buf) {
       _buf = (Byte *)::MidAlloc(kBufSize);
       if(!_buf)

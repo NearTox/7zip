@@ -1,6 +1,6 @@
 // SetProperties.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../Common/MyCom.h"
 #include "../../../Common/MyString.h"

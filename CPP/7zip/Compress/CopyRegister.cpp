@@ -1,6 +1,6 @@
 // CopyRegister.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../Common/RegisterCodec.h"
 
@@ -8,5 +8,6 @@
 
 namespace NCompress {
   REGISTER_CODEC_CREATE(CreateCodec, CCopyCoder())
-    REGISTER_CODEC_2(Copy, CreateCodec, 0, "Copy")
+
+    REGISTER_CODEC_2(Copy, CreateCodec, CreateCodec, 0, "Copy")
 }

@@ -3,7 +3,7 @@
 #ifndef __IDECL_H
 #define __IDECL_H
 
-#include "../Common/MyWindows.h"
+#include "../Common/MyUnknown.h"
 
 #define k_7zip_GUID_Data1 0x23170F69
 #define k_7zip_GUID_Data2 0x40C1
@@ -13,6 +13,7 @@
 #define k_7zip_GUID_Data3_Decoder 0x2790
 #define k_7zip_GUID_Data3_Encoder 0x2791
 #define k_7zip_GUID_Data3_Hasher  0x2792
+
 
 #define DECL_INTERFACE_SUB(i, base, groupId, subId) \
   DEFINE_GUID(IID_ ## i, \

@@ -77,6 +77,51 @@ SRes Bcj2Dec_Decode(CBcj2Dec *p);
 
 #define Bcj2Dec_IsFinished(_p_) ((_p_)->code == 0)
 
+typedef enum {
+  BCJ2_ENC_FINISH_MODE_CONTINUE,
+  BCJ2_ENC_FINISH_MODE_END_BLOCK,
+  BCJ2_ENC_FINISH_MODE_END_STREAM
+} EBcj2Enc_FinishMode;
+
+typedef struct {
+  Byte *bufs[BCJ2_NUM_STREAMS];
+  const Byte *lims[BCJ2_NUM_STREAMS];
+  const Byte *src;
+  const Byte *srcLim;
+
+  unsigned state;
+  EBcj2Enc_FinishMode finishMode;
+
+  Byte prevByte;
+
+  Byte cache;
+  UInt32 range;
+  UInt64 low;
+  UInt64 cacheSize;
+
+  UInt32 ip;
+
+  /* 32-bit ralative offset in JUMP/CALL commands is
+       - (mod 4 GB)   in 32-bit mode
+       - signed Int32 in 64-bit mode
+     We use (mod 4 GB) check for fileSize.
+     Use fileSize up to 2 GB, if you want to support 32-bit and 64-bit code conversion. */
+  UInt32 fileIp;
+  UInt32 fileSize;    /* (fileSize <= ((UInt32)1 << 31)), 0 means no_limit */
+  UInt32 relatLimit;  /* (relatLimit <= ((UInt32)1 << 31)), 0 means desable_conversion */
+
+  UInt32 tempTarget;
+  unsigned tempPos;
+  Byte temp[4 * 2];
+
+  unsigned flushPos;
+
+  UInt16 probs[2 + 256];
+} CBcj2Enc;
+
+void Bcj2Enc_Init(CBcj2Enc *p);
+void Bcj2Enc_Encode(CBcj2Enc *p);
+
 #define Bcj2Enc_Get_InputData_Size(p) ((SizeT)((p)->srcLim - (p)->src) + (p)->tempPos)
 #define Bcj2Enc_IsFinished(p) ((p)->flushPos == 5)
 

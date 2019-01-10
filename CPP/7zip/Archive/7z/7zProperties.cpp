@@ -1,6 +1,6 @@
 // 7zProperties.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "7zProperties.h"
 #include "7zHeader.h"
@@ -18,38 +18,38 @@ namespace NArchive {
     static const CPropMap kPropMap[] =
     {
       {NID::kName, {nullptr, kpidPath, VT_BSTR}},
-      {NID::kSize, {nullptr, kpidSize, VT_UI8}},
-      {NID::kPackInfo, {nullptr, kpidPackSize, VT_UI8}},
+    {NID::kSize, {nullptr, kpidSize, VT_UI8}},
+    {NID::kPackInfo, {nullptr, kpidPackSize, VT_UI8}},
 
 #ifdef _MULTI_PACK
-      {100, {"Pack0", kpidPackedSize0, VT_UI8}},
-      {101, {"Pack1", kpidPackedSize1, VT_UI8}},
-      {102, {"Pack2", kpidPackedSize2, VT_UI8}},
-      {103, {"Pack3", kpidPackedSize3, VT_UI8}},
-      {104, {"Pack4", kpidPackedSize4, VT_UI8}},
+    {100, {"Pack0", kpidPackedSize0, VT_UI8}},
+    {101, {"Pack1", kpidPackedSize1, VT_UI8}},
+    {102, {"Pack2", kpidPackedSize2, VT_UI8}},
+    {103, {"Pack3", kpidPackedSize3, VT_UI8}},
+    {104, {"Pack4", kpidPackedSize4, VT_UI8}},
 #endif
 
-      {NID::kCTime, {nullptr, kpidCTime, VT_FILETIME}},
-      {NID::kMTime, {nullptr, kpidMTime, VT_FILETIME}},
-      {NID::kATime, {nullptr, kpidATime, VT_FILETIME}},
-      {NID::kWinAttrib, {nullptr, kpidAttrib, VT_UI4}},
-      {NID::kStartPos, {nullptr, kpidPosition, VT_UI8}},
+    {NID::kCTime, {nullptr, kpidCTime, VT_FILETIME}},
+    {NID::kMTime, {nullptr, kpidMTime, VT_FILETIME}},
+    {NID::kATime, {nullptr, kpidATime, VT_FILETIME}},
+    {NID::kWinAttrib, {nullptr, kpidAttrib, VT_UI4}},
+    {NID::kStartPos, {nullptr, kpidPosition, VT_UI8}},
 
-      {NID::kCRC, {nullptr, kpidCRC, VT_UI4}},
+    {NID::kCRC, {nullptr, kpidCRC, VT_UI4}},
 
-      //  { NID::kIsAux, { nullptr, kpidIsAux, VT_BOOL } },
-      {NID::kAnti, {nullptr, kpidIsAnti, VT_BOOL}}
+  //  { NID::kIsAux, { nullptr, kpidIsAux, VT_BOOL } },
+    {NID::kAnti, {nullptr, kpidIsAnti, VT_BOOL}}
 
 #ifndef _SFX
-      ,
-      {97, {nullptr, kpidEncrypted, VT_BOOL}},
-      {98, {nullptr, kpidMethod, VT_BSTR}},
-      {99, {nullptr, kpidBlock, VT_UI4}}
+    ,
+    {97, {nullptr, kpidEncrypted, VT_BOOL}},
+    {98, {nullptr, kpidMethod, VT_BSTR}},
+    {99, {nullptr, kpidBlock, VT_UI4}}
 #endif
     };
 
     static void CopyOneItem(CRecordVector<UInt64> &src,
-                            CRecordVector<UInt64> &dest, UInt32 item) {
+      CRecordVector<UInt64> &dest, UInt32 item) {
       FOR_VECTOR(i, src)
         if(src[i] == item) {
           dest.Add(item);

@@ -21,9 +21,7 @@ namespace NArchive {
       CByteBuffer Props;
       UInt32 NumStreams;
 
-      bool IsSimpleCoder() const {
-        return NumStreams == 1;
-      }
+      bool IsSimpleCoder() const { return NumStreams == 1; }
     };
 
     struct CBond {
@@ -40,9 +38,7 @@ namespace NArchive {
 
       CFolder() {}
 
-      bool IsDecodingSupported() const {
-        return Coders.Size() <= 32;
-      }
+      bool IsDecodingSupported() const { return Coders.Size() <= 32; }
 
       int Find_in_PackStreams(UInt32 packStream) const {
         FOR_VECTOR(i, PackStreams)
@@ -103,9 +99,20 @@ namespace NArchive {
         Vals.ReserveDown();
       }
 
-      bool ValidAndDefined(unsigned i) const {
-        return i < Defs.Size() && Defs[i];
+      bool GetItem(unsigned index, UInt32 &value) const {
+        if(index < Defs.Size() && Defs[index]) {
+          value = Vals[index];
+          return true;
+        }
+        value = 0;
+        return false;
       }
+
+      bool ValidAndDefined(unsigned i) const { return i < Defs.Size() && Defs[i]; }
+
+      bool CheckSize(unsigned size) const { return Defs.Size() == size || Defs.Size() == 0; }
+
+      void SetItem(unsigned index, bool defined, UInt32 value);
     };
 
     struct CUInt64DefVector {
@@ -131,16 +138,13 @@ namespace NArchive {
         return false;
       }
 
-      void SetItem(unsigned index, bool defined, UInt64 value);
+      bool CheckSize(unsigned size) const { return Defs.Size() == size || Defs.Size() == 0; }
 
-      bool CheckSize(unsigned size) const {
-        return Defs.Size() == size || Defs.Size() == 0;
-      }
+      void SetItem(unsigned index, bool defined, UInt64 value);
     };
 
     struct CFileItem {
       UInt64 Size;
-      UInt32 Attrib;
       UInt32 Crc;
       /*
       int Parent;
@@ -150,21 +154,23 @@ namespace NArchive {
                       // stream in some folder. It can be empty stream
       bool IsDir;
       bool CrcDefined;
-      bool AttribDefined;
 
-      CFileItem() :
-        /*
-        Parent(-1),
-        IsAltStream(false),
-        */
+      /*
+      void Clear()
+      {
+        HasStream = true;
+        IsDir = false;
+        CrcDefined = false;
+      }
+
+      CFileItem():
+        // Parent(-1),
+        // IsAltStream(false),
         HasStream(true),
         IsDir(false),
         CrcDefined(false),
-        AttribDefined(false) {}
-      void SetAttrib(UInt32 attrib) {
-        AttribDefined = true;
-        Attrib = attrib;
-      }
+          {}
+      */
     };
   }
 }

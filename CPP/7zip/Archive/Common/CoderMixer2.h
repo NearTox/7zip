@@ -38,22 +38,14 @@ private:
   UInt64 _size;
   bool _wasFinished;
 public:
-  void SetStream(ISequentialInStream *stream) {
-    _stream = stream;
-  }
+  void SetStream(ISequentialInStream *stream) { _stream = stream; }
   void Init() {
     _size = 0;
     _wasFinished = false;
   }
-  void ReleaseStream() {
-    _stream.Release();
-  }
-  UInt64 GetSize() const {
-    return _size;
-  }
-  bool WasFinished() const {
-    return _wasFinished;
-  }
+  void ReleaseStream() { _stream.Release(); }
+  UInt64 GetSize() const { return _size; }
+  bool WasFinished() const { return _wasFinished; }
 };
 
 class COutStreamCalcSize :
@@ -68,18 +60,10 @@ public:
     STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
   STDMETHOD(OutStreamFinish)();
 
-  void SetStream(ISequentialOutStream *stream) {
-    _stream = stream;
-  }
-  void ReleaseStream() {
-    _stream.Release();
-  }
-  void Init() {
-    _size = 0;
-  }
-  UInt64 GetSize() const {
-    return _size;
-  }
+  void SetStream(ISequentialOutStream *stream) { _stream = stream; }
+  void ReleaseStream() { _stream.Release(); }
+  void Init() { _size = 0; }
+  UInt64 GetSize() const { return _size; }
 };
 
 #endif
@@ -89,12 +73,8 @@ namespace NCoderMixer2 {
     UInt32 PackIndex;
     UInt32 UnpackIndex;
 
-    UInt32 Get_InIndex(bool encodeMode) const {
-      return encodeMode ? UnpackIndex : PackIndex;
-    }
-    UInt32 Get_OutIndex(bool encodeMode) const {
-      return encodeMode ? PackIndex : UnpackIndex;
-    }
+    UInt32 Get_InIndex(bool encodeMode) const { return encodeMode ? UnpackIndex : PackIndex; }
+    UInt32 Get_OutIndex(bool encodeMode) const { return encodeMode ? PackIndex : UnpackIndex; }
   };
 
   struct CCoderStreamsInfo {
@@ -107,9 +87,7 @@ namespace NCoderMixer2 {
     CRecordVector<UInt32> PackStreams;
     unsigned UnpackCoder;
 
-    unsigned GetNum_Bonds_and_PackStreams() const {
-      return Bonds.Size() + PackStreams.Size();
-    }
+    unsigned GetNum_Bonds_and_PackStreams() const { return Bonds.Size() + PackStreams.Size(); }
 
     int FindBond_for_PackStream(UInt32 packStream) const {
       FOR_VECTOR(i, Bonds)
@@ -195,9 +173,13 @@ namespace NCoderMixer2 {
     CRecordVector<UInt64> PackSizes;
     CRecordVector<const UInt64 *> PackSizePointers;
 
-    CCoder() {}
+    bool Finish;
 
-    void SetCoderInfo(const UInt64 *unpackSize, const UInt64 * const *packSizes);
+    CCoder() : Finish(false) {}
+
+    void SetCoderInfo(const UInt64 *unpackSize, const UInt64 * const *packSizes, bool finish);
+
+    HRESULT CheckDataAfterEnd(bool &dataAfterEnd_Error /* , bool &InternalPackSizeError */) const;
 
     IUnknown *GetUnknown() const {
       return Coder ? (IUnknown *)Coder : (IUnknown *)Coder2;
@@ -227,26 +209,30 @@ namespace NCoderMixer2 {
   public:
     unsigned MainCoderIndex;
 
+    // bool InternalPackSizeError;
+
     CMixer(bool encodeMode) :
       EncodeMode(encodeMode),
-      MainCoderIndex(0) {}
+      MainCoderIndex(0)
+      // , InternalPackSizeError(false)
+    {}
 
-    /*
-    Sequence of calling:
+/*
+Sequence of calling:
 
-        SetBindInfo();
-        for each coder
-          AddCoder();
-        SelectMainCoder();
+    SetBindInfo();
+    for each coder
+      AddCoder();
+    SelectMainCoder();
 
-        for each file
-        {
-          ReInit()
-          for each coder
-            SetCoderInfo();
-          Code();
-        }
-    */
+    for each file
+    {
+      ReInit()
+      for each coder
+        SetCoderInfo();
+      Code();
+    }
+*/
 
     virtual HRESULT SetBindInfo(const CBindInfo &bindInfo) {
       _bi = bindInfo;
@@ -259,11 +245,12 @@ namespace NCoderMixer2 {
     virtual CCoder &GetCoder(unsigned index) = 0;
     virtual void SelectMainCoder(bool useFirst) = 0;
     virtual void ReInit() = 0;
-    virtual void SetCoderInfo(unsigned coderIndex, const UInt64 *unpackSize, const UInt64 * const *packSizes) = 0;
+    virtual void SetCoderInfo(unsigned coderIndex, const UInt64 *unpackSize, const UInt64 * const *packSizes, bool finish) = 0;
     virtual HRESULT Code(
       ISequentialInStream * const *inStreams,
       ISequentialOutStream * const *outStreams,
-      ICompressProgressInfo *progress) = 0;
+      ICompressProgressInfo *progress,
+      bool &dataAfterEnd_Error) = 0;
     virtual UInt64 GetBondStreamSize(unsigned bondIndex) const = 0;
 
     bool Is_UnpackSize_Correct_for_Coder(UInt32 coderIndex);
@@ -293,11 +280,11 @@ namespace NCoderMixer2 {
     public CMixer,
     public CMyUnknownImp {
     HRESULT GetInStream2(ISequentialInStream * const *inStreams, /* const UInt64 * const *inSizes, */
-                         UInt32 outStreamIndex, ISequentialInStream **inStreamRes);
+      UInt32 outStreamIndex, ISequentialInStream **inStreamRes);
     HRESULT GetInStream(ISequentialInStream * const *inStreams, /* const UInt64 * const *inSizes, */
-                        UInt32 inStreamIndex, ISequentialInStream **inStreamRes);
+      UInt32 inStreamIndex, ISequentialInStream **inStreamRes);
     HRESULT GetOutStream(ISequentialOutStream * const *outStreams, /* const UInt64 * const *outSizes, */
-                         UInt32 outStreamIndex, ISequentialOutStream **outStreamRes);
+      UInt32 outStreamIndex, ISequentialOutStream **outStreamRes);
 
     HRESULT FinishStream(UInt32 streamIndex);
     HRESULT FinishCoder(UInt32 coderIndex);
@@ -316,13 +303,14 @@ namespace NCoderMixer2 {
     virtual CCoder &GetCoder(unsigned index);
     virtual void SelectMainCoder(bool useFirst);
     virtual void ReInit();
-    virtual void SetCoderInfo(unsigned coderIndex, const UInt64 *unpackSize, const UInt64 * const *packSizes) {
-      _coders[coderIndex].SetCoderInfo(unpackSize, packSizes);
+    virtual void SetCoderInfo(unsigned coderIndex, const UInt64 *unpackSize, const UInt64 * const *packSizes, bool finish) {
+      _coders[coderIndex].SetCoderInfo(unpackSize, packSizes, finish);
     }
     virtual HRESULT Code(
       ISequentialInStream * const *inStreams,
       ISequentialOutStream * const *outStreams,
-      ICompressProgressInfo *progress);
+      ICompressProgressInfo *progress,
+      bool &dataAfterEnd_Error);
     virtual UInt64 GetBondStreamSize(unsigned bondIndex) const;
 
     HRESULT GetMainUnpackStream(
@@ -362,15 +350,11 @@ namespace NCoderMixer2 {
         CCoderMT &_c;
     public:
       CReleaser(CCoderMT &c) : _c(c) {}
-      ~CReleaser() {
-        _c.Release();
-      }
+      ~CReleaser() { _c.Release(); }
     };
 
     CCoderMT() : EncodeMode(false) {}
-    ~CCoderMT() {
-      CVirtThread::WaitThreadFinish();
-    }
+    ~CCoderMT() { CVirtThread::WaitThreadFinish(); }
 
     void Code(ICompressProgressInfo *progress);
   };
@@ -394,13 +378,14 @@ namespace NCoderMixer2 {
     virtual CCoder &GetCoder(unsigned index);
     virtual void SelectMainCoder(bool useFirst);
     virtual void ReInit();
-    virtual void SetCoderInfo(unsigned coderIndex, const UInt64 *unpackSize, const UInt64 * const *packSizes) {
-      _coders[coderIndex].SetCoderInfo(unpackSize, packSizes);
+    virtual void SetCoderInfo(unsigned coderIndex, const UInt64 *unpackSize, const UInt64 * const *packSizes, bool finish) {
+      _coders[coderIndex].SetCoderInfo(unpackSize, packSizes, finish);
     }
     virtual HRESULT Code(
       ISequentialInStream * const *inStreams,
       ISequentialOutStream * const *outStreams,
-      ICompressProgressInfo *progress);
+      ICompressProgressInfo *progress,
+      bool &dataAfterEnd_Error);
     virtual UInt64 GetBondStreamSize(unsigned bondIndex) const;
 
     CMixerMT(bool encodeMode) : CMixer(encodeMode) {}

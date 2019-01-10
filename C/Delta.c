@@ -1,7 +1,7 @@
 /* Delta.c -- Delta converter
 2009-05-26 : Igor Pavlov : Public domain */
 
-#include "Compiler.h"
+#include "Precomp.h"
 
 #include "Delta.h"
 

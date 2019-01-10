@@ -15,7 +15,7 @@ struct COutBufferException : public CSystemException {
 
 class COutBuffer {
 protected:
-  Byte *_buf;
+  Byte * _buf;
   UInt32 _pos;
   UInt32 _limitPos;
   UInt32 _streamPos;
@@ -32,26 +32,23 @@ public:
 #endif
 
   COutBuffer() : _buf(0), _pos(0), _stream(0), _buf2(0) {}
-  ~COutBuffer() {
-    Free();
-  }
+  ~COutBuffer() { Free(); }
 
   bool Create(UInt32 bufSize) throw();
   void Free() throw();
 
-  void SetMemStream(Byte *buf) {
-    _buf2 = buf;
-  }
-  void SetStream(ISequentialOutStream *stream) {
-    _stream = stream;
-  }
+  void SetMemStream(Byte *buf) { _buf2 = buf; }
+  void SetStream(ISequentialOutStream *stream) { _stream = stream; }
   void Init() throw();
   HRESULT Flush() throw();
   void FlushWithCheck();
 
   void WriteByte(Byte b) {
-    _buf[_pos++] = b;
-    if(_pos == _limitPos)
+    UInt32 pos = _pos;
+    _buf[pos] = b;
+    pos++;
+    _pos = pos;
+    if(pos == _limitPos)
       FlushWithCheck();
   }
   void WriteBytes(const void *data, size_t size) {

@@ -1,6 +1,6 @@
 // 7zDecode.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../Common/LimitedStreams.h"
 #include "../../Common/ProgressUtils.h"
@@ -194,7 +194,7 @@ namespace NArchive {
 #endif
 
     HRESULT CDecoder::Decode(
-
+      DECL_EXTERNAL_CODECS_LOC_VARS
       IInStream *inStream,
       UInt64 startPos,
       const CFolders &folders, unsigned folderIndex,
@@ -202,18 +202,22 @@ namespace NArchive {
 
       , ISequentialOutStream *outStream
       , ICompressProgressInfo *compressProgress
-      , ISequentialInStream **
 
+      , ISequentialInStream **
 #ifdef USE_MIXER_ST
       inStreamMainRes
 #endif
 
+      , bool &dataAfterEnd_Error
+
       _7Z_DECODER_CRYPRO_VARS_DECL
 
-#if !defined(_7ZIP_ST) && !defined(_SFX)
-      , bool mtMode, UInt32 numThreads
+#if !defined(_7ZIP_ST)
+      , bool mtMode, UInt32 numThreads, UInt64 memUsage
 #endif
     ) {
+      dataAfterEnd_Error = false;
+
       const UInt64 *packPositions = &folders.PackPositions[folders.FoStartPackStreamIndex[folderIndex]];
       CFolderEx folderInfo;
       folders.ParseFolderEx(folderIndex, folderInfo);
@@ -233,6 +237,16 @@ namespace NArchive {
           return E_FAIL;
         fullUnpack = (*unpackSize == folderUnpackSize);
       }
+
+      /*
+      We don't need to init isEncrypted and passwordIsDefined
+      We must upgrade them only
+
+      #ifndef _NO_CRYPTO
+      isEncrypted = false;
+      passwordIsDefined = false;
+      #endif
+      */
 
       if(!_bindInfoPrev_Defined || !AreBindInfoExEqual(bindInfo, _bindInfoPrev)) {
         _mixerRef.Release();
@@ -264,14 +278,14 @@ namespace NArchive {
           const CCoderInfo &coderInfo = folderInfo.Coders[i];
 
 #ifndef _SFX
-          // we don't support RAR codecs here
+// we don't support RAR codecs here
           if((coderInfo.MethodID >> 8) == 0x403)
             return E_NOTIMPL;
 #endif
 
           CCreatedCoder cod;
-          RINOK(CreateCoder(
-
+          RINOK(CreateCoder_Id(
+            EXTERNAL_CODECS_LOC_VARS
             coderInfo.MethodID, false, cod));
 
           if(coderInfo.IsSimpleCoder()) {
@@ -286,6 +300,17 @@ namespace NArchive {
           _mixer->AddCoder(cod);
 
           // now there is no codec that uses another external codec
+          /*
+          #ifdef EXTERNAL_CODECS
+          CMyComPtr<ISetCompressCodecsInfo> setCompressCodecsInfo;
+          decoderUnknown.QueryInterface(IID_ISetCompressCodecsInfo, (void **)&setCompressCodecsInfo);
+          if (setCompressCodecsInfo)
+          {
+            // we must use g_ExternalCodecs also
+            RINOK(setCompressCodecsInfo->SetCompressCodecsInfo(__externalCodecs->GetCodecs));
+          }
+          #endif
+          */
         }
 
         _bindInfoPrev = bindInfo;
@@ -299,9 +324,33 @@ namespace NArchive {
 
       unsigned i;
 
+      bool mt_wasUsed = false;
+
       for(i = 0; i < folderInfo.Coders.Size(); i++) {
         const CCoderInfo &coderInfo = folderInfo.Coders[i];
         IUnknown *decoder = _mixer->GetCoder(i).GetUnknown();
+
+#if !defined(_7ZIP_ST)
+        if(!mt_wasUsed) {
+          if(mtMode) {
+            CMyComPtr<ICompressSetCoderMt> setCoderMt;
+            decoder->QueryInterface(IID_ICompressSetCoderMt, (void **)&setCoderMt);
+            if(setCoderMt) {
+              mt_wasUsed = true;
+              RINOK(setCoderMt->SetNumberOfThreads(numThreads));
+            }
+          }
+          // if (memUsage != 0)
+          {
+            CMyComPtr<ICompressSetMemLimit> setMemLimit;
+            decoder->QueryInterface(IID_ICompressSetMemLimit, (void **)&setMemLimit);
+            if(setMemLimit) {
+              mt_wasUsed = true;
+              RINOK(setMemLimit->SetMemLimit(memUsage));
+            }
+          }
+        }
+#endif
 
         {
           CMyComPtr<ICompressSetDecoderProperties2> setDecoderProperties;
@@ -317,16 +366,6 @@ namespace NArchive {
             RINOK(res);
           }
         }
-
-#if !defined(_7ZIP_ST) && !defined(_SFX)
-        if(mtMode) {
-          CMyComPtr<ICompressSetCoderMt> setCoderMt;
-          decoder->QueryInterface(IID_ICompressSetCoderMt, (void **)&setCoderMt);
-          if(setCoderMt) {
-            RINOK(setCoderMt->SetNumberOfThreads(numThreads));
-          }
-        }
-#endif
 
 #ifndef _NO_CRYPTO
         {
@@ -356,11 +395,13 @@ namespace NArchive {
         }
 #endif
 
+        bool finishMode = false;
         {
           CMyComPtr<ICompressSetFinishMode> setFinishMode;
           decoder->QueryInterface(IID_ICompressSetFinishMode, (void **)&setFinishMode);
           if(setFinishMode) {
-            RINOK(setFinishMode->SetFinishMode(BoolToInt(fullUnpack)));
+            finishMode = fullUnpack;
+            RINOK(setFinishMode->SetFinishMode(BoolToInt(finishMode)));
           }
         }
 
@@ -388,7 +429,7 @@ namespace NArchive {
           unpackSize :
           &folders.CoderUnpackSizes[unpackStreamIndexStart + i];
 
-        _mixer->SetCoderInfo(i, unpackSizesPointer, packSizesPointers);
+        _mixer->SetCoderInfo(i, unpackSizesPointer, packSizesPointers, finishMode);
       }
 
       if(outStream) {
@@ -461,7 +502,9 @@ namespace NArchive {
           progress2 = new CDecProgress(compressProgress);
 
         ISequentialOutStream *outStreamPointer = outStream;
-        return _mixer->Code(inStreamPointers, &outStreamPointer, progress2 ? (ICompressProgressInfo *)progress2 : compressProgress);
+        return _mixer->Code(inStreamPointers, &outStreamPointer,
+          progress2 ? (ICompressProgressInfo *)progress2 : compressProgress,
+          dataAfterEnd_Error);
       }
 
 #ifdef USE_MIXER_ST

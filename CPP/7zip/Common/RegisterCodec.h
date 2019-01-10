@@ -7,10 +7,11 @@
 
 #include "../ICoder.h"
 
-typedef void* (*CreateCodecP)();
+typedef void * (*CreateCodecP)();
 
 struct CCodecInfo {
   CreateCodecP CreateDecoder;
+  CreateCodecP CreateEncoder;
   CMethodId Id;
   const char *Name;
   UInt32 NumStreams;
@@ -37,26 +38,42 @@ void RegisterCodec(const CCodecInfo *codecInfo) throw();
     RegisterCodec(&g_CodecsInfo[i]); }}; \
     static REGISTER_CODECS_NAME(x) g_RegisterCodecs;
 
-#define REGISTER_CODEC_2(x, crDec, id, name) \
-    REGISTER_CODEC_VAR { crDec, id, name, 1, false }; \
+#define REGISTER_CODEC_2(x, crDec, crEnc, id, name) \
+    REGISTER_CODEC_VAR \
+    { crDec, crEnc, id, name, 1, false }; \
     REGISTER_CODEC(x)
 
-#define REGISTER_CODEC_E(x, clsDec, id, name) \
+#ifdef EXTRACT_ONLY
+#define REGISTER_CODEC_E(x, clsDec, clsEnc, id, name) \
     REGISTER_CODEC_CREATE(CreateDec, clsDec) \
-    REGISTER_CODEC_2(x, CreateDec, id, name)
+    REGISTER_CODEC_2(x, CreateDec, nullptr, id, name)
+#else
+#define REGISTER_CODEC_E(x, clsDec, clsEnc, id, name) \
+    REGISTER_CODEC_CREATE(CreateDec, clsDec) \
+    REGISTER_CODEC_CREATE(CreateEnc, clsEnc) \
+    REGISTER_CODEC_2(x, CreateDec, CreateEnc, id, name)
+#endif
 
 #define REGISTER_FILTER_CREATE(name, cls) REGISTER_CODEC_CREATE_2(name, cls, ICompressFilter)
 
-#define REGISTER_FILTER_ITEM(crDec, id, name) \
-    { crDec, id, name, 1, true }
+#define REGISTER_FILTER_ITEM(crDec, crEnc, id, name) \
+    { crDec, crEnc, id, name, 1, true }
 
-#define REGISTER_FILTER(x, crDec, id, name) \
-    REGISTER_CODEC_VAR REGISTER_FILTER_ITEM(crDec, id, name); \
+#define REGISTER_FILTER(x, crDec, crEnc, id, name) \
+    REGISTER_CODEC_VAR \
+    REGISTER_FILTER_ITEM(crDec, crEnc, id, name); \
     REGISTER_CODEC(x)
 
-#define REGISTER_FILTER_E(x, clsDec, id, name) \
+#ifdef EXTRACT_ONLY
+#define REGISTER_FILTER_E(x, clsDec, clsEnc, id, name) \
     REGISTER_FILTER_CREATE(CreateDec, clsDec) \
-    REGISTER_FILTER(x, CreateDec, id, name)
+    REGISTER_FILTER(x, CreateDec, nullptr, id, name)
+#else
+#define REGISTER_FILTER_E(x, clsDec, clsEnc, id, name) \
+    REGISTER_FILTER_CREATE(CreateDec, clsDec) \
+    REGISTER_FILTER_CREATE(CreateEnc, clsEnc) \
+    REGISTER_FILTER(x, CreateDec, CreateEnc, id, name)
+#endif
 
 struct CHasherInfo {
   IHasher * (*CreateHasher)();

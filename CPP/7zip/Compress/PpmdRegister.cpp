@@ -1,7 +1,9 @@
 // PpmdRegister.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
+
 #include "../Common/RegisterCodec.h"
+
 #include "PpmdDecoder.h"
 
 #ifndef EXTRACT_ONLY
@@ -9,7 +11,12 @@
 #endif
 
 namespace NCompress {
-  namespace NPpmd {
-    REGISTER_CODEC_E(PPMD, CDecoder(), 0x30401, "PPMD")
-  }
-}
+namespace NPpmd {
+
+REGISTER_CODEC_E(PPMD,
+    CDecoder(),
+    CEncoder(),
+    0x30401,
+    "PPMD")
+
+}}

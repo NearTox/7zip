@@ -1,6 +1,6 @@
 // Common/StringToInt.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "StringToInt.h"
 

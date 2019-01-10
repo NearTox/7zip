@@ -10,8 +10,10 @@
 #include "LoadCodecs.h"
 #include "OpenArchive.h"
 
-namespace NOverwriteAnswer {
-  enum EEnum {
+namespace NOverwriteAnswer
+{
+  enum EEnum
+  {
     kYes,
     kYesToAll,
     kNo,
@@ -20,6 +22,7 @@ namespace NOverwriteAnswer {
     kCancel
   };
 }
+
 
 /* ---------- IFolderArchiveExtractCallback ----------
 is implemented by
@@ -40,18 +43,24 @@ IID_IFolderArchiveExtractCallback is requested by:
 */
 
 #define INTERFACE_IFolderArchiveExtractCallback(x) \
+  STDMETHOD(AskOverwrite)( \
+      const wchar_t *existName, const FILETIME *existTime, const UInt64 *existSize, \
+      const wchar_t *newName, const FILETIME *newTime, const UInt64 *newSize, \
+      Int32 *answer) x; \
   STDMETHOD(PrepareOperation)(const wchar_t *name, Int32 isFolder, Int32 askExtractMode, const UInt64 *position) x; \
   STDMETHOD(MessageError)(const wchar_t *message) x; \
   STDMETHOD(SetOperationResult)(Int32 opRes, Int32 encrypted) x; \
 
-DECL_INTERFACE_SUB(IFolderArchiveExtractCallback, IProgress, 0x01, 0x07) {
+DECL_INTERFACE_SUB(IFolderArchiveExtractCallback, IProgress, 0x01, 0x07)
+{
   INTERFACE_IFolderArchiveExtractCallback(PURE)
 };
 
 #define INTERFACE_IFolderArchiveExtractCallback2(x) \
   STDMETHOD(ReportExtractResult)(Int32 opRes, Int32 encrypted, const wchar_t *name) x; \
 
-DECL_INTERFACE_SUB(IFolderArchiveExtractCallback2, IUnknown, 0x01, 0x08) {
+DECL_INTERFACE_SUB(IFolderArchiveExtractCallback2, IUnknown, 0x01, 0x08)
+{
   INTERFACE_IFolderArchiveExtractCallback2(PURE)
 };
 
@@ -61,8 +70,12 @@ is implemented by
   FileManager/ExtractCallback.h     CExtractCallbackImp
 */
 
-#define INTERFACE_IExtractCallbackUI_Crypto(x) \
+#ifdef _NO_CRYPTO
+  #define INTERFACE_IExtractCallbackUI_Crypto(x)
+#else
+  #define INTERFACE_IExtractCallbackUI_Crypto(x) \
   virtual HRESULT SetPassword(const UString &password) x;
+#endif
 
 #define INTERFACE_IExtractCallbackUI(x) \
   virtual HRESULT BeforeOpen(const wchar_t *name, bool testMode) x; \
@@ -71,14 +84,18 @@ is implemented by
   virtual HRESULT ExtractResult(HRESULT result) x; \
   INTERFACE_IExtractCallbackUI_Crypto(x)
 
-struct IExtractCallbackUI : IFolderArchiveExtractCallback {
+struct IExtractCallbackUI: IFolderArchiveExtractCallback
+{
   INTERFACE_IExtractCallbackUI(PURE)
 };
+
+
 
 #define INTERFACE_IGetProp(x) \
   STDMETHOD(GetProp)(PROPID propID, PROPVARIANT *value) x; \
 
-DECL_INTERFACE_SUB(IGetProp, IUnknown, 0x01, 0x20) {
+DECL_INTERFACE_SUB(IGetProp, IUnknown, 0x01, 0x20)
+{
   INTERFACE_IGetProp(PURE)
 };
 
@@ -88,8 +105,10 @@ DECL_INTERFACE_SUB(IGetProp, IUnknown, 0x01, 0x20) {
   STDMETHOD(PrepareOperation7)(Int32 askExtractMode) x; \
   STDMETHOD(SetOperationResult7)(Int32 resultEOperationResult, Int32 encrypted) x; \
 
-DECL_INTERFACE_SUB(IFolderExtractToStreamCallback, IUnknown, 0x01, 0x30) {
+DECL_INTERFACE_SUB(IFolderExtractToStreamCallback, IUnknown, 0x01, 0x30)
+{
   INTERFACE_IFolderExtractToStreamCallback(PURE)
 };
+
 
 #endif

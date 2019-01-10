@@ -1,6 +1,6 @@
 // EnumDirItems.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include <wchar.h>
 
@@ -22,7 +22,7 @@ using namespace NFile;
 using namespace NName;
 
 void CDirItems::AddDirFileInfo(int phyParent, int logParent, int secureIndex,
-                               const NFind::CFileInfo &fi) {
+  const NFind::CFileInfo &fi) {
   CDirItem di;
   di.Size = fi.Size;
   di.CTime = fi.CTime;
@@ -35,7 +35,7 @@ void CDirItems::AddDirFileInfo(int phyParent, int logParent, int secureIndex,
   di.SecureIndex = secureIndex;
   di.Name = fs2us(fi.Name);
 #if defined(_WIN32) && !defined(UNDER_CE)
-  // di.ShortName = fs2us(fi.ShortName);
+// di.ShortName = fs2us(fi.ShortName);
 #endif
   Items.Add(di);
 
@@ -188,7 +188,8 @@ HRESULT CDirItems::AddSecurityItem(const FString &path, int &secureIndex) {
 HRESULT CDirItems::EnumerateDir(int phyParent, int logParent, const FString &phyPrefix) {
   RINOK(ScanProgress(phyPrefix));
 
-  NFind::CEnumerator enumerator(phyPrefix + FCHAR_ANY_MASK);
+  NFind::CEnumerator enumerator;
+  enumerator.SetDirPrefix(phyPrefix);
   for(unsigned ttt = 0; ; ttt++) {
     NFind::CFileInfo fi;
     bool found;
@@ -300,6 +301,7 @@ static HRESULT EnumerateAltStreams(
   const NWildcard::CCensorNode &curNode,
   int phyParent, int logParent, const FString &fullPath,
   const UStringVector &addArchivePrefix,  // prefix from curNode
+  bool addAllItems,
   CDirItems &dirItems) {
   NFind::CStreamEnumerator enumerator(fullPath);
   for(;;) {
@@ -317,6 +319,10 @@ static HRESULT EnumerateAltStreams(
     addArchivePrefixNew.Back() += reducedName;
     if(curNode.CheckPathToRoot(false, addArchivePrefixNew, true))
       continue;
+    if(!addAllItems)
+      if(!curNode.CheckPathToRoot(true, addArchivePrefixNew, true))
+        continue;
+
     NFind::CFileInfo fi2 = fi;
     fi2.Name += us2fs(reducedName);
     fi2.Size = si.Size;
@@ -329,18 +335,28 @@ static HRESULT EnumerateAltStreams(
 #endif
 
 HRESULT CDirItems::SetLinkInfo(CDirItem &dirItem, const NFind::CFileInfo &fi,
-                               const FString &phyPrefix) {
+  const FString &phyPrefix) {
   if(!SymLinks || !fi.HasReparsePoint())
     return S_OK;
   const FString path = phyPrefix + fi.Name;
   CByteBuffer &buf = dirItem.ReparseData;
+  DWORD res = 0;
   if(NIO::GetReparseData(path, buf)) {
     CReparseAttr attr;
-    if(attr.Parse(buf, buf.Size()))
+    if(attr.Parse(buf, buf.Size(), res))
       return S_OK;
+    // we ignore unknown reparse points
+    if(res != ERROR_INVALID_REPARSE_DATA)
+      res = 0;
+  } else {
+    res = ::GetLastError();
+    if(res == 0)
+      res = ERROR_INVALID_FUNCTION;
   }
-  DWORD res = ::GetLastError();
+
   buf.Free();
+  if(res == 0)
+    return S_OK;
   return AddError(path, res);
 }
 
@@ -364,6 +380,8 @@ static HRESULT EnumerateForItem(
   }
   int dirItemIndex = -1;
 
+  bool addAllSubStreams = false;
+
   if(curNode.CheckPathToRoot(true, addArchivePrefixNew, !fi.IsDir())) {
     int secureIndex = -1;
 #ifdef _USE_SECURITY_CODE
@@ -376,13 +394,17 @@ static HRESULT EnumerateForItem(
     dirItems.AddDirFileInfo(phyParent, logParent, secureIndex, fi);
     if(fi.IsDir())
       enterToSubFolders2 = true;
+
+    addAllSubStreams = true;
   }
 
 #ifndef UNDER_CE
   if(dirItems.ScanAltStreams) {
     RINOK(EnumerateAltStreams(fi, curNode, phyParent, logParent,
-                              phyPrefix + fi.Name,
-                              addArchivePrefixNew, dirItems));
+      phyPrefix + fi.Name,
+      addArchivePrefixNew,
+      addAllSubStreams,
+      dirItems));
   }
 
   if(dirItemIndex >= 0) {
@@ -432,10 +454,10 @@ static bool CanUseFsDirect(const NWildcard::CCensorNode &curNode) {
     /* Windows doesn't support file name with wildcard
        But if another system supports file name with wildcard,
        and wildcard mode is disabled, we can ignore wildcard in name */
-       /*
-       if (!item.WildcardParsing)
-         continue;
-       */
+    /*
+    if (!item.WildcardParsing)
+      continue;
+    */
     if(DoesNameContainWildcard(name))
       return false;
   }
@@ -497,14 +519,14 @@ static HRESULT EnumerateDirItems(
               needAltStreams = false;
 #endif
 
-              /*
-              // do we need to ignore security info for "\\" folder ?
-              #ifdef _USE_SECURITY_CODE
-              needSecurity = false;
-              #endif
-              */
+/*
+// do we need to ignore security info for "\\" folder ?
+#ifdef _USE_SECURITY_CODE
+needSecurity = false;
+#endif
+*/
 
-              fullPath = FCHAR_PATH_SEPARATOR;
+              fullPath = CHAR_PATH_SEPARATOR;
             }
 #if defined(_WIN32) && !defined(UNDER_CE)
             else if(item.IsDriveItem()) {
@@ -567,7 +589,9 @@ static HRESULT EnumerateDirItems(
           UStringVector pathParts;
           pathParts.Add(fs2us(fi.Name));
           RINOK(EnumerateAltStreams(fi, curNode, phyParent, logParent,
-                                    fullPath, pathParts, dirItems));
+            fullPath, pathParts,
+            true, /* addAllSubStreams */
+            dirItems));
         }
 #endif
 
@@ -588,7 +612,7 @@ static HRESULT EnumerateDirItems(
         }
 
         RINOK(EnumerateDirItems_Spec(*nextNode, phyParent, logParent, fi.Name, phyPrefix,
-                                     addArchivePrefixNew, dirItems, true));
+          addArchivePrefixNew, dirItems, true));
       }
 
       for(i = 0; i < curNode.SubNodes.Size(); i++) {
@@ -602,7 +626,7 @@ static HRESULT EnumerateDirItems(
         if(phyPrefix.IsEmpty()) {
           {
             if(nextNode.Name.IsEmpty())
-              fullPath = FCHAR_PATH_SEPARATOR;
+              fullPath = CHAR_PATH_SEPARATOR;
 #ifdef _WIN32
             else if(NWildcard::IsDriveColonName(nextNode.Name))
               fullPath.Add_PathSepar();
@@ -613,9 +637,9 @@ static HRESULT EnumerateDirItems(
         // we don't want to call fi.Find() for root folder or virtual folder
         if(phyPrefix.IsEmpty() && nextNode.Name.IsEmpty()
 #if defined(_WIN32) && !defined(UNDER_CE)
-           || IsVirtualFsFolder(phyPrefix, nextNode.Name)
+          || IsVirtualFsFolder(phyPrefix, nextNode.Name)
 #endif
-           ) {
+          ) {
           fi.SetAsDir();
           fi.Name = us2fs(nextNode.Name);
         } else {
@@ -633,7 +657,7 @@ static HRESULT EnumerateDirItems(
         }
 
         RINOK(EnumerateDirItems_Spec(nextNode, phyParent, logParent, fi.Name, phyPrefix,
-                                     UStringVector(), dirItems, false));
+          UStringVector(), dirItems, false));
       }
 
       return S_OK;
@@ -643,7 +667,7 @@ static HRESULT EnumerateDirItems(
 #ifdef _WIN32
 #ifndef UNDER_CE
 
-  // scan drives, if wildcard is "*:\"
+// scan drives, if wildcard is "*:\"
 
   if(phyPrefix.IsEmpty() && curNode.IncludeItems.Size() > 0) {
     unsigned i;
@@ -675,7 +699,7 @@ static HRESULT EnumerateDirItems(
         fi.Name = driveName;
 
         RINOK(EnumerateForItem(fi, curNode, phyParent, logParent, phyPrefix,
-                               addArchivePrefix, dirItems, enterToSubFolders));
+          addArchivePrefix, dirItems, enterToSubFolders));
       }
       return S_OK;
     }
@@ -684,7 +708,9 @@ static HRESULT EnumerateDirItems(
 #endif
 #endif
 
-  NFind::CEnumerator enumerator(phyPrefix + FCHAR_ANY_MASK);
+  NFind::CEnumerator enumerator;
+  enumerator.SetDirPrefix(phyPrefix);
+
   for(unsigned ttt = 0; ; ttt++) {
     NFind::CFileInfo fi;
     bool found;
@@ -700,19 +726,32 @@ static HRESULT EnumerateDirItems(
     }
 
     RINOK(EnumerateForItem(fi, curNode, phyParent, logParent, phyPrefix,
-                           addArchivePrefix, dirItems, enterToSubFolders));
+      addArchivePrefix, dirItems, enterToSubFolders));
   }
 
   return S_OK;
 }
 
-HRESULT EnumerateItems(const NWildcard::CCensor &censor, CDirItems &dirItems) {
+HRESULT EnumerateItems(
+  const NWildcard::CCensor &censor,
+  const NWildcard::ECensorPathMode pathMode,
+  const UString &addPathPrefix,
+  CDirItems &dirItems) {
   FOR_VECTOR(i, censor.Pairs) {
     const NWildcard::CPair &pair = censor.Pairs[i];
     int phyParent = pair.Prefix.IsEmpty() ? -1 : dirItems.AddPrefix(-1, -1, pair.Prefix);
     int logParent = -1;
 
-    RINOK(EnumerateDirItems(pair.Head, phyParent, logParent, us2fs(pair.Prefix), UStringVector(), dirItems, false // enterToSubFolders
+    if(pathMode == NWildcard::k_AbsPath)
+      logParent = phyParent;
+    else {
+      if(!addPathPrefix.IsEmpty())
+        logParent = dirItems.AddPrefix(-1, -1, addPathPrefix);
+    }
+
+    RINOK(EnumerateDirItems(pair.Head, phyParent, logParent, us2fs(pair.Prefix), UStringVector(),
+      dirItems,
+      false // enterToSubFolders
     ));
   }
   dirItems.ReserveDown();
@@ -739,7 +778,8 @@ void CDirItems::FillFixedReparse() {
       continue;
 
     CReparseAttr attr;
-    if(!attr.Parse(item.ReparseData, item.ReparseData.Size()))
+    DWORD errorCode = 0;
+    if(!attr.Parse(item.ReparseData, item.ReparseData.Size(), errorCode))
       continue;
     if(attr.IsRelative())
       continue;

@@ -1,6 +1,6 @@
 // Common/StringConvert.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "StringConvert.h"
 
@@ -178,9 +178,9 @@ static void UnicodeStringToMultiByte2(AString &dest, const UString &src, UINT co
       bool isUtf = (codePage == CP_UTF8 || codePage == CP_UTF7);
       // defaultChar = defaultChar;
       len = WideCharToMultiByte(codePage, 0, src, src.Len(),
-                                dest.GetBuf(len), len,
-                                (isUtf ? nullptr : &defaultChar),
-                                (isUtf ? nullptr : &defUsed)
+        dest.GetBuf(len), len,
+        (isUtf ? nullptr : &defaultChar),
+        (isUtf ? nullptr : &defUsed)
       );
       if(!isUtf)
         defaultCharWasUsed = (defUsed != FALSE);
@@ -271,6 +271,10 @@ UString MultiByteToUnicodeString(const AString &src, UINT codePage) {
   UString dest;
   MultiByteToUnicodeString2(dest, src, codePage);
   return dest;
+}
+
+UString MultiByteToUnicodeString(const char *src, UINT codePage) {
+  return MultiByteToUnicodeString(AString(src), codePage);
 }
 
 void UnicodeStringToMultiByte2(AString &dest, const UString &src, UINT codePage) {

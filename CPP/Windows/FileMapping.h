@@ -11,15 +11,15 @@ namespace NWindows {
   class CFileMapping : public CHandle {
   public:
     WRes Create(DWORD protect, UInt64 maxSize, LPCTSTR name) {
-      _handle = ::CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, protect, (DWORD)(maxSize >> 32), (DWORD)maxSize, name);
+      _handle = ::CreateFileMapping(INVALID_HANDLE_VALUE, NULL, protect, (DWORD)(maxSize >> 32), (DWORD)maxSize, name);
       return ::GetLastError();
     }
 
     WRes Open(DWORD
 #ifndef UNDER_CE
-              desiredAccess
+      desiredAccess
 #endif
-              , LPCTSTR name) {
+      , LPCTSTR name) {
 #ifdef UNDER_CE
       WRes res = Create(PAGE_READONLY, 0, name);
       if(res == ERROR_ALREADY_EXISTS)
@@ -51,9 +51,7 @@ namespace NWindows {
     const void *_data;
   public:
     CFileUnmapper(const void *data) : _data(data) {}
-    ~CFileUnmapper() {
-      ::UnmapViewOfFile(_data);
-    }
+    ~CFileUnmapper() { ::UnmapViewOfFile(_data); }
   };
 }
 

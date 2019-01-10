@@ -7,20 +7,19 @@
 
 namespace NArchive {
   namespace NItemName {
-    void ReplaceToOsPathSeparator(wchar_t *s);
+    void ReplaceSlashes_OsToUnix(UString &name);
 
-    UString MakeLegalName(const UString &name);
-    UString GetOSName(const UString &name);
-    UString GetOSName2(const UString &name);
-    void ConvertToOSName2(UString &name);
+    UString GetOsPath(const UString &name);
+    UString GetOsPath_Remove_TailSlash(const UString &name);
+
+    void ReplaceToOsSlashes_Remove_TailSlash(UString &name);
+
     bool HasTailSlash(const AString &name, UINT codePage);
 
 #ifdef _WIN32
-    inline UString WinNameToOSName(const UString &name) {
-      return name;
-    }
+    inline UString WinPathToOsPath(const UString &name) { return name; }
 #else
-    UString WinNameToOSName(const UString &name);
+    UString WinPathToOsPath(const UString &name);
 #endif
   }
 }

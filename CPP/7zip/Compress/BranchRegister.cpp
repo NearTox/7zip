@@ -1,6 +1,6 @@
 // BranchRegister.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../C/Bra.h"
 
@@ -10,7 +10,9 @@
 
 namespace NCompress {
   namespace NBranch {
-#define CREATE_BRA(n) REGISTER_FILTER_CREATE(CreateBra_Decoder_ ## n, CCoder(n ## _Convert, false)) 
+#define CREATE_BRA(n) \
+    REGISTER_FILTER_CREATE(CreateBra_Decoder_ ## n, CCoder(n ## _Convert, false)) \
+    REGISTER_FILTER_CREATE(CreateBra_Encoder_ ## n, CCoder(n ## _Convert, true)) \
 
     CREATE_BRA(PPC)
       CREATE_BRA(IA64)
@@ -21,6 +23,7 @@ namespace NCompress {
 #define METHOD_ITEM(n, id, name) \
     REGISTER_FILTER_ITEM( \
       CreateBra_Decoder_ ## n, \
+      CreateBra_Encoder_ ## n, \
       0x3030000 + id, name)
 
       REGISTER_CODECS_VAR {

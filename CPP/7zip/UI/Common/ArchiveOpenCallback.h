@@ -4,27 +4,62 @@
 #define __ARCHIVE_OPEN_CALLBACK_H
 
 #include "../../../Common/MyCom.h"
+
 #include "../../../Windows/FileFind.h"
+
+#ifndef _NO_CRYPTO
 #include "../../IPassword.h"
+#endif
 #include "../../Archive/IArchive.h"
 
-#define INTERFACE_IOpenCallbackUI_Crypto(x) virtual HRESULT Open_CryptoGetTextPassword(BSTR *password) x;
+#ifdef _NO_CRYPTO
+
+#define INTERFACE_IOpenCallbackUI_Crypto(x)
+
+#else
+
+#define INTERFACE_IOpenCallbackUI_Crypto(x) \
+  virtual HRESULT Open_CryptoGetTextPassword(BSTR *password) x; \
+  /* virtual HRESULT Open_GetPasswordIfAny(bool &passwordIsDefined, UString &password) x; */ \
+  /* virtual bool Open_WasPasswordAsked() x; */ \
+  /* virtual void Open_Clear_PasswordWasAsked_Flag() x; */  \
+
+#endif
+
+#define INTERFACE_IOpenCallbackUI(x) \
+  virtual HRESULT Open_CheckBreak() x; \
+  virtual HRESULT Open_SetTotal(const UInt64 *files, const UInt64 *bytes) x; \
+  virtual HRESULT Open_SetCompleted(const UInt64 *files, const UInt64 *bytes) x; \
+  virtual HRESULT Open_Finished() x; \
+  INTERFACE_IOpenCallbackUI_Crypto(x)
+
 struct IOpenCallbackUI {
-  INTERFACE_IOpenCallbackUI_Crypto(= 0)
+  INTERFACE_IOpenCallbackUI(= 0)
 };
 
-class COpenCallbackImp : public IArchiveOpenCallback, public IArchiveOpenVolumeCallback, public IArchiveOpenSetSubArchiveName, public ICryptoGetTextPassword, public CMyUnknownImp {
+class COpenCallbackImp :
+  public IArchiveOpenCallback,
+  public IArchiveOpenVolumeCallback,
+  public IArchiveOpenSetSubArchiveName,
+#ifndef _NO_CRYPTO
+  public ICryptoGetTextPassword,
+#endif
+  public CMyUnknownImp {
 public:
   MY_QUERYINTERFACE_BEGIN2(IArchiveOpenVolumeCallback)
     MY_QUERYINTERFACE_ENTRY(IArchiveOpenSetSubArchiveName)
+#ifndef _NO_CRYPTO
     MY_QUERYINTERFACE_ENTRY(ICryptoGetTextPassword)
+#endif
     MY_QUERYINTERFACE_END
     MY_ADDREF_RELEASE
 
     INTERFACE_IArchiveOpenCallback(;)
     INTERFACE_IArchiveOpenVolumeCallback(;)
 
+#ifndef _NO_CRYPTO
     STDMETHOD(CryptoGetTextPassword)(BSTR *password);
+#endif
 
   STDMETHOD(SetSubArchiveName(const wchar_t *name)) {
     _subArchiveMode = true;

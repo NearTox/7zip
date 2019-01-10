@@ -18,12 +18,10 @@ namespace NCompress {
       UInt32 _prevMask;
       int _encode;
     public:
-      MY_UNKNOWN_IMP//1(ICompressFilter);
+      MY_UNKNOWN_IMP1(ICompressFilter);
       INTERFACE_ICompressFilter(;)
 
-        CCoder(int encode) : _bufferPos(0), _encode(encode) {
-        x86_Convert_Init(_prevMask);
-      }
+        CCoder(int encode) : _bufferPos(0), _encode(encode) { x86_Convert_Init(_prevMask); }
     };
   }
 }

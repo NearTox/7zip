@@ -1,7 +1,7 @@
 /* Sort.c -- Sort functions
 2014-04-05 : Igor Pavlov : Public domain */
 
-#include "Compiler.h"
+#include "Precomp.h"
 
 #include "Sort.h"
 

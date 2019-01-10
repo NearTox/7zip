@@ -8,8 +8,8 @@
 #include <windows.h>
 
 #ifdef UNDER_CE
-#undef VARIANT_TRUE
-#define VARIANT_TRUE ((VARIANT_BOOL)-1)
+  #undef VARIANT_TRUE
+  #define VARIANT_TRUE ((VARIANT_BOOL)-1)
 #endif
 
 #else
@@ -44,15 +44,21 @@ typedef UINT32 ULONG;
 #undef DWORD
 typedef UINT32 DWORD;
 
+typedef long BOOL;
+
+#ifndef FALSE
+  #define FALSE 0
+  #define TRUE 1
+#endif
+
+// typedef size_t ULONG_PTR;
+typedef size_t DWORD_PTR;
+
 typedef Int64 LONGLONG;
 typedef UInt64 ULONGLONG;
 
-typedef struct _LARGE_INTEGER {
-  LONGLONG QuadPart;
-} LARGE_INTEGER;
-typedef struct _ULARGE_INTEGER {
-  ULONGLONG QuadPart;
-} ULARGE_INTEGER;
+typedef struct _LARGE_INTEGER { LONGLONG QuadPart; } LARGE_INTEGER;
+typedef struct _ULARGE_INTEGER { ULONGLONG QuadPart; } ULARGE_INTEGER;
 
 typedef const CHAR *LPCSTR;
 typedef CHAR TCHAR;
@@ -64,7 +70,8 @@ typedef OLECHAR *BSTR;
 typedef const OLECHAR *LPCOLESTR;
 typedef OLECHAR *LPOLESTR;
 
-typedef struct _FILETIME {
+typedef struct _FILETIME
+{
   DWORD dwLowDateTime;
   DWORD dwHighDateTime;
 } FILETIME;
@@ -102,14 +109,15 @@ typedef LONG SCODE;
 #ifdef __cplusplus
 
 DEFINE_GUID(IID_IUnknown,
-            0x00000000, 0x0000, 0x0000, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46);
-struct IUnknown {
+0x00000000, 0x0000, 0x0000, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46);
+struct IUnknown
+{
   STDMETHOD(QueryInterface) (REFIID iid, void **outObject) PURE;
   STDMETHOD_(ULONG, AddRef)() PURE;
   STDMETHOD_(ULONG, Release)() PURE;
-#ifndef _WIN32
+  #ifndef _WIN32
   virtual ~IUnknown() {}
-#endif
+  #endif
 };
 
 typedef IUnknown *LPUNKNOWN;
@@ -119,7 +127,8 @@ typedef IUnknown *LPUNKNOWN;
 #define VARIANT_TRUE ((VARIANT_BOOL)-1)
 #define VARIANT_FALSE ((VARIANT_BOOL)0)
 
-enum VARENUM {
+enum VARENUM
+{
   VT_EMPTY = 0,
   VT_NULL = 1,
   VT_I2 = 2,
@@ -153,12 +162,14 @@ typedef WORD PROPVAR_PAD1;
 typedef WORD PROPVAR_PAD2;
 typedef WORD PROPVAR_PAD3;
 
-typedef struct tagPROPVARIANT {
+typedef struct tagPROPVARIANT
+{
   VARTYPE vt;
   PROPVAR_PAD1 wReserved1;
   PROPVAR_PAD2 wReserved2;
   PROPVAR_PAD3 wReserved3;
-  union {
+  union
+  {
     CHAR cVal;
     UCHAR bVal;
     SHORT iVal;
@@ -183,7 +194,8 @@ typedef VARIANT VARIANTARG;
 MY_EXTERN_C HRESULT VariantClear(VARIANTARG *prop);
 MY_EXTERN_C HRESULT VariantCopy(VARIANTARG *dest, const VARIANTARG *src);
 
-typedef struct tagSTATPROPSTG {
+typedef struct tagSTATPROPSTG
+{
   LPOLESTR lpwstrName;
   PROPID propid;
   VARTYPE vt;
@@ -203,7 +215,8 @@ MY_EXTERN_C LONG CompareFileTime(const FILETIME* ft1, const FILETIME* ft2);
 #define CP_OEMCP  1
 #define CP_UTF8   65001
 
-typedef enum tagSTREAM_SEEK {
+typedef enum tagSTREAM_SEEK
+{
   STREAM_SEEK_SET = 0,
   STREAM_SEEK_CUR = 1,
   STREAM_SEEK_END = 2

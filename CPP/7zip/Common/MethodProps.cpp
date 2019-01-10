@@ -1,6 +1,6 @@
 // MethodProps.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../Common/StringToInt.h"
 
@@ -8,8 +8,8 @@
 
 using namespace NWindows;
 
-bool StringToBool(const UString &s, bool &res) {
-  if(s.IsEmpty() || (s[0] == '+' && s[1] == 0) || StringsAreEqualNoCase_Ascii(s, "ON")) {
+bool StringToBool(const wchar_t *s, bool &res) {
+  if(s[0] == 0 || (s[0] == '+' && s[1] == 0) || StringsAreEqualNoCase_Ascii(s, "ON")) {
     res = true;
     return true;
   }
@@ -33,6 +33,13 @@ unsigned ParseStringToUInt32(const UString &srcString, UInt32 &number) {
   const wchar_t *start = srcString;
   const wchar_t *end;
   number = ConvertStringToUInt32(start, &end);
+  return (unsigned)(end - start);
+}
+
+static unsigned ParseStringToUInt64(const UString &srcString, UInt64 &number) {
+  const wchar_t *start = srcString;
+  const wchar_t *end;
+  number = ConvertStringToUInt64(start, &end);
   return (unsigned)(end - start);
 }
 
@@ -82,7 +89,7 @@ HRESULT ParseMtProp(const UString &name, const PROPVARIANT &prop, UInt32 default
 static HRESULT StringToDictSize(const UString &s, NCOM::CPropVariant &destProp) {
   const wchar_t *end;
   UInt32 number = ConvertStringToUInt32(s, &end);
-  unsigned numDigits = (unsigned)(end - s);
+  unsigned numDigits = (unsigned)(end - s.Ptr());
   if(numDigits == 0 || s.Len() > numDigits + 1)
     return E_INVALIDARG;
 
@@ -125,16 +132,26 @@ static HRESULT PROPVARIANT_to_DictSize(const PROPVARIANT &prop, NCOM::CPropVaria
       destProp = (UInt64)((UInt64)1 << (unsigned)v);
     return S_OK;
   }
-  if(prop.vt == VT_BSTR)
-    return StringToDictSize(prop.bstrVal, destProp);
+  if(prop.vt == VT_BSTR) {
+    UString s;
+    s = prop.bstrVal;
+    return StringToDictSize(s, destProp);
+  }
   return E_INVALIDARG;
 }
 
-void CProps::AddProp32(PROPID propid, UInt32 level) {
+void CProps::AddProp32(PROPID propid, UInt32 val) {
   CProp &prop = Props.AddNew();
   prop.IsOptional = true;
   prop.Id = propid;
-  prop.Value = (UInt32)level;
+  prop.Value = (UInt32)val;
+}
+
+void CProps::AddPropBool(PROPID propid, bool val) {
+  CProp &prop = Props.AddNew();
+  prop.IsOptional = true;
+  prop.Id = propid;
+  prop.Value = val;
 }
 
 class CCoderProps {
@@ -202,25 +219,32 @@ struct CNameToPropID {
   const char *Name;
 };
 
+// the following are related to NCoderPropID::EEnum values
+
 static const CNameToPropID g_NameToPropID[] =
 {
   {VT_UI4, ""},
-  {VT_UI4, "d"},
-  {VT_UI4, "mem"},
-  {VT_UI4, "o"},
-  {VT_UI4, "c"},
-  {VT_UI4, "pb"},
-  {VT_UI4, "lc"},
-  {VT_UI4, "lp"},
-  {VT_UI4, "fb"},
-  {VT_BSTR, "mf"},
-  {VT_UI4, "mc"},
-  {VT_UI4, "pass"},
-  {VT_UI4, "a"},
-  {VT_UI4, "mt"},
-  {VT_BOOL, "eos"},
-  {VT_UI4, "x"},
-  {VT_UI4, "reduceSize"}
+{VT_UI4, "d"},
+{VT_UI4, "mem"},
+{VT_UI4, "o"},
+{VT_UI4, "c"},
+{VT_UI4, "pb"},
+{VT_UI4, "lc"},
+{VT_UI4, "lp"},
+{VT_UI4, "fb"},
+{VT_BSTR, "mf"},
+{VT_UI4, "mc"},
+{VT_UI4, "pass"},
+{VT_UI4, "a"},
+{VT_UI4, "mt"},
+{VT_BOOL, "eos"},
+{VT_UI4, "x"},
+{VT_UI8, "reduce"},
+{VT_UI8, "expect"},
+{VT_UI4, "b"},
+{VT_UI4, "check"},
+{VT_BSTR, "filter"},
+{VT_UI8, "memuse"}
 };
 
 static int FindPropIdExact(const UString &name) {
@@ -235,6 +259,12 @@ static bool ConvertProperty(const PROPVARIANT &srcProp, VARTYPE varType, NCOM::C
     destProp = srcProp;
     return true;
   }
+
+  if(varType == VT_UI8 && srcProp.vt == VT_UI4) {
+    destProp = (UInt64)srcProp.ulVal;
+    return true;
+  }
+
   if(varType == VT_BOOL) {
     bool res;
     if(PROPVARIANT_to_bool(srcProp, res) != S_OK)
@@ -288,7 +318,8 @@ static bool IsLogSizeProp(PROPID propid) {
     case NCoderPropID::kDictionarySize:
     case NCoderPropID::kUsedMemorySize:
     case NCoderPropID::kBlockSize:
-    case NCoderPropID::kReduceSize:
+    case NCoderPropID::kBlockSize2:
+    // case NCoderPropID::kReduceSize:
       return true;
   }
   return false;
@@ -314,10 +345,19 @@ HRESULT CMethodProps::SetParam(const UString &name, const UString &value) {
         return E_INVALIDARG;
       propValue = res;
     } else if(!value.IsEmpty()) {
-      UInt32 number;
-      if(ParseStringToUInt32(value, number) == value.Len())
-        propValue = number;
-      else
+      if(nameToPropID.VarType == VT_UI4) {
+        UInt32 number;
+        if(ParseStringToUInt32(value, number) == value.Len())
+          propValue = number;
+        else
+          propValue = value;
+      } else if(nameToPropID.VarType == VT_UI8) {
+        UInt64 number;
+        if(ParseStringToUInt64(value, number) == value.Len())
+          propValue = number;
+        else
+          propValue = value;
+      } else
         propValue = value;
     }
     if(!ConvertProperty(propValue, nameToPropID.VarType, prop.Value))
@@ -392,5 +432,7 @@ HRESULT COneMethodInfo::ParseMethodFromPROPVARIANT(const UString &realName, cons
   // -m{N}=method
   if(value.vt != VT_BSTR)
     return E_INVALIDARG;
-  return ParseMethodFromString(value.bstrVal);
+  UString s;
+  s = value.bstrVal;
+  return ParseMethodFromString(s);
 }

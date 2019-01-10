@@ -1,6 +1,6 @@
 // UTFConvert.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "MyTypes.h"
 #include "UTFConvert.h"
@@ -35,7 +35,7 @@
     else _UTF8_HEAD_PARSE2(4) \
     else _UTF8_HEAD_PARSE2(5) \
 
-// else _UTF8_HEAD_PARSE2(6)
+    // else _UTF8_HEAD_PARSE2(6)
 
 bool CheckUTF8(const char *src, bool allowReduced) throw() {
   for(;;) {
@@ -225,15 +225,7 @@ static char *Utf16_To_Utf8(char *dest, const wchar_t *src, const wchar_t *srcLim
 
     UInt32 b;
     unsigned numBits;
-    if(val < _UTF8_RANGE(3)) {
-      numBits = 6 * 3; b = _UTF8_HEAD(3, val);
-    } else if(val < _UTF8_RANGE(4)) {
-      numBits = 6 * 4; b = _UTF8_HEAD(4, val);
-    } else if(val < _UTF8_RANGE(5)) {
-      numBits = 6 * 5; b = _UTF8_HEAD(5, val);
-    } else {
-      numBits = 6 * 6; b = _UTF8_START(6);
-    }
+    if(val < _UTF8_RANGE(3)) { numBits = 6 * 3; b = _UTF8_HEAD(3, val); } else if(val < _UTF8_RANGE(4)) { numBits = 6 * 4; b = _UTF8_HEAD(4, val); } else if(val < _UTF8_RANGE(5)) { numBits = 6 * 5; b = _UTF8_HEAD(5, val); } else { numBits = 6 * 6; b = _UTF8_START(6); }
 
     *dest++ = (Byte)b;
 

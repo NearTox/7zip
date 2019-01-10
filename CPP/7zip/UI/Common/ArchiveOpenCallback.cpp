@@ -1,6 +1,6 @@
 // ArchiveOpenCallback.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../Common/ComTry.h"
 
@@ -19,7 +19,7 @@ STDMETHODIMP COpenCallbackImp::SetTotal(const UInt64 *files, const UInt64 *bytes
       return ReOpenCallback->SetTotal(files, bytes);
   if(!Callback)
     return S_OK;
-  return S_OK;
+  return Callback->Open_SetTotal(files, bytes);
   COM_TRY_END
 }
 
@@ -29,7 +29,7 @@ STDMETHODIMP COpenCallbackImp::SetCompleted(const UInt64 *files, const UInt64 *b
       return ReOpenCallback->SetCompleted(files, bytes);
   if(!Callback)
     return S_OK;
-  return S_OK;
+  return Callback->Open_SetCompleted(files, bytes);
   COM_TRY_END
 }
 
@@ -39,6 +39,7 @@ STDMETHODIMP COpenCallbackImp::GetProperty(PROPID propID, PROPVARIANT *value) {
   if(_subArchiveMode)
     switch(propID) {
       case kpidName: prop = _subArchiveName; break;
+      // case kpidSize:  prop = _subArchiveSize; break; // we don't use it now
     } else
       switch(propID) {
         case kpidName:  prop = _fileInfo.Name; break;
@@ -75,7 +76,7 @@ STDMETHODIMP COpenCallbackImp::GetStream(const wchar_t *name, IInStream **inStre
   if(_subArchiveMode)
     return S_FALSE;
   if(Callback) {
-    RINOK(S_OK);
+    RINOK(Callback->Open_CheckBreak());
   }
 
   UString name2 = name;
@@ -86,7 +87,7 @@ STDMETHODIMP COpenCallbackImp::GetStream(const wchar_t *name, IInStream **inStre
   name2.Replace(L'/', WCHAR_PATH_SEPARATOR);
 #endif
 
-  // if (!allowAbsVolPaths)
+// if (!allowAbsVolPaths)
   if(!IsSafePath(name2))
     return S_FALSE;
 
@@ -119,6 +120,7 @@ STDMETHODIMP COpenCallbackImp::GetStream(const wchar_t *name, IInStream **inStre
   COM_TRY_END
 }
 
+#ifndef _NO_CRYPTO
 STDMETHODIMP COpenCallbackImp::CryptoGetTextPassword(BSTR *password) {
   COM_TRY_BEGIN
     if(ReOpenCallback) {
@@ -133,3 +135,4 @@ STDMETHODIMP COpenCallbackImp::CryptoGetTextPassword(BSTR *password) {
   return Callback->Open_CryptoGetTextPassword(password);
   COM_TRY_END
 }
+#endif

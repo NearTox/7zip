@@ -4,7 +4,6 @@
 #define __MY_COM_H
 
 #include "MyWindows.h"
-#include "NewHandler.h"
 
 #ifndef RINOK
 #define RINOK(x) { HRESULT __result_ = (x); if (__result_ != S_OK) return __result_; }
@@ -15,30 +14,14 @@ class CMyComPtr {
   T* _p;
 public:
   CMyComPtr() : _p(nullptr) {}
-  CMyComPtr(T* p) throw() {
-    if((_p = p) != nullptr) p->AddRef();
-  }
-  CMyComPtr(const CMyComPtr<T>& lp) throw() {
-    if((_p = lp._p) != nullptr) _p->AddRef();
-  }
-  ~CMyComPtr() {
-    if(_p) _p->Release();
-  }
-  void Release() {
-    if(_p) {
-      _p->Release(); _p = nullptr;
-    }
-  }
-  operator T*() const {
-    return (T*)_p;
-  }
+  CMyComPtr(T* p) throw() { if((_p = p) != nullptr) p->AddRef(); }
+  CMyComPtr(const CMyComPtr<T>& lp) throw() { if((_p = lp._p) != nullptr) _p->AddRef(); }
+  ~CMyComPtr() { if(_p) _p->Release(); }
+  void Release() { if(_p) { _p->Release(); _p = nullptr; } }
+  operator T*() const { return (T*)_p; }
   // T& operator*() const {  return *_p; }
-  T** operator&() {
-    return &_p;
-  }
-  T* operator->() const {
-    return _p;
-  }
+  T** operator&() { return &_p; }
+  T* operator->() const { return _p; }
   T* operator=(T* p) {
     if(p)
       p->AddRef();
@@ -47,12 +30,8 @@ public:
     _p = p;
     return p;
   }
-  T* operator=(const CMyComPtr<T>& lp) {
-    return (*this = lp._p);
-  }
-  bool operator!() const {
-    return (_p == nullptr);
-  }
+  T* operator=(const CMyComPtr<T>& lp) { return (*this = lp._p); }
+  bool operator!() const { return (_p == nullptr); }
   // bool operator==(T* pT) const {  return _p == pT; }
   void Attach(T* p2) {
     Release();
@@ -68,17 +47,17 @@ public:
     return ::CoCreateInstance(rclsid, pUnkOuter, dwClsContext, iid, (void**)&_p);
   }
 #endif
-  /*
-  HRESULT CoCreateInstance(LPCOLESTR szProgID, LPUNKNOWN pUnkOuter = nullptr, DWORD dwClsContext = CLSCTX_ALL)
-  {
-    CLSID clsid;
-    HRESULT hr = CLSIDFromProgID(szProgID, &clsid);
-    ATLASSERT(_p == nullptr);
-    if (SUCCEEDED(hr))
-      hr = ::CoCreateInstance(clsid, pUnkOuter, dwClsContext, __uuidof(T), (void**)&_p);
-    return hr;
-  }
-  */
+/*
+HRESULT CoCreateInstance(LPCOLESTR szProgID, LPUNKNOWN pUnkOuter = nullptr, DWORD dwClsContext = CLSCTX_ALL)
+{
+  CLSID clsid;
+  HRESULT hr = CLSIDFromProgID(szProgID, &clsid);
+  ATLASSERT(_p == nullptr);
+  if (SUCCEEDED(hr))
+    hr = ::CoCreateInstance(clsid, pUnkOuter, dwClsContext, __uuidof(T), (void**)&_p);
+  return hr;
+}
+*/
   template <class Q>
   HRESULT QueryInterface(REFGUID iid, Q** pp) const throw() {
     return _p->QueryInterface(iid, (void**)pp);
@@ -97,28 +76,18 @@ class CMyComBSTR {
 
 public:
   CMyComBSTR() : m_str(nullptr) {}
-  ~CMyComBSTR() {
-    ::SysFreeString(m_str);
-  }
-  BSTR* operator&() {
-    return &m_str;
-  }
-  operator LPCOLESTR() const {
-    return m_str;
-  }
+  ~CMyComBSTR() { ::SysFreeString(m_str); }
+  BSTR* operator&() { return &m_str; }
+  operator LPCOLESTR() const { return m_str; }
   // operator bool() const { return m_str != nullptr; }
   // bool operator!() const { return m_str == nullptr; }
 private:
   // operator BSTR() const { return m_str; }
 
-  CMyComBSTR(LPCOLESTR src) {
-    m_str = ::SysAllocString(src);
-  }
+  CMyComBSTR(LPCOLESTR src) { m_str = ::SysAllocString(src); }
   // CMyComBSTR(int nSize) { m_str = ::SysAllocStringLen(nullptr, nSize); }
   // CMyComBSTR(int nSize, LPCOLESTR sz) { m_str = ::SysAllocStringLen(sz, nSize);  }
-  CMyComBSTR(const CMyComBSTR& src) {
-    m_str = src.MyCopy();
-  }
+  CMyComBSTR(const CMyComBSTR& src) { m_str = src.MyCopy(); }
 
   /*
   CMyComBSTR(REFGUID src)
@@ -145,9 +114,7 @@ private:
     return *this;
   }
 
-  unsigned Len() const {
-    return ::SysStringLen(m_str);
-  }
+  unsigned Len() const { return ::SysStringLen(m_str); }
 
   BSTR MyCopy() const {
     // We don't support Byte BSTRs here
@@ -177,14 +144,26 @@ private:
   }
 };
 
-//////////////////////////////////////////////////////////
+/*
+  If CMyUnknownImp doesn't use virtual destructor, the code size is smaller.
+  But if some class_1 derived from CMyUnknownImp
+    uses MY_ADDREF_RELEASE and IUnknown::Release()
+    and some another class_2 is derived from class_1,
+    then class_1 must use virtual destructor:
+      virtual ~class_1();
+    In that case, class_1::Release() calls correct destructor of class_2.
+
+  Also you can use virtual ~CMyUnknownImp(), if you want to disable warning
+    "class has virtual functions, but destructor is not virtual".
+*/
 
 class CMyUnknownImp {
 public:
   ULONG __m_RefCount;
   CMyUnknownImp() : __m_RefCount(0) {}
 
-  // virtual ~CMyUnknownImp() {};
+  // virtual
+  ~CMyUnknownImp() {}
 };
 
 #define MY_QUERYINTERFACE_BEGIN STDMETHOD(QueryInterface) \

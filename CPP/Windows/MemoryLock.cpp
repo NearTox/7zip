@@ -1,6 +1,6 @@
 // Windows/MemoryLock.cpp
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #include "MemoryLock.h"
 
@@ -16,7 +16,7 @@ namespace NWindows {
       typedef BOOL(WINAPI * Func_OpenProcessToken)(HANDLE ProcessHandle, DWORD DesiredAccess, PHANDLE TokenHandle);
       typedef BOOL(WINAPI * Func_LookupPrivilegeValue)(LPCTSTR lpSystemName, LPCTSTR lpName, PLUID lpLuid);
       typedef BOOL(WINAPI * Func_AdjustTokenPrivileges)(HANDLE TokenHandle, BOOL DisableAllPrivileges,
-                                                        PTOKEN_PRIVILEGES NewState, DWORD BufferLength, PTOKEN_PRIVILEGES PreviousState, PDWORD ReturnLength);
+        PTOKEN_PRIVILEGES NewState, DWORD BufferLength, PTOKEN_PRIVILEGES PreviousState, PDWORD ReturnLength);
     }
 #define GET_PROC_ADDR(fff, name) Func_ ## fff  my_ ## fff  = (Func_ ## fff)GetProcAddress(hModule, name)
 #endif
@@ -35,8 +35,8 @@ namespace NWindows {
       GET_PROC_ADDR(AdjustTokenPrivileges, "AdjustTokenPrivileges");
 
       if(my_OpenProcessToken &&
-         my_AdjustTokenPrivileges &&
-         my_LookupPrivilegeValue)
+        my_AdjustTokenPrivileges &&
+        my_LookupPrivilegeValue)
 
 #endif
 

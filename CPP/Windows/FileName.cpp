@@ -1,6 +1,6 @@
 // Windows/FileName.cpp
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #include "FileName.h"
 
@@ -53,9 +53,7 @@ namespace NWindows {
 
 #define IS_LETTER_CHAR(c) ((c) >= 'a' && (c) <= 'z' || (c) >= 'A' && (c) <= 'Z')
 
-      bool IsDrivePath(const wchar_t *s) throw() {
-        return IS_LETTER_CHAR(s[0]) && s[1] == ':' && IS_SEPAR(s[2]);
-      }
+      bool IsDrivePath(const wchar_t *s) throw() { return IS_LETTER_CHAR(s[0]) && s[1] == ':' && IS_SEPAR(s[2]); }
 
       bool IsAltPathPrefix(CFSTR s) throw() {
         unsigned len = MyStringLen(s);
@@ -80,8 +78,8 @@ namespace NWindows {
 
 #if defined(_WIN32) && !defined(UNDER_CE)
 
-      const wchar_t *kSuperPathPrefix = L"\\\\?\\";
-      static const wchar_t *kSuperUncPrefix = L"\\\\?\\UNC\\";
+      const char * const kSuperPathPrefix = "\\\\?\\";
+      static const char * const kSuperUncPrefix = "\\\\?\\UNC\\";
 
 #define IS_DEVICE_PATH(s)          (IS_SEPAR((s)[0]) && IS_SEPAR((s)[1]) && (s)[2] == '.' && IS_SEPAR((s)[3]))
 #define IS_SUPER_PREFIX(s)         (IS_SEPAR((s)[0]) && IS_SEPAR((s)[1]) && (s)[2] == '?' && IS_SEPAR((s)[3]))
@@ -101,7 +99,7 @@ namespace NWindows {
         /*
         // actually we don't know the way to open device file in WinCE.
         unsigned len = MyStringLen(s);
-        if (len < 5 || len > 5 || memcmp(s, FTEXT("DSK"), 3 * sizeof(FChar)) != 0)
+        if (len < 5 || len > 5 || !IsString1PrefixedByString2(s, "DSK"))
           return false;
         if (s[4] != ':')
           return false;
@@ -115,7 +113,7 @@ namespace NWindows {
         unsigned len = MyStringLen(s);
         if(len == 6 && s[5] == ':')
           return true;
-        if(len < 18 || len > 22 || memcmp(s + kDevicePathPrefixSize, FTEXT("PhysicalDrive"), 13 * sizeof(FChar)) != 0)
+        if(len < 18 || len > 22 || !IsString1PrefixedByString2(s + kDevicePathPrefixSize, "PhysicalDrive"))
           return false;
         for(unsigned i = 17; i < len; i++)
           if(s[i] < '0' || s[i] > '9')
@@ -125,9 +123,7 @@ namespace NWindows {
 #endif
       }
 
-      bool IsSuperUncPath(CFSTR s) throw() {
-        return (IS_SUPER_PREFIX(s) && IS_UNC_WITH_SLASH(s + kSuperPathPrefixSize));
-      }
+      bool IsSuperUncPath(CFSTR s) throw() { return (IS_SUPER_PREFIX(s) && IS_UNC_WITH_SLASH(s + kSuperPathPrefixSize)); }
       bool IsNetworkPath(CFSTR s) throw() {
         if(!IS_SEPAR(s[0]) || !IS_SEPAR(s[1]))
           return false;
@@ -167,42 +163,25 @@ namespace NWindows {
 
       static const unsigned kDrivePrefixSize = 3; /* c:\ */
 
-      bool IsDrivePath2(const wchar_t *s) throw() {
-        return IS_LETTER_CHAR(s[0]) && s[1] == ':';
-      }
+      bool IsDrivePath2(const wchar_t *s) throw() { return IS_LETTER_CHAR(s[0]) && s[1] == ':'; }
       // bool IsDriveName2(const wchar_t *s) throw() { return IS_LETTER_CHAR(s[0]) && s[1] == ':' && s[2] == 0; }
-      bool IsSuperPath(const wchar_t *s) throw() {
-        return IS_SUPER_PREFIX(s);
-      }
-      bool IsSuperOrDevicePath(const wchar_t *s) throw() {
-        return IS_SUPER_OR_DEVICE_PATH(s);
-      }
+      bool IsSuperPath(const wchar_t *s) throw() { return IS_SUPER_PREFIX(s); }
+      bool IsSuperOrDevicePath(const wchar_t *s) throw() { return IS_SUPER_OR_DEVICE_PATH(s); }
       // bool IsSuperUncPath(const wchar_t *s) throw() { return (IS_SUPER_PREFIX(s) && IS_UNC_WITH_SLASH(s + kSuperPathPrefixSize)); }
 
 #ifndef USE_UNICODE_FSTRING
-      bool IsDrivePath2(CFSTR s) throw() {
-        return IS_LETTER_CHAR(s[0]) && s[1] == ':';
-      }
+      bool IsDrivePath2(CFSTR s) throw() { return IS_LETTER_CHAR(s[0]) && s[1] == ':'; }
       // bool IsDriveName2(CFSTR s) throw() { return IS_LETTER_CHAR(s[0]) && s[1] == ':' && s[2] == 0; }
-      bool IsDrivePath(CFSTR s) throw() {
-        return IS_LETTER_CHAR(s[0]) && s[1] == ':' && IS_SEPAR(s[2]);
-      }
-      bool IsSuperPath(CFSTR s) throw() {
-        return IS_SUPER_PREFIX(s);
-      }
-      bool IsSuperOrDevicePath(CFSTR s) throw() {
-        return IS_SUPER_OR_DEVICE_PATH(s);
-      }
-#endif //USE_UNICODE_FSTRING
+      bool IsDrivePath(CFSTR s) throw() { return IS_LETTER_CHAR(s[0]) && s[1] == ':' && IS_SEPAR(s[2]); }
+      bool IsSuperPath(CFSTR s) throw() { return IS_SUPER_PREFIX(s); }
+      bool IsSuperOrDevicePath(CFSTR s) throw() { return IS_SUPER_OR_DEVICE_PATH(s); }
+#endif // USE_UNICODE_FSTRING
 
-      /*
-      bool IsDrivePath_SuperAllowed(CFSTR s)
-      {
-        if (IsSuperPath(s))
+      bool IsDrivePath_SuperAllowed(CFSTR s) throw() {
+        if(IsSuperPath(s))
           s += kSuperPathPrefixSize;
         return IsDrivePath(s);
       }
-      */
 
       bool IsDriveRootPath_SuperAllowed(CFSTR s) throw() {
         if(IsSuperPath(s))
@@ -214,7 +193,7 @@ namespace NWindows {
         return IS_SEPAR(s[0]) || IsDrivePath2(s);
       }
 
-      int FindAltStreamColon(CFSTR path) {
+      int FindAltStreamColon(CFSTR path) throw() {
         unsigned i = 0;
         if(IsDrivePath2(path))
           i = 2;
@@ -269,7 +248,7 @@ namespace NWindows {
         return kSuperPathPrefixSize + pos + 1;
       }
 
-      unsigned GetRootPrefixSize(CFSTR s) {
+      unsigned GetRootPrefixSize(CFSTR s) throw() {
         if(IS_DEVICE_PATH(s))
           return kDevicePathPrefixSize;
         if(IsSuperPath(s))
@@ -277,9 +256,9 @@ namespace NWindows {
         return GetRootPrefixSize_Of_SimplePath(s);
       }
 
-#endif //USE_UNICODE_FSTRING
+#endif // USE_UNICODE_FSTRING
 
-      static unsigned GetRootPrefixSize_Of_NetworkPath(const wchar_t *s) {
+      static unsigned GetRootPrefixSize_Of_NetworkPath(const wchar_t *s) throw() {
         // Network path: we look "server\path\" as root prefix
         int pos = FindSepar(s);
         if(pos < 0)
@@ -290,7 +269,7 @@ namespace NWindows {
         return pos + pos2 + 2;
       }
 
-      static unsigned GetRootPrefixSize_Of_SimplePath(const wchar_t *s) {
+      static unsigned GetRootPrefixSize_Of_SimplePath(const wchar_t *s) throw() {
         if(IsDrivePath(s))
           return kDrivePrefixSize;
         if(!IS_SEPAR(s[0]))
@@ -301,7 +280,7 @@ namespace NWindows {
         return (size == 0) ? 0 : 2 + size;
       }
 
-      static unsigned GetRootPrefixSize_Of_SuperPath(const wchar_t *s) {
+      static unsigned GetRootPrefixSize_Of_SuperPath(const wchar_t *s) throw() {
         if(IS_UNC_WITH_SLASH(s + kSuperPathPrefixSize)) {
           unsigned size = GetRootPrefixSize_Of_NetworkPath(s + kSuperUncPathPrefixSize);
           return (size == 0) ? 0 : kSuperUncPathPrefixSize + size;
@@ -323,20 +302,14 @@ namespace NWindows {
 
 #else // _WIN32
 
-      bool IsAbsolutePath(const wchar_t *s) {
-        return IS_SEPAR(s[0]);
-      }
+      bool IsAbsolutePath(const wchar_t *s) { return IS_SEPAR(s[0]); }
 
 #ifndef USE_UNICODE_FSTRING
-      unsigned GetRootPrefixSize(CFSTR s) {
-        return IS_SEPAR(s[0]) ? 1 : 0;
-      }
+      unsigned GetRootPrefixSize(CFSTR s) { return IS_SEPAR(s[0]) ? 1 : 0; }
 #endif
-      unsigned GetRootPrefixSize(const wchar_t *s) {
-        return IS_SEPAR(s[0]) ? 1 : 0;
-      }
+      unsigned GetRootPrefixSize(const wchar_t *s) { return IS_SEPAR(s[0]) ? 1 : 0; }
 
-#endif //_WIN32
+#endif // _WIN32
 
 #ifndef UNDER_CE
 
@@ -362,7 +335,7 @@ namespace NWindows {
 
       static bool ResolveDotsFolders(UString &s) {
 #ifdef _WIN32
-        // s.Replace(L'/', WCHAR_PATH_SEPARATOR);
+// s.Replace(L'/', WCHAR_PATH_SEPARATOR);
 #endif
 
         for(unsigned i = 0;;) {
@@ -418,16 +391,16 @@ namespace NWindows {
         }
       }
 
-#endif //UNDER_CE
+#endif // UNDER_CE
 
 #define LONG_PATH_DOTS_FOLDERS_PARSING
 
-      /*
-      Windows (at least 64-bit XP) can't resolve "." or ".." in paths that start with SuperPrefix \\?\
-      To solve that problem we check such path:
-         - super path contains        "." or ".." - we use kSuperPathType_UseOnlySuper
-         - super path doesn't contain "." or ".." - we use kSuperPathType_UseOnlyMain
-      */
+/*
+Windows (at least 64-bit XP) can't resolve "." or ".." in paths that start with SuperPrefix \\?\
+To solve that problem we check such path:
+   - super path contains        "." or ".." - we use kSuperPathType_UseOnlySuper
+   - super path doesn't contain "." or ".." - we use kSuperPathType_UseOnlyMain
+*/
 #ifdef LONG_PATH_DOTS_FOLDERS_PARSING
 #ifndef UNDER_CE
       static bool AreThereDotsFolders(CFSTR s) {
@@ -444,27 +417,27 @@ namespace NWindows {
         }
       }
 #endif
-#endif //LONG_PATH_DOTS_FOLDERS_PARSING
+#endif // LONG_PATH_DOTS_FOLDERS_PARSING
 
 #ifdef WIN_LONG_PATH
 
-      /*
-      Most of Windows versions have problems, if some file or dir name
-      contains '.' or ' ' at the end of name (Bad Path).
-      To solve that problem, we always use Super Path ("\\?\" prefix and full path)
-      in such cases. Note that "." and ".." are not bad names.
+/*
+Most of Windows versions have problems, if some file or dir name
+contains '.' or ' ' at the end of name (Bad Path).
+To solve that problem, we always use Super Path ("\\?\" prefix and full path)
+in such cases. Note that "." and ".." are not bad names.
 
-      There are 3 cases:
-        1) If the path is already Super Path, we use that path
-        2) If the path is not Super Path :
-           2.1) Bad Path;  we use only Super Path.
-           2.2) Good Path; we use Main Path. If it fails, we use Super Path.
+There are 3 cases:
+  1) If the path is already Super Path, we use that path
+  2) If the path is not Super Path :
+     2.1) Bad Path;  we use only Super Path.
+     2.2) Good Path; we use Main Path. If it fails, we use Super Path.
 
-       NeedToUseOriginalPath returns:
-          kSuperPathType_UseOnlyMain    : Super already
-          kSuperPathType_UseOnlySuper    : not Super, Bad Path
-          kSuperPathType_UseMainAndSuper : not Super, Good Path
-      */
+ NeedToUseOriginalPath returns:
+    kSuperPathType_UseOnlyMain    : Super already
+    kSuperPathType_UseOnlySuper    : not Super, Bad Path
+    kSuperPathType_UseMainAndSuper : not Super, Good Path
+*/
 
       int GetUseSuperPathType(CFSTR s) throw() {
         if(IsSuperOrDevicePath(s)) {
@@ -588,7 +561,7 @@ namespace NWindows {
 
         unsigned fixedSizeStart = 0;
         unsigned fixedSize = 0;
-        const wchar_t *superMarker = nullptr;
+        const char *superMarker = nullptr;
         if(IsSuperPath(curDir)) {
           fixedSize = GetRootPrefixSize_Of_SuperPath(curDir);
           if(fixedSize == 0)
@@ -658,7 +631,7 @@ namespace NWindows {
 
       bool GetSuperPaths(CFSTR s1, CFSTR s2, UString &d1, UString &d2, bool onlyIfNew) {
         if(!GetSuperPathBase(s1, d1) ||
-           !GetSuperPathBase(s2, d2))
+          !GetSuperPathBase(s2, d2))
           return false;
         if(d1.IsEmpty() && d2.IsEmpty() && onlyIfNew)
           return false;
@@ -676,7 +649,7 @@ namespace NWindows {
         return false;
       }
       */
-#endif //WIN_LONG_PATH
+#endif // WIN_LONG_PATH
 
       bool GetFullPath(CFSTR dirPrefix, CFSTR s, FString &res) {
         res = s;
@@ -747,7 +720,7 @@ namespace NWindows {
           }
         }
 
-#endif //_WIN32
+#endif // _WIN32
 
         UString temp;
         if(IS_SEPAR(s[0])) {
@@ -762,7 +735,7 @@ namespace NWindows {
         res = us2fs(curDir);
         res += us2fs(temp);
 
-#endif //UNDER_CE
+#endif // UNDER_CE
 
         return true;
       }

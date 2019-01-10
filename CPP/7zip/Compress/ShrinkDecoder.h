@@ -8,27 +8,38 @@
 #include "../ICoder.h"
 
 namespace NCompress {
-  namespace NShrink {
-    const unsigned kNumMaxBits = 13;
-    const unsigned kNumItems = 1 << kNumMaxBits;
+namespace NShrink {
 
-    class CDecoder :
-      public ICompressCoder,
-      public CMyUnknownImp {
-      UInt16 _parents[kNumItems];
-      Byte _suffixes[kNumItems];
-      Byte _stack[kNumItems];
+const unsigned kNumMaxBits = 13;
+const unsigned kNumItems = 1 << kNumMaxBits;
 
-    public:
-      MY_UNKNOWN_IMP
+class CDecoder :
+  public ICompressCoder,
+  public ICompressSetFinishMode,
+  public ICompressGetInStreamProcessedSize,
+  public CMyUnknownImp
+{
+  bool _fullStreamMode;
+  UInt64 _inProcessed;
 
-        HRESULT CodeReal(ISequentialInStream *inStream, ISequentialOutStream *outStream,
-                         const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
+  UInt16 _parents[kNumItems];
+  Byte _suffixes[kNumItems];
+  Byte _stack[kNumItems];
 
-      STDMETHOD(Code)(ISequentialInStream *inStream, ISequentialOutStream *outStream,
-                      const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
-    };
-  }
-}
+  HRESULT CodeReal(ISequentialInStream *inStream, ISequentialOutStream *outStream,
+      const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
+
+public:
+  MY_UNKNOWN_IMP2(
+      ICompressSetFinishMode,
+      ICompressGetInStreamProcessedSize)
+
+  STDMETHOD(Code)(ISequentialInStream *inStream, ISequentialOutStream *outStream,
+      const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
+  STDMETHOD(SetFinishMode)(UInt32 finishMode);
+  STDMETHOD(GetInStreamProcessedSize)(UInt64 *value);
+};
+
+}}
 
 #endif

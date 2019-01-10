@@ -24,7 +24,7 @@ bool DoesWildcardMatchName(const UString &mask, const UString &name);
 
 namespace NWildcard {
 #ifdef _WIN32
-  // returns true, if name is like "a:", "c:", ...
+// returns true, if name is like "a:", "c:", ...
   bool IsDriveColonName(const wchar_t *s);
   unsigned GetNumPrefixParts_if_DrivePath(UStringVector &pathParts);
 #endif
@@ -42,7 +42,7 @@ namespace NWildcard {
     }
 #endif
 
-    // CItem(): WildcardMatching(true) {}
+// CItem(): WildcardMatching(true) {}
 
     bool AreAllAllowed() const;
     bool CheckPath(const UStringVector &pathParts, bool isFile) const;
@@ -129,7 +129,7 @@ namespace NWildcard {
       AddPreItem(true, path, false, false);
     }
     void AddPreItem_Wildcard() {
-      AddPreItem(true, L"*", false, true);
+      AddPreItem(true, UString("*"), false, true);
     }
   };
 }

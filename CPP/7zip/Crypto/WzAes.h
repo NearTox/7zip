@@ -23,100 +23,115 @@ specified in "A Password Based File Encryption Utility":
 #include "HmacSha1.h"
 
 namespace NCrypto {
-  namespace NWzAes {
-    /* ICompressFilter::Init() does nothing for this filter.
+namespace NWzAes {
 
-      Call to init:
-        Encoder:
-          CryptoSetPassword();
-          WriteHeader();
-        Decoder:
-          [CryptoSetPassword();]
-          ReadHeader();
-          [CryptoSetPassword();] Init_and_CheckPassword();
-          [CryptoSetPassword();] Init_and_CheckPassword();
-    */
+/* ICompressFilter::Init() does nothing for this filter.
 
-    const UInt32 kPasswordSizeMax = 99; // 128;
+  Call to init:
+    Encoder:
+      CryptoSetPassword();
+      WriteHeader();
+    Decoder:
+      [CryptoSetPassword();]
+      ReadHeader();
+      [CryptoSetPassword();] Init_and_CheckPassword();
+      [CryptoSetPassword();] Init_and_CheckPassword();
+*/
 
-    const unsigned kSaltSizeMax = 16;
-    const unsigned kPwdVerifSize = 2;
-    const unsigned kMacSize = 10;
+const UInt32 kPasswordSizeMax = 99; // 128;
 
-    enum EKeySizeMode {
-      kKeySizeMode_AES128 = 1,
-      kKeySizeMode_AES192 = 2,
-      kKeySizeMode_AES256 = 3
-    };
+const unsigned kSaltSizeMax = 16;
+const unsigned kPwdVerifSize = 2;
+const unsigned kMacSize = 10;
 
-    struct CKeyInfo {
-      EKeySizeMode KeySizeMode;
-      Byte Salt[kSaltSizeMax];
-      Byte PwdVerifComputed[kPwdVerifSize];
+enum EKeySizeMode
+{
+  kKeySizeMode_AES128 = 1,
+  kKeySizeMode_AES192 = 2,
+  kKeySizeMode_AES256 = 3
+};
 
-      CByteBuffer Password;
+struct CKeyInfo
+{
+  EKeySizeMode KeySizeMode;
+  Byte Salt[kSaltSizeMax];
+  Byte PwdVerifComputed[kPwdVerifSize];
 
-      unsigned GetKeySize()  const {
-        return (8 * KeySizeMode + 8);
-      }
-      unsigned GetSaltSize() const {
-        return (4 * KeySizeMode + 4);
-      }
-      unsigned GetNumSaltWords() const {
-        return (KeySizeMode + 1);
-      }
+  CByteBuffer Password;
 
-      CKeyInfo() : KeySizeMode(kKeySizeMode_AES256) {}
-    };
+  unsigned GetKeySize()  const { return (8 * KeySizeMode + 8); }
+  unsigned GetSaltSize() const { return (4 * KeySizeMode + 4); }
+  unsigned GetNumSaltWords() const { return (KeySizeMode + 1); }
 
-    struct CAesCtr2 {
-      unsigned pos;
-      unsigned offset;
-      UInt32 aes[4 + AES_NUM_IVMRK_WORDS + 3];
-      CAesCtr2();
-    };
+  CKeyInfo(): KeySizeMode(kKeySizeMode_AES256) {}
+};
 
-    void AesCtr2_Init(CAesCtr2 *p);
-    void AesCtr2_Code(CAesCtr2 *p, Byte *data, SizeT size);
+struct CAesCtr2
+{
+  unsigned pos;
+  unsigned offset;
+  UInt32 aes[4 + AES_NUM_IVMRK_WORDS + 3];
+  CAesCtr2();
+};
 
-    class CBaseCoder : public ICompressFilter, public ICryptoSetPassword, public CMyUnknownImp {
-    protected:
-      CKeyInfo _key;
-      NSha1::CHmac _hmac;
-      CAesCtr2 _aes;
+void AesCtr2_Init(CAesCtr2 *p);
+void AesCtr2_Code(CAesCtr2 *p, Byte *data, SizeT size);
 
-      void Init2();
-    public:
-      MY_UNKNOWN_IMP1(ICryptoSetPassword)
+class CBaseCoder:
+  public ICompressFilter,
+  public ICryptoSetPassword,
+  public CMyUnknownImp
+{
+protected:
+  CKeyInfo _key;
+  NSha1::CHmac _hmac;
+  CAesCtr2 _aes;
 
-        STDMETHOD(CryptoSetPassword)(const Byte *data, UInt32 size);
+  void Init2();
+public:
+  MY_UNKNOWN_IMP1(ICryptoSetPassword)
 
-      STDMETHOD(Init)();
+  STDMETHOD(CryptoSetPassword)(const Byte *data, UInt32 size);
 
-      unsigned GetHeaderSize() const {
-        return _key.GetSaltSize() + kPwdVerifSize;
-      }
-      unsigned GetAddPackSize() const {
-        return GetHeaderSize() + kMacSize;
-      }
+  STDMETHOD(Init)();
+  
+  unsigned GetHeaderSize() const { return _key.GetSaltSize() + kPwdVerifSize; }
+  unsigned GetAddPackSize() const { return GetHeaderSize() + kMacSize; }
 
-      bool SetKeyMode(unsigned mode) {
-        if(mode < kKeySizeMode_AES128 || mode > kKeySizeMode_AES256)
-          return false;
-        _key.KeySizeMode = (EKeySizeMode)mode;
-        return true;
-      }
-    };
-
-    class CDecoder : public CBaseCoder {
-      Byte _pwdVerifFromArchive[kPwdVerifSize];
-    public:
-      STDMETHOD_(UInt32, Filter)(Byte *data, UInt32 size);
-      HRESULT ReadHeader(ISequentialInStream *inStream);
-      bool Init_and_CheckPassword();
-      HRESULT CheckMac(ISequentialInStream *inStream, bool &isOK);
-    };
+  bool SetKeyMode(unsigned mode)
+  {
+    if (mode < kKeySizeMode_AES128 || mode > kKeySizeMode_AES256)
+      return false;
+    _key.KeySizeMode = (EKeySizeMode)mode;
+    return true;
   }
-}
+
+  virtual ~CBaseCoder() {}
+};
+
+class CEncoder:
+  public CBaseCoder
+{
+public:
+  STDMETHOD_(UInt32, Filter)(Byte *data, UInt32 size);
+  HRESULT WriteHeader(ISequentialOutStream *outStream);
+  HRESULT WriteFooter(ISequentialOutStream *outStream);
+};
+
+class CDecoder:
+  public CBaseCoder
+  // public ICompressSetDecoderProperties2
+{
+  Byte _pwdVerifFromArchive[kPwdVerifSize];
+public:
+  // ICompressSetDecoderProperties2
+  // STDMETHOD(SetDecoderProperties2)(const Byte *data, UInt32 size);
+  STDMETHOD_(UInt32, Filter)(Byte *data, UInt32 size);
+  HRESULT ReadHeader(ISequentialInStream *inStream);
+  bool Init_and_CheckPassword();
+  HRESULT CheckMac(ISequentialInStream *inStream, bool &isOK);
+};
+
+}}
 
 #endif

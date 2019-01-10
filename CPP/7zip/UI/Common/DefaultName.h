@@ -6,6 +6,6 @@
 #include "../../../Common/MyString.h"
 
 UString GetDefaultName2(const UString &fileName,
-                        const UString &extension, const UString &addSubExtension);
+  const UString &extension, const UString &addSubExtension);
 
 #endif

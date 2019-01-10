@@ -1,6 +1,6 @@
 // Windows/FileFind.cpp
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #ifndef _UNICODE
 #include "../Common/StringConvert.h"
@@ -33,7 +33,7 @@ typedef struct {
 } MY_WIN32_FIND_STREAM_DATA, *MY_PWIN32_FIND_STREAM_DATA;
 
 typedef WINBASEAPI HANDLE(WINAPI *FindFirstStreamW_Ptr)(LPCWSTR fileName, MY_STREAM_INFO_LEVELS infoLevel,
-                                                        LPVOID findStreamData, DWORD flags);
+  LPVOID findStreamData, DWORD flags);
 
 typedef WINBASEAPI BOOL(APIENTRY *FindNextStreamW_Ptr)(HANDLE findStream, LPVOID findStreamData);
 
@@ -67,19 +67,19 @@ namespace NWindows {
   fi.IsAltStream = false; \
   fi.IsDevice = false;
 
-      /*
-      #ifdef UNDER_CE
-      fi.ObjectID = fd.dwOID;
-      #else
-      fi.ReparseTag = fd.dwReserved0;
-      #endif
-      */
+  /*
+  #ifdef UNDER_CE
+  fi.ObjectID = fd.dwOID;
+  #else
+  fi.ReparseTag = fd.dwReserved0;
+  #endif
+  */
 
       static void Convert_WIN32_FIND_DATA_to_FileInfo(const WIN32_FIND_DATAW &fd, CFileInfo &fi) {
         WIN_FD_TO_MY_FI(fi, fd);
         fi.Name = us2fs(fd.cFileName);
 #if defined(_WIN32) && !defined(UNDER_CE)
-        // fi.ShortName = us2fs(fd.cAlternateFileName);
+// fi.ShortName = us2fs(fd.cAlternateFileName);
 #endif
       }
 
@@ -89,13 +89,13 @@ namespace NWindows {
         WIN_FD_TO_MY_FI(fi, fd);
         fi.Name = fas2fs(fd.cFileName);
 #if defined(_WIN32) && !defined(UNDER_CE)
-        // fi.ShortName = fas2fs(fd.cAlternateFileName);
+// fi.ShortName = fas2fs(fd.cAlternateFileName);
 #endif
       }
 #endif
 
-      ////////////////////////////////
-      // CFindFile
+////////////////////////////////
+// CFindFile
 
       bool CFindFileBase::Close() throw() {
         if(_handle == INVALID_HANDLE_VALUE)
@@ -188,8 +188,8 @@ namespace NWindows {
 
 #if defined(_WIN32) && !defined(UNDER_CE)
 
-      ////////////////////////////////
-      // AltStreams
+////////////////////////////////
+// AltStreams
 
       static FindFirstStreamW_Ptr g_FindFirstStreamW;
       static FindNextStreamW_Ptr g_FindNextStreamW;
@@ -207,7 +207,7 @@ namespace NWindows {
 
       UString CStreamInfo::GetReducedName() const {
         // remove ":$DATA" postfix, but keep postfix, if Name is "::$DATA"
-        UString s = Name;
+        UString s(Name);
         if(s.Len() > 6 + 1 && StringsAreEqualNoCase_Ascii(s.RightPtr(6), ":$DATA"))
           s.DeleteFrom(s.Len() - 6);
         return s;
@@ -363,25 +363,25 @@ namespace NWindows {
       /* if path is "c:" or "c::" then CFileInfo::Find() returns name of current folder for that disk
          so instead of absolute path we have relative path in Name. That is not good in some calls */
 
-         /* In CFileInfo::Find() we want to support same names for alt streams as in CreateFile(). */
+      /* In CFileInfo::Find() we want to support same names for alt streams as in CreateFile(). */
 
-         /* CFileInfo::Find()
-         We alow the following paths (as FindFirstFile):
-           C:\folder
-           c:                      - if current dir is NOT ROOT ( c:\folder )
+      /* CFileInfo::Find()
+      We alow the following paths (as FindFirstFile):
+        C:\folder
+        c:                      - if current dir is NOT ROOT ( c:\folder )
 
-         also we support paths that are not supported by FindFirstFile:
-           \
-           \\.\c:
-           c:\                     - Name will be without tail slash ( c: )
-           \\?\c:\                 - Name will be without tail slash ( c: )
-           \\Server\Share
-           \\?\UNC\Server\Share
+      also we support paths that are not supported by FindFirstFile:
+        \
+        \\.\c:
+        c:\                     - Name will be without tail slash ( c: )
+        \\?\c:\                 - Name will be without tail slash ( c: )
+        \\Server\Share
+        \\?\UNC\Server\Share
 
-           c:\folder:stream  - Name = folder:stream
-           c:\:stream        - Name = :stream
-           c::stream         - Name = c::stream
-         */
+        c:\folder:stream  - Name = folder:stream
+        c:\:stream        - Name = :stream
+        c::stream         - Name = c::stream
+      */
 
       bool CFileInfo::Find(CFSTR path) {
 #ifdef SUPPORT_DEVICE_FILE
@@ -415,7 +415,7 @@ namespace NWindows {
         int colonPos = FindAltStreamColon(path);
         if(colonPos >= 0 && path[(unsigned)colonPos + 1] != 0) {
           UString streamName = fs2us(path + (unsigned)colonPos);
-          FString filePath = path;
+          FString filePath(path);
           filePath.DeleteFrom(colonPos);
           /* we allow both cases:
             name:stream
@@ -423,14 +423,14 @@ namespace NWindows {
           */
           const unsigned kPostfixSize = 6;
           if(streamName.Len() <= kPostfixSize
-             || !StringsAreEqualNoCase_Ascii(streamName.RightPtr(kPostfixSize), ":$DATA"))
-            streamName += L":$DATA";
+            || !StringsAreEqualNoCase_Ascii(streamName.RightPtr(kPostfixSize), ":$DATA"))
+            streamName += ":$DATA";
 
           bool isOk = true;
 
           if(IsDrivePath2(filePath) &&
             (colonPos == 2 || colonPos == 3 && filePath[2] == '\\')) {
-            // FindFirstFile doesn't work for "c:\" and for "c:" (if current dir is ROOT)
+          // FindFirstFile doesn't work for "c:\" and for "c:" (if current dir is ROOT)
             ClearBase();
             Name.Empty();
             if(colonPos == 2)
@@ -506,9 +506,9 @@ namespace NWindows {
               const unsigned prefixSize = GetNetworkServerPrefixSize(path);
               if(prefixSize > 0 && path[prefixSize] != 0) {
                 if(NName::FindSepar(path + prefixSize) < 0) {
-                  FString s = path;
+                  FString s(path);
                   s.Add_PathSepar();
-                  s += FCHAR_ANY_MASK;
+                  s += '*'; // CHAR_ANY_MASK
 
                   bool isOK = false;
                   if(finder.FindFirst(s, *this)) {
@@ -555,6 +555,11 @@ namespace NWindows {
       bool DoesFileOrDirExist(CFSTR name) {
         CFileInfo fi;
         return fi.Find(name);
+      }
+
+      void CEnumerator::SetDirPrefix(const FString &dirPrefix) {
+        _wildcard = dirPrefix;
+        _wildcard += '*';
       }
 
       bool CEnumerator::NextAny(CFileInfo &fi) {

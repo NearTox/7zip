@@ -7,21 +7,21 @@
 #include "../../../C/Sha256.h"
 
 namespace NCrypto {
-  namespace NSha256 {
-    const unsigned kDigestSize = SHA256_DIGEST_SIZE;
+namespace NSha256 {
 
-    class CHmac {
-      CSha256 _sha;
-      CSha256 _sha2;
-    public:
-      void SetKey(const Byte *key, size_t keySize);
-      void Update(const Byte *data, size_t dataSize) {
-        Sha256_Update(&_sha, data, dataSize);
-      }
-      void Final(Byte *mac);
-      // void Final(Byte *mac, size_t macSize);
-    };
-  }
-}
+const unsigned kDigestSize = SHA256_DIGEST_SIZE;
+
+class CHmac
+{
+  CSha256 _sha;
+  CSha256 _sha2;
+public:
+  void SetKey(const Byte *key, size_t keySize);
+  void Update(const Byte *data, size_t dataSize) { Sha256_Update(&_sha, data, dataSize); }
+  void Final(Byte *mac);
+  // void Final(Byte *mac, size_t macSize);
+};
+
+}}
 
 #endif

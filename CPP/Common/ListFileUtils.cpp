@@ -1,6 +1,6 @@
 // Common/ListFileUtils.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "../../C/CpuArch.h"
 
@@ -47,13 +47,13 @@ bool ReadNamesFromListFile(CFSTR fileName, UStringVector &strings, UINT codePage
     wchar_t *p = u.GetBuf(num);
     if(codePage == MY__CP_UTF16)
       for(unsigned i = 0; i < num; i++) {
-        wchar_t c = GetUi16(buf + i * 2);
+        wchar_t c = GetUi16(buf + (size_t)i * 2);
         if(c == 0)
           return false;
         p[i] = c;
       } else
         for(unsigned i = 0; i < num; i++) {
-          wchar_t c = (wchar_t)GetBe16(buf + i * 2);
+          wchar_t c = (wchar_t)GetBe16(buf + (size_t)i * 2);
           if(c == 0)
             return false;
           p[i] = c;
@@ -78,7 +78,7 @@ bool ReadNamesFromListFile(CFSTR fileName, UStringVector &strings, UINT codePage
       if(!ConvertUTF8ToUnicode(s, u))
         return false;
     } else
-      // #endif
+    // #endif
       MultiByteToUnicodeString2(u, s, codePage);
   }
 
@@ -92,7 +92,7 @@ bool ReadNamesFromListFile(CFSTR fileName, UStringVector &strings, UINT codePage
     wchar_t c = u[i];
     if(c == kGoodBOM || c == kBadBOM)
       return false;
-    if(c == L'\n' || c == 0xD) {
+    if(c == '\n' || c == 0xD) {
       AddName(strings, s);
       s.Empty();
     } else

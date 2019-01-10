@@ -1,10 +1,11 @@
 // DefaultName.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "DefaultName.h"
 
-static UString GetDefaultName3(const UString &fileName, const UString &extension, const UString &addSubExtension) {
+static UString GetDefaultName3(const UString &fileName,
+  const UString &extension, const UString &addSubExtension) {
   const unsigned extLen = extension.Len();
   const unsigned fileNameLen = fileName.Len();
 
@@ -25,7 +26,8 @@ static UString GetDefaultName3(const UString &fileName, const UString &extension
     return fileName + addSubExtension;
 }
 
-UString GetDefaultName2(const UString &fileName, const UString &extension, const UString &addSubExtension) {
+UString GetDefaultName2(const UString &fileName,
+  const UString &extension, const UString &addSubExtension) {
   UString name = GetDefaultName3(fileName, extension, addSubExtension);
   name.TrimRight();
   return name;

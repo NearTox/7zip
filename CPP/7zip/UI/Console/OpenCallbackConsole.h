@@ -6,31 +6,58 @@
 #include "../../../Common/StdOutStream.h"
 
 #include "../Common/ArchiveOpenCallback.h"
-#include "../../../Common/StdOutStream.h"
+
+#include "PercentPrinter.h"
 
 class COpenCallbackConsole : public IOpenCallbackUI {
 protected:
+  CPercentPrinter _percent;
+
   CStdOutStream *_so;
   CStdOutStream *_se;
 
   bool _totalFilesDefined;
-  bool _totalBytesDefined;
+  // bool _totalBytesDefined;
+  // UInt64 _totalFiles;
+  UInt64 _totalBytes;
+
+  bool NeedPercents() const { return _percent._so != nullptr; }
 
 public:
 
   bool MultiArcMode;
-  COpenCallbackConsole() : _totalFilesDefined(false), _totalBytesDefined(false), MultiArcMode(false), PasswordIsDefined(false) {}
 
-  void Init(CStdOutStream *outStream, CStdOutStream *errorStream) {
-    _so = outStream;
-    _se = errorStream;
+  void ClosePercents() {
+    if(NeedPercents())
+      _percent.ClosePrint(true);
   }
 
-  INTERFACE_IOpenCallbackUI_Crypto(;)
+  COpenCallbackConsole() :
+    _totalFilesDefined(false),
+    // _totalBytesDefined(false),
+    _totalBytes(0),
+    MultiArcMode(false)
 
+#ifndef _NO_CRYPTO
+    , PasswordIsDefined(false)
+    // , PasswordWasAsked(false)
+#endif
+
+  {}
+
+  void Init(CStdOutStream *outStream, CStdOutStream *errorStream, CStdOutStream *percentStream) {
+    _so = outStream;
+    _se = errorStream;
+    _percent._so = percentStream;
+  }
+
+  INTERFACE_IOpenCallbackUI(;)
+
+#ifndef _NO_CRYPTO
     bool PasswordIsDefined;
-  // bool PasswordWasAsked;
+    // bool PasswordWasAsked;
   UString Password;
+#endif
 };
 
 #endif

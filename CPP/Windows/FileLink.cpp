@@ -1,6 +1,6 @@
 // Windows/FileLink.cpp
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../C/CpuArch.h"
 
@@ -73,7 +73,7 @@ namespace NWindows {
 #define Set16(p, v) SetUi16(p, v)
 #define Set32(p, v) SetUi32(p, v)
 
-    static const wchar_t *k_LinkPrefix = L"\\??\\";
+    static const wchar_t * const k_LinkPrefix = L"\\??\\";
     static const unsigned k_LinkPrefix_Size = 4;
 
     static const bool IsLinkPrefix(const wchar_t *s) {
@@ -81,7 +81,7 @@ namespace NWindows {
     }
 
     /*
-    static const wchar_t *k_VolumePrefix = L"Volume{";
+    static const wchar_t * const k_VolumePrefix = L"Volume{";
     static const bool IsVolumeName(const wchar_t *s)
     {
       return IsString1PrefixedByString2(s, k_VolumePrefix);
@@ -185,7 +185,8 @@ namespace NWindows {
       res.ReleaseBuf_SetLen(i);
     }
 
-    bool CReparseAttr::Parse(const Byte *p, size_t size) {
+    bool CReparseAttr::Parse(const Byte *p, size_t size, DWORD &errorCode) {
+      errorCode = ERROR_INVALID_REPARSE_DATA;
       if(size < 8)
         return false;
       Tag = Get32(p);
@@ -198,9 +199,10 @@ namespace NWindows {
           (type & 0xFFFF) != 3)
       */
       if(Tag != _my_IO_REPARSE_TAG_MOUNT_POINT &&
-         Tag != _my_IO_REPARSE_TAG_SYMLINK)
-        // return true;
+        Tag != _my_IO_REPARSE_TAG_SYMLINK) {
+        errorCode = ERROR_REPARSE_TAG_MISMATCH; // ERROR_REPARSE_TAG_INVALID
         return false;
+      }
 
       if(Get16(p + 6) != 0) // padding
         return false;
@@ -236,6 +238,7 @@ namespace NWindows {
       GetString(p + subOffs, subLen >> 1, SubsName);
       GetString(p + printOffs, printLen >> 1, PrintName);
 
+      errorCode = 0;
       return true;
     }
 
@@ -255,8 +258,8 @@ namespace NWindows {
           (type & 0xFFFF) != 3)
       */
       if(Tag != _my_IO_REPARSE_TAG_MOUNT_POINT &&
-         Tag != _my_IO_REPARSE_TAG_SYMLINK)
-        // return true;
+        Tag != _my_IO_REPARSE_TAG_SYMLINK)
+      // return true;
         return false;
 
       if(Get16(p + 6) != 0) // padding
@@ -316,7 +319,7 @@ namespace NWindows {
     */
 
     UString CReparseAttr::GetPath() const {
-      UString s = SubsName;
+      UString s(SubsName);
       if(IsLinkPrefix(s)) {
         s.ReplaceOneCharAtPos(1, '\\');
         if(IsDrivePath(s.Ptr(k_LinkPrefix_Size)))
@@ -354,7 +357,7 @@ namespace NWindows {
       }
 
       static bool CreatePrefixDirOfFile(CFSTR path) {
-        FString path2 = path;
+        FString path2(path);
         int pos = path2.ReverseFind_PathSepar();
         if(pos < 0)
           return true;
@@ -388,9 +391,9 @@ namespace NWindows {
 
         COutFile file;
         if(!file.Open(path,
-                      FILE_SHARE_WRITE,
-                      OPEN_EXISTING,
-                      FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS))
+          FILE_SHARE_WRITE,
+          OPEN_EXISTING,
+          FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS))
           return false;
 
         DWORD returnedSize;

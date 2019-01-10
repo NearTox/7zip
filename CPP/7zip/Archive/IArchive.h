@@ -434,13 +434,24 @@ UpdateItems()
     ISequentialOutStream *outStream
 */
 
-/*#define INTERFACE_IOutArchive(x) \
+#define INTERFACE_IOutArchive(x) \
   STDMETHOD(UpdateItems)(ISequentialOutStream *outStream, UInt32 numItems, IArchiveUpdateCallback *updateCallback) x; \
   STDMETHOD(GetFileTimeType)(UInt32 *type) x;
 
 ARCHIVE_INTERFACE(IOutArchive, 0xA0) {
   INTERFACE_IOutArchive(PURE)
-};*/
+};
+
+/*
+ISetProperties::SetProperties()
+  PROPVARIANT values[i].vt:
+    VT_EMPTY
+    VT_BOOL
+    VT_UI4   - if 32-bit number
+    VT_UI8   - if 64-bit number
+    VT_BSTR
+*/
+
 ARCHIVE_INTERFACE(ISetProperties, 0x03) {
   STDMETHOD(SetProperties)(const wchar_t * const *names, const PROPVARIANT *values, UInt32 numProps) PURE;
 };
@@ -471,7 +482,7 @@ struct CStatProp {
 
 namespace NWindows {
   namespace NCOM {
-    // PropVariant.cpp
+  // PropVariant.cpp
     BSTR AllocBstrFromAscii(const char *s) throw();
   }
 }
@@ -535,7 +546,8 @@ extern "C"
 
   typedef HRESULT(WINAPI *Func_SetCaseSensitive)(Int32 caseSensitive);
   typedef HRESULT(WINAPI *Func_SetLargePageMode)();
-  //typedef IOutArchive * (*Func_CreateOutArchive)();
+
+  typedef IOutArchive * (*Func_CreateOutArchive)();
   typedef IInArchive * (*Func_CreateInArchive)();
 }
 

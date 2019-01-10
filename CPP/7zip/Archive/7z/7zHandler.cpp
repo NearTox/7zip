@@ -1,6 +1,6 @@
 // 7zHandler.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../../C/CpuArch.h"
 
@@ -18,7 +18,7 @@
 
 #ifdef __7Z_SET_PROPERTIES
 #ifdef EXTRACT_ONLY
-//#include "../Common/ParseProperties.h"
+#include "../Common/ParseProperties.h"
 #endif
 #endif
 
@@ -38,7 +38,6 @@ namespace NArchive {
       _crcSize = 4;
 
 #ifdef __7Z_SET_PROPERTIES
-      _numThreads = NSystem::GetNumberOfProcessors();
       _useMultiThreadMixer = true;
 #endif
 
@@ -60,7 +59,7 @@ namespace NArchive {
     }
 
     STDMETHODIMP CHandler::GetPropertyInfo(UInt32 /* index */,
-                                           BSTR * /* name */, PROPID * /* propID */, VARTYPE * /* varType */) {
+      BSTR * /* name */, PROPID * /* propID */, VARTYPE * /* varType */) {
       return E_NOTIMPL;
     }
 
@@ -107,22 +106,12 @@ namespace NArchive {
             s[1] = 0;
             return 1;
           }
-          if(i < 20) {
-            s[0] = '1'; s[1] = (char)('0' + i - 10);
-          } else if(i < 30) {
-            s[0] = '2'; s[1] = (char)('0' + i - 20);
-          } else {
-            s[0] = '3'; s[1] = (char)('0' + i - 30);
-          }
+          if(i < 20) { s[0] = '1'; s[1] = (char)('0' + i - 10); } else if(i < 30) { s[0] = '2'; s[1] = (char)('0' + i - 20); } else { s[0] = '3'; s[1] = (char)('0' + i - 30); }
           s[2] = 0;
           return 2;
         }
       char c = 'b';
-      if((val & ((1 << 20) - 1)) == 0) {
-        val >>= 20; c = 'm';
-      } else if((val & ((1 << 10) - 1)) == 0) {
-        val >>= 10; c = 'k';
-      }
+      if((val & ((1 << 20) - 1)) == 0) { val >>= 20; c = 'm'; } else if((val & ((1 << 10) - 1)) == 0) { val >>= 10; c = 'k'; }
       ::ConvertUInt32ToString(val, s);
       unsigned pos = MyStringLen(s);
       s[pos++] = c;
@@ -147,7 +136,7 @@ namespace NArchive {
 
     void CHandler::AddMethodName(AString &s, UInt64 id) {
       AString name;
-      FindMethod(id, name);
+      FindMethod(EXTERNAL_CODECS_VARS id, name);
       if(name.IsEmpty())
         ConvertMethodIdToString(s, id);
       else
@@ -193,12 +182,12 @@ namespace NArchive {
         case kpidHeadersSize:  prop = _db.HeadersSize; break;
         case kpidPhySize:  prop = _db.PhySize; break;
         case kpidOffset: if(_db.ArcInfo.StartPosition != 0) prop = _db.ArcInfo.StartPosition; break;
-          /*
-          case kpidIsTree: if (_db.IsTree) prop = true; break;
-          case kpidIsAltStream: if (_db.ThereAreAltStreams) prop = true; break;
-          case kpidIsAux: if (_db.IsTree) prop = true; break;
-          */
-          // case kpidError: if (_db.ThereIsHeaderError) prop = "Header error"; break;
+        /*
+        case kpidIsTree: if (_db.IsTree) prop = true; break;
+        case kpidIsAltStream: if (_db.ThereAreAltStreams) prop = true; break;
+        case kpidIsAux: if (_db.IsTree) prop = true; break;
+        */
+        // case kpidError: if (_db.ThereIsHeaderError) prop = "Header error"; break;
 #endif
 
         case kpidWarningFlags:
@@ -447,7 +436,7 @@ namespace NArchive {
             temp[pos + totalLen - 1] = ' ';
         } else {
           AString methodName;
-          FindMethod(id64, methodName);
+          FindMethod(EXTERNAL_CODECS_VARS id64, methodName);
           if(needSpace)
             temp[--pos] = ' ';
           if(methodName.IsEmpty())
@@ -489,7 +478,7 @@ namespace NArchive {
       */
 
       const CFileItem &item = _db.Files[index];
-      UInt32 index2 = index;
+      const UInt32 index2 = index;
 
       switch(propID) {
         case kpidIsDir: PropVarEm_Set_Bool(value, item.IsDir); break;
@@ -517,31 +506,28 @@ namespace NArchive {
           break;
         }
         // case kpidIsAux: prop = _db.IsItemAux(index2); break;
-        case kpidPosition:
-        {
-          UInt64 v; if(_db.StartPos.GetItem(index2, v)) PropVarEm_Set_UInt64(value, v); break;
-        }
+        case kpidPosition: { UInt64 v; if(_db.StartPos.GetItem(index2, v)) PropVarEm_Set_UInt64(value, v); break; }
         case kpidCTime:  SetFileTimeProp_From_UInt64Def(value, _db.CTime, index2); break;
         case kpidATime:  SetFileTimeProp_From_UInt64Def(value, _db.ATime, index2); break;
         case kpidMTime:  SetFileTimeProp_From_UInt64Def(value, _db.MTime, index2); break;
-        case kpidAttrib:  if(item.AttribDefined) PropVarEm_Set_UInt32(value, item.Attrib); break;
+        case kpidAttrib:  if(_db.Attrib.ValidAndDefined(index2)) PropVarEm_Set_UInt32(value, _db.Attrib.Vals[index2]); break;
         case kpidCRC:  if(item.CrcDefined) PropVarEm_Set_UInt32(value, item.Crc); break;
         case kpidEncrypted:  PropVarEm_Set_Bool(value, IsFolderEncrypted(_db.FileIndexToFolderIndexMap[index2])); break;
         case kpidIsAnti:  PropVarEm_Set_Bool(value, _db.IsItemAnti(index2)); break;
-          /*
-          case kpidIsAltStream:  prop = item.IsAltStream; break;
-          case kpidNtSecure:
+        /*
+        case kpidIsAltStream:  prop = item.IsAltStream; break;
+        case kpidNtSecure:
+          {
+            int id = _db.SecureIDs[index];
+            size_t offs = _db.SecureOffsets[id];
+            size_t size = _db.SecureOffsets[id + 1] - offs;
+            if (size >= 0)
             {
-              int id = _db.SecureIDs[index];
-              size_t offs = _db.SecureOffsets[id];
-              size_t size = _db.SecureOffsets[id + 1] - offs;
-              if (size >= 0)
-              {
-                prop.SetBlob(_db.SecureBuf + offs, (ULONG)size);
-              }
-              break;
+              prop.SetBlob(_db.SecureBuf + offs, (ULONG)size);
             }
-          */
+            break;
+          }
+        */
 
         case kpidPath: return _db.GetPath_Prop(index, value);
 
@@ -555,28 +541,28 @@ namespace NArchive {
             PropVarEm_Set_UInt32(value, (UInt32)folderIndex);
         }
         break;
-        /*
-        case kpidPackedSize0:
-        case kpidPackedSize1:
-        case kpidPackedSize2:
-        case kpidPackedSize3:
-        case kpidPackedSize4:
+      /*
+      case kpidPackedSize0:
+      case kpidPackedSize1:
+      case kpidPackedSize2:
+      case kpidPackedSize3:
+      case kpidPackedSize4:
+        {
+          CNum folderIndex = _db.FileIndexToFolderIndexMap[index2];
+          if (folderIndex != kNumNoIndex)
           {
-            CNum folderIndex = _db.FileIndexToFolderIndexMap[index2];
-            if (folderIndex != kNumNoIndex)
+            if (_db.FolderStartFileIndex[folderIndex] == (CNum)index2 &&
+                _db.FoStartPackStreamIndex[folderIndex + 1] -
+                _db.FoStartPackStreamIndex[folderIndex] > (propID - kpidPackedSize0))
             {
-              if (_db.FolderStartFileIndex[folderIndex] == (CNum)index2 &&
-                  _db.FoStartPackStreamIndex[folderIndex + 1] -
-                  _db.FoStartPackStreamIndex[folderIndex] > (propID - kpidPackedSize0))
-              {
-                PropVarEm_Set_UInt64(value, _db.GetFolderPackStreamSize(folderIndex, propID - kpidPackedSize0));
-              }
+              PropVarEm_Set_UInt64(value, _db.GetFolderPackStreamSize(folderIndex, propID - kpidPackedSize0));
             }
-            else
-              PropVarEm_Set_UInt64(value, 0);
           }
-          break;
-        */
+          else
+            PropVarEm_Set_UInt64(value, 0);
+        }
+        break;
+      */
 
 #endif
       }
@@ -586,8 +572,8 @@ namespace NArchive {
     }
 
     STDMETHODIMP CHandler::Open(IInStream *stream,
-                                const UInt64 *maxCheckStartPosition,
-                                IArchiveOpenCallback *openArchiveCallback) {
+      const UInt64 *maxCheckStartPosition,
+      IArchiveOpenCallback *openArchiveCallback) {
       COM_TRY_BEGIN
         Close();
 #ifndef _SFX
@@ -615,7 +601,7 @@ namespace NArchive {
         _db.IsArc = true;
 
         HRESULT result = archive.ReadDatabase(
-
+          EXTERNAL_CODECS_VARS
           _db
 #ifndef _NO_CRYPTO
           , getTextPassword, _isEncrypted, _passwordIsDefined, _password
@@ -657,8 +643,8 @@ namespace NArchive {
 
     STDMETHODIMP CHandler::SetProperties(const wchar_t * const *names, const PROPVARIANT *values, UInt32 numProps) {
       COM_TRY_BEGIN
-        const UInt32 numProcessors = NSystem::GetNumberOfProcessors();
-      _numThreads = numProcessors;
+
+        InitCommon();
       _useMultiThreadMixer = true;
 
       for(UInt32 i = 0; i < numProps; i++) {
@@ -674,11 +660,14 @@ namespace NArchive {
             RINOK(PROPVARIANT_to_bool(value, _useMultiThreadMixer));
             continue;
           }
-          if(name.IsPrefixedBy_Ascii_NoCase("mt")) {
-            RINOK(ParseMtProp(name.Ptr(2), value, numProcessors, _numThreads));
-            continue;
-          } else
-            return E_INVALIDARG;
+          {
+            HRESULT hres;
+            if(SetCommonProperty(name, value, hres)) {
+              RINOK(hres);
+              continue;
+            }
+          }
+          return E_INVALIDARG;
         }
       }
       return S_OK;
@@ -688,6 +677,6 @@ namespace NArchive {
 #endif
 #endif
 
-    //IMPL_ISetCompressCodecsInfo
+    IMPL_ISetCompressCodecsInfo
   }
 }

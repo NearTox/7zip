@@ -22,7 +22,7 @@ namespace NWindows {
 
 #if defined(_WIN32) && !defined(UNDER_CE)
 
-      extern const wchar_t *kSuperPathPrefix; /* \\?\ */
+      extern const char * const kSuperPathPrefix; /* \\?\ */
       const unsigned kDevicePathPrefixSize = 4;
       const unsigned kSuperPathPrefixSize = 4;
       const unsigned kSuperUncPathPrefixSize = kSuperPathPrefixSize + 4;
@@ -41,7 +41,7 @@ namespace NWindows {
 
       bool IsNetworkShareRootPath(CFSTR s) throw();  /* \\?\UNC\SERVER\share or \\SERVER\share or with slash */
 
-      // bool IsDrivePath_SuperAllowed(CFSTR s) throw();  // first chars are drive chars like "a:\" or "\\?\a:\"
+      bool IsDrivePath_SuperAllowed(CFSTR s) throw();  // first chars are drive chars like "a:\" or "\\?\a:\"
       bool IsDriveRootPath_SuperAllowed(CFSTR s) throw();  // exact drive root path "a:\" or "\\?\a:\"
 
       bool IsDrivePath2(const wchar_t *s) throw(); // first 2 chars are drive chars like "a:"
@@ -70,9 +70,9 @@ namespace NWindows {
 
 #endif
 
-      int FindAltStreamColon(CFSTR path);
+      int FindAltStreamColon(CFSTR path) throw();
 
-#endif //_WIN32
+#endif // _WIN32
 
       bool IsAbsolutePath(const wchar_t *s) throw();
       unsigned GetRootPrefixSize(const wchar_t *s) throw();
@@ -104,7 +104,7 @@ namespace NWindows {
 #define IF_USE_MAIN_PATH
 #define IF_USE_MAIN_PATH_2(x1, x2)
 
-#endif //WIN_LONG_PATH
+#endif // WIN_LONG_PATH
 
       bool GetFullPath(CFSTR dirPrefix, CFSTR path, FString &fullPath);
       bool GetFullPath(CFSTR path, FString &fullPath);

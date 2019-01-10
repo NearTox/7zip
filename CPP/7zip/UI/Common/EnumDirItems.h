@@ -10,8 +10,12 @@
 #include "DirItem.h"
 
 void AddDirFileInfo(int phyParent, int logParent, int secureIndex,
-                    const NWindows::NFile::NFind::CFileInfo &fi, CObjectVector<CDirItem> &dirItems);
+  const NWindows::NFile::NFind::CFileInfo &fi, CObjectVector<CDirItem> &dirItems);
 
-HRESULT EnumerateItems(const NWildcard::CCensor &censor, CDirItems &dirItems);
+HRESULT EnumerateItems(
+  const NWildcard::CCensor &censor,
+  NWildcard::ECensorPathMode pathMode,
+  const UString &addPathPrefix,
+  CDirItems &dirItems);
 
 #endif

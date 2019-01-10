@@ -17,9 +17,9 @@
 
 namespace NArchive {
   namespace N7z {
-    /*
-      We don't need to init isEncrypted and passwordIsDefined
-      We must upgrade them only */
+  /*
+    We don't need to init isEncrypted and passwordIsDefined
+    We must upgrade them only */
 
 #ifdef _NO_CRYPTO
 #define _7Z_DECODER_CRYPRO_VARS_DECL
@@ -105,6 +105,7 @@ namespace NArchive {
       CUInt64DefVector ATime;
       CUInt64DefVector MTime;
       CUInt64DefVector StartPos;
+      CUInt32DefVector Attrib;
       CBoolVector IsAnti;
       /*
       CBoolVector IsAux;
@@ -135,6 +136,7 @@ namespace NArchive {
         ATime.Clear();
         MTime.Clear();
         StartPos.Clear();
+        Attrib.Clear();
         IsAnti.Clear();
         // IsAux.Clear();
       }
@@ -145,9 +147,7 @@ namespace NArchive {
             return true;
         return false;
       }
-      bool IsItemAnti(unsigned index) const {
-        return (index < IsAnti.Size() && IsAnti[index]);
-      }
+      bool IsItemAnti(unsigned index) const { return (index < IsAnti.Size() && IsAnti[index]); }
       // bool IsItemAux(unsigned index) const { return (index < IsAux.Size() && IsAux[index]); }
 
       /*
@@ -276,12 +276,8 @@ namespace NArchive {
       size_t _size;
       size_t _pos;
 
-      size_t GetRem() const {
-        return _size - _pos;
-      }
-      const Byte *GetPtr() const {
-        return _buffer + _pos;
-      }
+      size_t GetRem() const { return _size - _pos; }
+      const Byte *GetPtr() const { return _buffer + _pos; }
       void Init(const Byte *buffer, size_t size) {
         _buffer = buffer;
         _size = size;
@@ -289,15 +285,11 @@ namespace NArchive {
       }
       Byte ReadByte();
       void ReadBytes(Byte *data, size_t size);
-      void SkipDataNoCheck(UInt64 size) {
-        _pos += (size_t)size;
-      }
+      void SkipDataNoCheck(UInt64 size) { _pos += (size_t)size; }
       void SkipData(UInt64 size);
 
       void SkipData();
-      void SkipRem() {
-        _pos = _size;
-      }
+      void SkipRem() { _pos = _size; }
       UInt64 ReadNumber();
       CNum ReadNum();
       UInt32 ReadUInt32();
@@ -343,34 +335,18 @@ namespace NArchive {
 
       HRESULT FindAndReadSignature(IInStream *stream, const UInt64 *searchHeaderSizeLimit);
 
-      void ReadBytes(Byte *data, size_t size) {
-        _inByteBack->ReadBytes(data, size);
-      }
-      Byte ReadByte() {
-        return _inByteBack->ReadByte();
-      }
-      UInt64 ReadNumber() {
-        return _inByteBack->ReadNumber();
-      }
-      CNum ReadNum() {
-        return _inByteBack->ReadNum();
-      }
-      UInt64 ReadID() {
-        return _inByteBack->ReadNumber();
-      }
-      UInt32 ReadUInt32() {
-        return _inByteBack->ReadUInt32();
-      }
-      UInt64 ReadUInt64() {
-        return _inByteBack->ReadUInt64();
-      }
-      void SkipData(UInt64 size) {
-        _inByteBack->SkipData(size);
-      }
-      void SkipData() {
-        _inByteBack->SkipData();
-      }
+      void ReadBytes(Byte *data, size_t size) { _inByteBack->ReadBytes(data, size); }
+      Byte ReadByte() { return _inByteBack->ReadByte(); }
+      UInt64 ReadNumber() { return _inByteBack->ReadNumber(); }
+      CNum ReadNum() { return _inByteBack->ReadNum(); }
+      UInt64 ReadID() { return _inByteBack->ReadNumber(); }
+      UInt32 ReadUInt32() { return _inByteBack->ReadUInt32(); }
+      UInt64 ReadUInt64() { return _inByteBack->ReadUInt64(); }
+      void SkipData(UInt64 size) { _inByteBack->SkipData(size); }
+      void SkipData() { _inByteBack->SkipData(); }
       void WaitId(UInt64 id);
+
+      void Read_UInt32_Vector(CUInt32DefVector &v);
 
       void ReadArchiveProperties(CInArchiveInfo &archiveInfo);
       void ReadHashDigests(unsigned numItems, CUInt32DefVector &crcs);
@@ -396,20 +372,20 @@ namespace NArchive {
       void ReadBoolVector(unsigned numItems, CBoolVector &v);
       void ReadBoolVector2(unsigned numItems, CBoolVector &v);
       void ReadUInt64DefVector(const CObjectVector<CByteBuffer> &dataVector,
-                               CUInt64DefVector &v, unsigned numItems);
+        CUInt64DefVector &v, unsigned numItems);
       HRESULT ReadAndDecodePackedStreams(
-        
+        DECL_EXTERNAL_CODECS_LOC_VARS
         UInt64 baseOffset, UInt64 &dataOffset,
         CObjectVector<CByteBuffer> &dataVector
         _7Z_DECODER_CRYPRO_VARS_DECL
       );
       HRESULT ReadHeader(
-        
+        DECL_EXTERNAL_CODECS_LOC_VARS
         CDbEx &db
         _7Z_DECODER_CRYPRO_VARS_DECL
       );
       HRESULT ReadDatabase2(
-        
+        DECL_EXTERNAL_CODECS_LOC_VARS
         CDbEx &db
         _7Z_DECODER_CRYPRO_VARS_DECL
       );
@@ -422,7 +398,7 @@ namespace NArchive {
       void Close();
 
       HRESULT ReadDatabase(
-        
+        DECL_EXTERNAL_CODECS_LOC_VARS
         CDbEx &db
         _7Z_DECODER_CRYPRO_VARS_DECL
       );

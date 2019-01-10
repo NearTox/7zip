@@ -1,6 +1,6 @@
 // CrcReg.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "../../C/7zCrc.h"
 #include "../../C/CpuArch.h"
@@ -31,9 +31,7 @@ class CCrcHasher :
 
   bool SetFunctions(UInt32 tSize);
 public:
-  CCrcHasher() : _crc(CRC_INIT_VAL) {
-    SetFunctions(0);
-  }
+  CCrcHasher() : _crc(CRC_INIT_VAL) { SetFunctions(0); }
 
   MY_UNKNOWN_IMP2(IHasher, ICompressSetCoderProperties)
     INTERFACE_IHasher(;)

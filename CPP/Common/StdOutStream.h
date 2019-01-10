@@ -14,16 +14,12 @@ class CStdOutStream {
 public:
   CStdOutStream() : _stream(0), _streamIsOpen(false) {};
   CStdOutStream(FILE *stream) : _stream(stream), _streamIsOpen(false) {};
-  ~CStdOutStream() {
-    Close();
-  }
+  ~CStdOutStream() { Close(); }
 
   // void AttachStdStream(FILE *stream) { _stream  = stream; _streamIsOpen = false; }
   // bool IsDefined() const { return _stream  != nullptr; }
 
-  operator FILE *() {
-    return _stream;
-  }
+  operator FILE *() { return _stream; }
   bool Open(const char *fileName) throw();
   bool Close() throw();
   bool Flush() throw();

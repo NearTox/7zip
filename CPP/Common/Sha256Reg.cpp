@@ -1,6 +1,6 @@
 // Sha256Reg.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "../../C/Sha256.h"
 
@@ -15,9 +15,7 @@ class CSha256Hasher :
   Byte mtDummy[1 << 7];
 
 public:
-  CSha256Hasher() {
-    Sha256_Init(&_sha);
-  }
+  CSha256Hasher() { Sha256_Init(&_sha); }
 
   MY_UNKNOWN_IMP1(IHasher)
     INTERFACE_IHasher(;)

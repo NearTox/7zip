@@ -12,16 +12,12 @@ struct CVirtThread {
   NWindows::CThread Thread;
   bool Exit;
 
-  ~CVirtThread() {
-    WaitThreadFinish();
-  }
+  ~CVirtThread() { WaitThreadFinish(); }
   void WaitThreadFinish(); // call it in destructor of child class !
   WRes Create();
   void Start();
   virtual void Execute() = 0;
-  void WaitExecuteFinish() {
-    FinishedEvent.Lock();
-  }
+  void WaitExecuteFinish() { FinishedEvent.Lock(); }
 };
 
 #endif

@@ -22,7 +22,7 @@ namespace NCompress {
       int _encode;
       Func_Bra BraFunc;
     public:
-      MY_UNKNOWN_IMP;//1(ICompressFilter);
+      MY_UNKNOWN_IMP1(ICompressFilter);
       INTERFACE_ICompressFilter(;)
 
         CCoder(Func_Bra bra, int encode) : _bufferPos(0), _encode(encode), BraFunc(bra) {}

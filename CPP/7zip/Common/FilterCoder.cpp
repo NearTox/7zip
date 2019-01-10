@@ -1,6 +1,6 @@
 // FilterCoder.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../Common/Defs.h"
 
@@ -20,12 +20,8 @@
 
 static const UInt32 kBufSize = 1 << 20;
 
-STDMETHODIMP CFilterCoder::SetInBufSize(UInt32, UInt32 size) {
-  _inBufSize = size; return S_OK;
-}
-STDMETHODIMP CFilterCoder::SetOutBufSize(UInt32, UInt32 size) {
-  _outBufSize = size; return S_OK;
-}
+STDMETHODIMP CFilterCoder::SetInBufSize(UInt32, UInt32 size) { _inBufSize = size; return S_OK; }
+STDMETHODIMP CFilterCoder::SetOutBufSize(UInt32, UInt32 size) { _outBufSize = size; return S_OK; }
 
 HRESULT CFilterCoder::Alloc() {
   UInt32 size = MyMin(_inBufSize, _outBufSize);
@@ -62,7 +58,7 @@ CFilterCoder::CFilterCoder(bool encodeMode) :
 CFilterCoder::~CFilterCoder() {}
 
 STDMETHODIMP CFilterCoder::Code(ISequentialInStream *inStream, ISequentialOutStream *outStream,
-                                const UInt64 * /* inSize */, const UInt64 *outSize, ICompressProgressInfo *progress) {
+  const UInt64 * /* inSize */, const UInt64 *outSize, ICompressProgressInfo *progress) {
   RINOK(Init_and_Alloc());
 
   UInt64 nowPos64 = 0;
@@ -352,6 +348,28 @@ STDMETHODIMP CFilterCoder::SetKey(const Byte *data, UInt32 size) {
 
 STDMETHODIMP CFilterCoder::SetInitVector(const Byte *data, UInt32 size) {
   return _CryptoProperties->SetInitVector(data, size);
+}
+
+#endif
+
+#ifndef EXTRACT_ONLY
+
+STDMETHODIMP CFilterCoder::SetCoderProperties(const PROPID *propIDs,
+  const PROPVARIANT *properties, UInt32 numProperties) {
+  return _SetCoderProperties->SetCoderProperties(propIDs, properties, numProperties);
+}
+
+STDMETHODIMP CFilterCoder::WriteCoderProperties(ISequentialOutStream *outStream) {
+  return _WriteCoderProperties->WriteCoderProperties(outStream);
+}
+
+/*
+STDMETHODIMP CFilterCoder::ResetSalt()
+  { return _CryptoResetSalt->ResetSalt(); }
+*/
+
+STDMETHODIMP CFilterCoder::ResetInitVector() {
+  return _CryptoResetInitVector->ResetInitVector();
 }
 
 #endif

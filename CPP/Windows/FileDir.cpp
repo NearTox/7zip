@@ -1,6 +1,6 @@
 // Windows/FileDir.cpp
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #ifndef _UNICODE
 #include "../Common/StringConvert.h"
@@ -73,13 +73,13 @@ namespace NWindows {
         HANDLE hDir = INVALID_HANDLE_VALUE;
         IF_USE_MAIN_PATH
           hDir = ::CreateFileW(fs2us(path), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                               nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+            nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 #ifdef WIN_LONG_PATH
         if(hDir == INVALID_HANDLE_VALUE && USE_SUPER_PATH) {
           UString superPath;
           if(GetSuperPath(path, superPath, USE_MAIN_PATH))
             hDir = ::CreateFileW(superPath, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                                 nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+              nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
         }
 #endif
 
@@ -111,6 +111,12 @@ namespace NWindows {
 #endif
         }
         return false;
+      }
+
+      bool SetFileAttrib_PosixHighDetect(CFSTR path, DWORD attrib) {
+        if((attrib & 0xF0000000) != 0)
+          attrib &= 0x3FFF;
+        return SetFileAttrib(path, attrib);
       }
 
       bool RemoveDir(CFSTR path) {
@@ -199,28 +205,28 @@ namespace NWindows {
 
 #endif
 
-      /*
-      WinXP-64 CreateDir():
-        ""                  - ERROR_PATH_NOT_FOUND
-        \                   - ERROR_ACCESS_DENIED
-        C:\                 - ERROR_ACCESS_DENIED, if there is such drive,
+/*
+WinXP-64 CreateDir():
+  ""                  - ERROR_PATH_NOT_FOUND
+  \                   - ERROR_ACCESS_DENIED
+  C:\                 - ERROR_ACCESS_DENIED, if there is such drive,
 
-        D:\folder             - ERROR_PATH_NOT_FOUND, if there is no such drive,
-        C:\nonExistent\folder - ERROR_PATH_NOT_FOUND
+  D:\folder             - ERROR_PATH_NOT_FOUND, if there is no such drive,
+  C:\nonExistent\folder - ERROR_PATH_NOT_FOUND
 
-        C:\existFolder      - ERROR_ALREADY_EXISTS
-        C:\existFolder\     - ERROR_ALREADY_EXISTS
+  C:\existFolder      - ERROR_ALREADY_EXISTS
+  C:\existFolder\     - ERROR_ALREADY_EXISTS
 
-        C:\folder   - OK
-        C:\folder\  - OK
+  C:\folder   - OK
+  C:\folder\  - OK
 
-        \\Server\nonExistent    - ERROR_BAD_NETPATH
-        \\Server\Share_Readonly - ERROR_ACCESS_DENIED
-        \\Server\Share          - ERROR_ALREADY_EXISTS
+  \\Server\nonExistent    - ERROR_BAD_NETPATH
+  \\Server\Share_Readonly - ERROR_ACCESS_DENIED
+  \\Server\Share          - ERROR_ALREADY_EXISTS
 
-        \\Server\Share_NTFS_drive - ERROR_ACCESS_DENIED
-        \\Server\Share_FAT_drive  - ERROR_ALREADY_EXISTS
-      */
+  \\Server\Share_NTFS_drive - ERROR_ACCESS_DENIED
+  \\Server\Share_FAT_drive  - ERROR_ALREADY_EXISTS
+*/
 
       bool CreateDir(CFSTR path) {
 #ifndef _UNICODE
@@ -308,7 +314,7 @@ namespace NWindows {
 
 #endif
 
-        FString path = _path;
+        FString path(_path);
 
         int pos = path.ReverseFind_PathSepar();
         if(pos >= 0 && (unsigned)pos == path.Len() - 1) {
@@ -317,7 +323,7 @@ namespace NWindows {
           path.DeleteBack();
         }
 
-        const FString path2 = path;
+        const FString path2(path);
         pos = path.Len();
 
         for(;;) {
@@ -359,8 +365,8 @@ namespace NWindows {
         {
           DWORD attrib = NFind::GetFileAttrib(path);
           if(attrib != INVALID_FILE_ATTRIBUTES
-             && (attrib & FILE_ATTRIBUTE_DIRECTORY) == 0
-             && (attrib & FILE_ATTRIBUTE_READONLY) != 0) {
+            && (attrib & FILE_ATTRIBUTE_DIRECTORY) == 0
+            && (attrib & FILE_ATTRIBUTE_READONLY) != 0) {
             if(!SetFileAttrib(path, attrib & ~FILE_ATTRIBUTE_READONLY))
               return false;
           }
@@ -404,11 +410,11 @@ namespace NWindows {
         }
 
         if(needRemoveSubItems) {
-          FString s = path;
+          FString s(path);
           s.Add_PathSepar();
-          unsigned prefixSize = s.Len();
-          s += FCHAR_ANY_MASK;
-          NFind::CEnumerator enumerator(s);
+          const unsigned prefixSize = s.Len();
+          NFind::CEnumerator enumerator;
+          enumerator.SetDirPrefix(s);
           NFind::CFileInfo fi;
           while(enumerator.Next(fi)) {
             s.DeleteFrom(prefixSize);
@@ -513,17 +519,17 @@ namespace NWindows {
         for(unsigned i = 0; i < 100; i++) {
           path = prefix;
           if(addRandom) {
-            FChar s[16];
-            UInt32 value = d;
+            char s[16];
+            UInt32 val = d;
             unsigned k;
             for(k = 0; k < 8; k++) {
-              unsigned t = value & 0xF;
-              value >>= 4;
-              s[k] = (FChar)((t < 10) ? ('0' + t) : ('A' + (t - 10)));
+              unsigned t = val & 0xF;
+              val >>= 4;
+              s[k] = (char)((t < 10) ? ('0' + t) : ('A' + (t - 10)));
             }
             s[k] = '\0';
             if(outFile)
-              path += FChar('.');
+              path += '.';
             path += s;
             UInt32 step = GetTickCount() + 2;
             if(step == 0)
@@ -532,7 +538,7 @@ namespace NWindows {
           }
           addRandom = true;
           if(outFile)
-            path += FTEXT(".tmp");
+            path += ".tmp";
           if(NFind::DoesFileOrDirExist(path)) {
             SetLastError(ERROR_ALREADY_EXISTS);
             continue;
@@ -546,7 +552,7 @@ namespace NWindows {
           }
           DWORD error = GetLastError();
           if(error != ERROR_FILE_EXISTS &&
-             error != ERROR_ALREADY_EXISTS)
+            error != ERROR_ALREADY_EXISTS)
             break;
         }
         path.Empty();
@@ -582,12 +588,25 @@ namespace NWindows {
       }
 
       bool CTempFile::MoveTo(CFSTR name, bool deleteDestBefore) {
-        if(deleteDestBefore)
-          if(NFind::DoesFileExist(name))
+        // DWORD attrib = 0;
+        if(deleteDestBefore) {
+          if(NFind::DoesFileExist(name)) {
+            // attrib = NFind::GetFileAttrib(name);
             if(!DeleteFileAlways(name))
               return false;
+          }
+        }
         DisableDeleting();
         return MyMoveFile(_path, name);
+
+        /*
+        if (attrib != INVALID_FILE_ATTRIBUTES && (attrib & FILE_ATTRIBUTE_READONLY))
+        {
+          DWORD attrib2 = NFind::GetFileAttrib(name);
+          if (attrib2 != INVALID_FILE_ATTRIBUTES)
+            SetFileAttrib(name, attrib2 | FILE_ATTRIBUTE_READONLY);
+        }
+        */
       }
 
       bool CTempDir::Create(CFSTR prefix) {

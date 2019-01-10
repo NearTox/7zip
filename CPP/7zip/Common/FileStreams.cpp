@@ -1,6 +1,6 @@
 // FileStreams.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -313,19 +313,6 @@ STDMETHODIMP COutFileStream::Write(const void *data, UInt32 size, UInt32 *proces
 #ifdef USE_WIN_FILE
 
   UInt32 realProcessedSize;
-  UInt64 actualSize = 0;
-  UInt64 actualPos = 0;
-  if(File.GetPosition(actualPos) && File.GetLength(actualSize) && actualSize < size) {
-    File.SetLength(size);
-    File.SeekToBegin();
-    if(actualPos != 0) {
-      UInt64 newPos = 0;
-      File.Seek(actualPos, newPos);
-      if(newPos != actualPos) {
-        return ConvertBoolToHRESULT(newPos == actualPos);
-      }
-    }
-  }
   bool result = File.Write(data, size, realProcessedSize);
   ProcessedSize += realProcessedSize;
   if(processedSize)
@@ -419,7 +406,7 @@ STDMETHODIMP CStdOutFileStream::Write(const void *data, UInt32 size, UInt32 *pro
     if(sizeTemp > size)
       sizeTemp = size;
     res = ::WriteFile(GetStdHandle(STD_OUTPUT_HANDLE),
-                      data, sizeTemp, (DWORD *)&realProcessedSize, nullptr);
+      data, sizeTemp, (DWORD *)&realProcessedSize, nullptr);
     _size += realProcessedSize;
     size -= realProcessedSize;
     data = (const void *)((const Byte *)data + realProcessedSize);

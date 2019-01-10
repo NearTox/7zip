@@ -1,8 +1,8 @@
 /* Sha1.c -- SHA-1 Hash
-2016-05-20 : Igor Pavlov : Public domain
+2017-04-03 : Igor Pavlov : Public domain
 This code is based on public domain code of Steve Reid from Wei Dai's Crypto++ library. */
 
-#include "Compiler.h"
+#include "Precomp.h"
 
 #include <string.h>
 
@@ -62,10 +62,11 @@ This code is based on public domain code of Steve Reid from Wei Dai's Crypto++ l
 
 #else
 
-#define RX_15  { unsigned i; for (i = 0; i < 15; i += 5) { RX_5(R0, i); } }
-#define RX_20(rx, ii)  { unsigned i; i = ii; for (; i < ii + 20; i += 5) { RX_5(rx, i); } }
+#define RX_15  { size_t i; for (i = 0; i < 15; i += 5) { RX_5(R0, i); } }
+#define RX_20(rx, ii)  { size_t i; i = ii; for (; i < ii + 20; i += 5) { RX_5(rx, i); } }
 
 #endif
+
 
 void Sha1_Init(CSha1 *p) {
   p->state[0] = 0x67452301;
@@ -126,7 +127,7 @@ void Sha1_UpdateBlock_Rar(CSha1 *p, UInt32 *data, int returnRes) {
   p->state[4] += e;
 
   if(returnRes) {
-    unsigned i;
+    size_t i;
     for(i = 0; i < SHA1_NUM_BLOCK_WORDS; i++)
       data[i] = W[kNumW - SHA1_NUM_BLOCK_WORDS + i];
   }
@@ -164,7 +165,7 @@ void Sha1_Update(CSha1 *p, const Byte *data, size_t size) {
   for(;;) {
     if(pos == SHA1_NUM_BLOCK_WORDS) {
       for(;;) {
-        unsigned i;
+        size_t i;
         Sha1_UpdateBlock(p);
         if(size < SHA1_BLOCK_SIZE)
           break;
@@ -218,7 +219,7 @@ void Sha1_Update_Rar(CSha1 *p, Byte *data, size_t size /* , int rar350Mode */) {
       pos = 0;
       Sha1_UpdateBlock_Rar(p, p->buffer, returnRes);
       if(returnRes) {
-        unsigned i;
+        size_t i;
         for(i = 0; i < SHA1_NUM_BLOCK_WORDS; i++) {
           UInt32 d = p->buffer[i];
           Byte *prev = data + i * 4 - SHA1_BLOCK_SIZE;
@@ -265,6 +266,7 @@ void Sha1_Final(CSha1 *p, Byte *digest) {
 
   Sha1_Init(p);
 }
+
 
 void Sha1_32_PrepareBlock(const CSha1 *p, UInt32 *block, unsigned size) {
   const UInt64 numBits = (p->count + size) << 5;

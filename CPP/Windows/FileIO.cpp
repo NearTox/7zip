@@ -1,6 +1,6 @@
 // Windows/FileIO.cpp
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #ifdef SUPPORT_DEVICE_FILE
 #include "../../C/Alloc.h"
@@ -27,24 +27,24 @@ namespace NWindows {
 #endif
 
     namespace NIO {
-      /*
-      WinXP-64 CreateFile():
-        ""             -  ERROR_PATH_NOT_FOUND
-        :stream        -  OK
-        .:stream       -  ERROR_PATH_NOT_FOUND
-        .\:stream      -  OK
+    /*
+    WinXP-64 CreateFile():
+      ""             -  ERROR_PATH_NOT_FOUND
+      :stream        -  OK
+      .:stream       -  ERROR_PATH_NOT_FOUND
+      .\:stream      -  OK
 
-        folder\:stream -  ERROR_INVALID_NAME
-        folder:stream  -  OK
+      folder\:stream -  ERROR_INVALID_NAME
+      folder:stream  -  OK
 
-        c:\:stream     -  OK
+      c:\:stream     -  OK
 
-        c::stream      -  ERROR_INVALID_NAME, if current dir is NOT ROOT ( c:\dir1 )
-        c::stream      -  OK,                 if current dir is ROOT     ( c:\ )
-      */
+      c::stream      -  ERROR_INVALID_NAME, if current dir is NOT ROOT ( c:\dir1 )
+      c::stream      -  OK,                 if current dir is ROOT     ( c:\ )
+    */
 
       bool CFileBase::Create(CFSTR path, DWORD desiredAccess,
-                             DWORD shareMode, DWORD creationDisposition, DWORD flagsAndAttributes) {
+        DWORD shareMode, DWORD creationDisposition, DWORD flagsAndAttributes) {
         if(!Close())
           return false;
 
@@ -293,14 +293,14 @@ namespace NWindows {
         return OpenShared(fileName, false);
       }
 
-      // ReadFile and WriteFile functions in Windows have BUG:
-      // If you Read or Write 64MB or more (probably min_failure_size = 64MB - 32KB + 1)
-      // from/to Network file, it returns ERROR_NO_SYSTEM_RESOURCES
-      // (Insufficient system resources exist to complete the requested service).
+// ReadFile and WriteFile functions in Windows have BUG:
+// If you Read or Write 64MB or more (probably min_failure_size = 64MB - 32KB + 1)
+// from/to Network file, it returns ERROR_NO_SYSTEM_RESOURCES
+// (Insufficient system resources exist to complete the requested service).
 
-      // Probably in some version of Windows there are problems with other sizes:
-      // for 32 MB (maybe also for 16 MB).
-      // And message can be "Network connection was lost"
+// Probably in some version of Windows there are problems with other sizes:
+// for 32 MB (maybe also for 16 MB).
+// And message can be "Network connection was lost"
 
       static UInt32 kChunkSizeMax = (1 << 22);
 
@@ -359,9 +359,7 @@ namespace NWindows {
         return BOOLToBool(::SetFileTime(_handle, cTime, aTime, mTime));
       }
 
-      bool COutFile::SetMTime(const FILETIME *mTime) throw() {
-        return SetTime(nullptr, nullptr, mTime);
-      }
+      bool COutFile::SetMTime(const FILETIME *mTime) throw() { return SetTime(nullptr, nullptr, mTime); }
 
       bool COutFile::WritePart(const void *data, UInt32 size, UInt32 &processedSize) throw() {
         if(size > kChunkSizeMax)
@@ -388,9 +386,7 @@ namespace NWindows {
         return true;
       }
 
-      bool COutFile::SetEndOfFile() throw() {
-        return BOOLToBool(::SetEndOfFile(_handle));
-      }
+      bool COutFile::SetEndOfFile() throw() { return BOOLToBool(::SetEndOfFile(_handle)); }
 
       bool COutFile::SetLength(UInt64 length) throw() {
         UInt64 newPosition;

@@ -1,6 +1,6 @@
 // Common/StdOutStream.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include <tchar.h>
 
@@ -9,8 +9,10 @@
 #include "StringConvert.h"
 #include "UTFConvert.h"
 
-static const char kNewLineChar = '\n';
-static const char *kFileOpenMode = "wt";
+#define kFileOpenMode "wt"
+
+extern int g_CodePage;
+
 CStdOutStream g_StdOut(stdout);
 CStdOutStream g_StdErr(stderr);
 
@@ -36,11 +38,11 @@ bool CStdOutStream::Flush() throw() {
 }
 
 CStdOutStream & endl(CStdOutStream & outStream) throw() {
-  return outStream << kNewLineChar;
+  return outStream << '\n';
 }
 
 CStdOutStream & CStdOutStream::operator<<(const wchar_t *s) {
-  int codePage = -1;
+  int codePage = g_CodePage;
   if(codePage == -1)
     codePage = CP_OEMCP;
   AString dest;
@@ -52,7 +54,7 @@ CStdOutStream & CStdOutStream::operator<<(const wchar_t *s) {
 }
 
 void StdOut_Convert_UString_to_AString(const UString &s, AString &temp) {
-  int codePage = -1;
+  int codePage = g_CodePage;
   if(codePage == -1)
     codePage = CP_OEMCP;
   if(codePage == CP_UTF8)

@@ -1,6 +1,7 @@
 // ByteSwap.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
+
 #include "../../Common/MyCom.h"
 
 #include "../ICoder.h"
@@ -13,21 +14,19 @@ namespace NCompress {
       public ICompressFilter,
       public CMyUnknownImp {
     public:
-      MY_UNKNOWN_IMP//1(ICompressFilter);
-        INTERFACE_ICompressFilter(;)
+      MY_UNKNOWN_IMP1(ICompressFilter);
+      INTERFACE_ICompressFilter(;)
     };
 
     class CByteSwap4 :
       public ICompressFilter,
       public CMyUnknownImp {
     public:
-      MY_UNKNOWN_IMP//1(ICompressFilter);
-        INTERFACE_ICompressFilter(;)
+      MY_UNKNOWN_IMP1(ICompressFilter);
+      INTERFACE_ICompressFilter(;)
     };
 
-    STDMETHODIMP CByteSwap2::Init() {
-      return S_OK;
-    }
+    STDMETHODIMP CByteSwap2::Init() { return S_OK; }
 
     STDMETHODIMP_(UInt32) CByteSwap2::Filter(Byte *data, UInt32 size) {
       const UInt32 kStep = 2;
@@ -47,9 +46,7 @@ namespace NCompress {
       return size;
     }
 
-    STDMETHODIMP CByteSwap4::Init() {
-      return S_OK;
-    }
+    STDMETHODIMP CByteSwap4::Init() { return S_OK; }
 
     STDMETHODIMP_(UInt32) CByteSwap4::Filter(Byte *data, UInt32 size) {
       const UInt32 kStep = 4;
@@ -76,8 +73,8 @@ namespace NCompress {
       REGISTER_FILTER_CREATE(CreateFilter4, CByteSwap4())
 
       REGISTER_CODECS_VAR {
-      REGISTER_FILTER_ITEM(CreateFilter2, 0x20302, "Swap2"),
-        REGISTER_FILTER_ITEM(CreateFilter4, 0x20304, "Swap4")
+      REGISTER_FILTER_ITEM(CreateFilter2, CreateFilter2, 0x20302, "Swap2"),
+        REGISTER_FILTER_ITEM(CreateFilter4, CreateFilter4, 0x20304, "Swap4")
     };
 
     REGISTER_CODECS(ByteSwap)

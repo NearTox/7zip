@@ -1,6 +1,7 @@
 // DeflateRegister.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
+
 #include "../Common/RegisterCodec.h"
 
 #include "DeflateDecoder.h"
@@ -9,8 +10,16 @@
 #endif
 
 namespace NCompress {
-  namespace NDeflate {
-    REGISTER_CODEC_CREATE(CreateDec, NDecoder::CCOMCoder)
-      REGISTER_CODEC_2(Deflate, CreateDec, 0x40108, "Deflate")
-  }
-}
+namespace NDeflate {
+
+REGISTER_CODEC_CREATE(CreateDec, NDecoder::CCOMCoder)
+
+#if !defined(EXTRACT_ONLY) && !defined(DEFLATE_EXTRACT_ONLY)
+REGISTER_CODEC_CREATE(CreateEnc, NEncoder::CCOMCoder)
+#else
+#define CreateEnc nullptr
+#endif
+
+REGISTER_CODEC_2(Deflate, CreateDec, CreateEnc, 0x40108, "Deflate")
+
+}}

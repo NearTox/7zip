@@ -1,5 +1,5 @@
 /* LzmaDec.h -- LZMA Decoder
-2013-01-18 : Igor Pavlov : Public domain */
+2018-02-06 : Igor Pavlov : Public domain */
 
 #ifndef __LZMA_DEC_H
 #define __LZMA_DEC_H
@@ -18,12 +18,15 @@ EXTERN_C_BEGIN
 #define CLzmaProb UInt16
 #endif
 
-   /* ---------- LZMA Properties ---------- */
+/* ---------- LZMA Properties ---------- */
 
 #define LZMA_PROPS_SIZE 5
 
-  typedef struct _CLzmaProps {
-  unsigned lc, lp, pb;
+typedef struct _CLzmaProps {
+  Byte lc;
+  Byte lp;
+  Byte pb;
+  Byte _pad_;
   UInt32 dicSize;
 } CLzmaProps;
 
@@ -43,26 +46,28 @@ SRes LzmaProps_Decode(CLzmaProps *p, const Byte *data, unsigned size);
 #define LZMA_REQUIRED_INPUT_MAX 20
 
 typedef struct {
+  /* Don't change this structure. ASM code can use it. */
   CLzmaProps prop;
   CLzmaProb *probs;
+  CLzmaProb *probs_1664;
   Byte *dic;
-  const Byte *buf;
-  UInt32 range, code;
-  SizeT dicPos;
   SizeT dicBufSize;
+  SizeT dicPos;
+  const Byte *buf;
+  UInt32 range;
+  UInt32 code;
   UInt32 processedPos;
   UInt32 checkDicSize;
-  unsigned state;
   UInt32 reps[4];
-  unsigned remainLen;
-  int needFlush;
-  int needInitState;
+  UInt32 state;
+  UInt32 remainLen;
+
   UInt32 numProbs;
   unsigned tempBufSize;
   Byte tempBuf[LZMA_REQUIRED_INPUT_MAX];
 } CLzmaDec;
 
-#define LzmaDec_Construct(p) { (p)->dic = 0; (p)->probs = 0; }
+#define LzmaDec_Construct(p) { (p)->dic = NULL; (p)->probs = NULL; }
 
 void LzmaDec_Init(CLzmaDec *p);
 
@@ -109,23 +114,23 @@ typedef enum {
    You can select any of these interfaces, but don't mix functions from different
    groups for same object. */
 
-   /* There are two variants to allocate state for Dictionary Interface:
-        1) LzmaDec_Allocate / LzmaDec_Free
-        2) LzmaDec_AllocateProbs / LzmaDec_FreeProbs
-      You can use variant 2, if you set dictionary buffer manually.
-      For Buffer Interface you must always use variant 1.
+/* There are two variants to allocate state for Dictionary Interface:
+     1) LzmaDec_Allocate / LzmaDec_Free
+     2) LzmaDec_AllocateProbs / LzmaDec_FreeProbs
+   You can use variant 2, if you set dictionary buffer manually.
+   For Buffer Interface you must always use variant 1.
 
-   LzmaDec_Allocate* can return:
-     SZ_OK
-     SZ_ERROR_MEM         - Memory allocation error
-     SZ_ERROR_UNSUPPORTED - Unsupported properties
-   */
+LzmaDec_Allocate* can return:
+  SZ_OK
+  SZ_ERROR_MEM         - Memory allocation error
+  SZ_ERROR_UNSUPPORTED - Unsupported properties
+*/
 
-SRes LzmaDec_AllocateProbs(CLzmaDec *p, const Byte *props, unsigned propsSize, ISzAlloc *alloc);
-void LzmaDec_FreeProbs(CLzmaDec *p, ISzAlloc *alloc);
+SRes LzmaDec_AllocateProbs(CLzmaDec *p, const Byte *props, unsigned propsSize, ISzAllocPtr alloc);
+void LzmaDec_FreeProbs(CLzmaDec *p, ISzAllocPtr alloc);
 
-SRes LzmaDec_Allocate(CLzmaDec *state, const Byte *prop, unsigned propsSize, ISzAlloc *alloc);
-void LzmaDec_Free(CLzmaDec *state, ISzAlloc *alloc);
+SRes LzmaDec_Allocate(CLzmaDec *p, const Byte *props, unsigned propsSize, ISzAllocPtr alloc);
+void LzmaDec_Free(CLzmaDec *p, ISzAllocPtr alloc);
 
 /* ---------- Dictionary Interface ---------- */
 
@@ -169,7 +174,7 @@ Returns:
 */
 
 SRes LzmaDec_DecodeToDic(CLzmaDec *p, SizeT dicLimit,
-                         const Byte *src, SizeT *srcLen, ELzmaFinishMode finishMode, ELzmaStatus *status);
+  const Byte *src, SizeT *srcLen, ELzmaFinishMode finishMode, ELzmaStatus *status);
 
 /* ---------- Buffer Interface ---------- */
 
@@ -185,7 +190,7 @@ finishMode:
 */
 
 SRes LzmaDec_DecodeToBuf(CLzmaDec *p, Byte *dest, SizeT *destLen,
-                         const Byte *src, SizeT *srcLen, ELzmaFinishMode finishMode, ELzmaStatus *status);
+  const Byte *src, SizeT *srcLen, ELzmaFinishMode finishMode, ELzmaStatus *status);
 
 /* ---------- One Call Interface ---------- */
 
@@ -209,8 +214,8 @@ Returns:
 */
 
 SRes LzmaDecode(Byte *dest, SizeT *destLen, const Byte *src, SizeT *srcLen,
-                const Byte *propData, unsigned propSize, ELzmaFinishMode finishMode,
-                ELzmaStatus *status, ISzAlloc *alloc);
+  const Byte *propData, unsigned propSize, ELzmaFinishMode finishMode,
+  ELzmaStatus *status, ISzAllocPtr alloc);
 
 EXTERN_C_END
 

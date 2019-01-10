@@ -7,18 +7,21 @@
 
 typedef int HRes;
 
-struct CBoolPair {
+struct CBoolPair
+{
   bool Val;
   bool Def;
 
-  CBoolPair() : Val(false), Def(false) {}
-
-  void Init() {
+  CBoolPair(): Val(false), Def(false) {}
+  
+  void Init()
+  {
     Val = false;
     Def = false;
   }
 
-  void SetTrueTrue() {
+  void SetTrueTrue()
+  {
     Val = true;
     Def = true;
   }

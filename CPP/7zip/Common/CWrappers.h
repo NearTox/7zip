@@ -6,36 +6,45 @@
 #include "../ICoder.h"
 #include "../../Common/MyCom.h"
 
+SRes HRESULT_To_SRes(HRESULT res, SRes defaultRes) throw();
+HRESULT SResToHRESULT(SRes res) throw();
+
+struct CCompressProgressWrap {
+  ICompressProgress vt;
+  ICompressProgressInfo *Progress;
+  HRESULT Res;
+
+  void Init(ICompressProgressInfo *progress) throw();
+};
+
 struct CSeqInStreamWrap {
-  ISeqInStream p;
+  ISeqInStream vt;
   ISequentialInStream *Stream;
   HRESULT Res;
   UInt64 Processed;
 
-  CSeqInStreamWrap(ISequentialInStream *stream) throw();
+  void Init(ISequentialInStream *stream) throw();
 };
 
 struct CSeekInStreamWrap {
-  ISeekInStream p;
+  ISeekInStream vt;
   IInStream *Stream;
   HRESULT Res;
 
-  CSeekInStreamWrap(IInStream *stream) throw();
+  void Init(IInStream *stream) throw();
 };
 
 struct CSeqOutStreamWrap {
-  ISeqOutStream p;
+  ISeqOutStream vt;
   ISequentialOutStream *Stream;
   HRESULT Res;
   UInt64 Processed;
 
-  CSeqOutStreamWrap(ISequentialOutStream *stream) throw();
+  void Init(ISequentialOutStream *stream) throw();
 };
 
-HRESULT SResToHRESULT(SRes res) throw();
-
 struct CByteInBufWrap {
-  IByteIn p;
+  IByteIn vt;
   const Byte *Cur;
   const Byte *Lim;
   Byte *Buf;
@@ -46,9 +55,7 @@ struct CByteInBufWrap {
   HRESULT Res;
 
   CByteInBufWrap();
-  ~CByteInBufWrap() {
-    Free();
-  }
+  ~CByteInBufWrap() { Free(); }
   void Free() throw();
   bool Alloc(UInt32 size) throw();
   void Init() {
@@ -57,9 +64,7 @@ struct CByteInBufWrap {
     Extra = false;
     Res = S_OK;
   }
-  UInt64 GetProcessed() const {
-    return Processed + (Cur - Buf);
-  }
+  UInt64 GetProcessed() const { return Processed + (Cur - Buf); }
   Byte ReadByteFromNewBlock() throw();
   Byte ReadByte() {
     if(Cur != Lim)
@@ -67,4 +72,34 @@ struct CByteInBufWrap {
     return ReadByteFromNewBlock();
   }
 };
+
+struct CByteOutBufWrap {
+  IByteOut vt;
+  Byte *Cur;
+  const Byte *Lim;
+  Byte *Buf;
+  size_t Size;
+  ISequentialOutStream *Stream;
+  UInt64 Processed;
+  HRESULT Res;
+
+  CByteOutBufWrap() throw();
+  ~CByteOutBufWrap() { Free(); }
+  void Free() throw();
+  bool Alloc(size_t size) throw();
+  void Init() {
+    Cur = Buf;
+    Lim = Buf + Size;
+    Processed = 0;
+    Res = S_OK;
+  }
+  UInt64 GetProcessed() const { return Processed + (Cur - Buf); }
+  HRESULT Flush() throw();
+  void WriteByte(Byte b) {
+    *Cur++ = b;
+    if(Cur == Lim)
+      Flush();
+  }
+};
+
 #endif

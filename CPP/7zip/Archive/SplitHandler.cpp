@@ -1,6 +1,6 @@
 // SplitHandler.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../Common/ComTry.h"
 #include "../../Common/MyString.h"
@@ -159,7 +159,7 @@ namespace NArchive {
       seqName._splitStyle = splitStyle;
 
       if(prefix.Len() < 1)
-        _subName.SetFromAscii("file");
+        _subName = "file";
       else
         _subName.SetFrom(prefix, prefix.Len() - 1);
 
@@ -168,7 +168,7 @@ namespace NArchive {
         /*
         NCOM::CPropVariant prop;
         RINOK(volumeCallback->GetProperty(kpidSize, &prop));
-        if(prop.vt != VT_UI8)
+        if (prop.vt != VT_UI8)
           return E_INVALIDARG;
         size = prop.uhVal.QuadPart;
         */
@@ -260,7 +260,7 @@ namespace NArchive {
     }
 
     STDMETHODIMP CHandler::Extract(const UInt32 *indices, UInt32 numItems,
-                                   Int32 testMode, IArchiveExtractCallback *extractCallback) {
+      Int32 testMode, IArchiveExtractCallback *extractCallback) {
       COM_TRY_BEGIN
         if(numItems == 0)
           return S_OK;

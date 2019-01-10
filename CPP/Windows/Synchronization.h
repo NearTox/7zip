@@ -17,21 +17,11 @@ namespace NWindows {
     protected:
       ::CEvent _object;
     public:
-      bool IsCreated() {
-        return Event_IsCreated(&_object) != 0;
-      }
-      operator HANDLE() {
-        return _object;
-      }
-      CBaseEvent() {
-        Event_Construct(&_object);
-      }
-      ~CBaseEvent() {
-        Close();
-      }
-      WRes Close() {
-        return Event_Close(&_object);
-      }
+      bool IsCreated() { return Event_IsCreated(&_object) != 0; }
+      operator HANDLE() { return _object; }
+      CBaseEvent() { Event_Construct(&_object); }
+      ~CBaseEvent() { Close(); }
+      WRes Close() { return Event_Close(&_object); }
 #ifdef _WIN32
       WRes Create(bool manualReset, bool initiallyOwn, LPCTSTR name = nullptr, LPSECURITY_ATTRIBUTES sa = nullptr) {
         _object = ::CreateEvent(sa, BoolToBOOL(manualReset), BoolToBOOL(initiallyOwn), name);
@@ -47,16 +37,10 @@ namespace NWindows {
       }
 #endif
 
-      WRes Set() {
-        return Event_Set(&_object);
-      }
+      WRes Set() { return Event_Set(&_object); }
       // bool Pulse() { return BOOLToBool(::PulseEvent(_handle)); }
-      WRes Reset() {
-        return Event_Reset(&_object);
-      }
-      WRes Lock() {
-        return Event_Wait(&_object);
-      }
+      WRes Reset() { return Event_Reset(&_object); }
+      WRes Lock() { return Event_Wait(&_object); }
     };
 
     class CManualResetEvent : public CBaseEvent {
@@ -118,73 +102,41 @@ namespace NWindows {
     class CMutexLock {
       CMutex *_object;
     public:
-      CMutexLock(CMutex &object) : _object(&object) {
-        _object->Lock();
-      }
-      ~CMutexLock() {
-        _object->Release();
-      }
+      CMutexLock(CMutex &object) : _object(&object) { _object->Lock(); }
+      ~CMutexLock() { _object->Release(); }
     };
 #endif
 
     class CSemaphore {
       ::CSemaphore _object;
     public:
-      CSemaphore() {
-        Semaphore_Construct(&_object);
-      }
-      ~CSemaphore() {
-        Close();
-      }
-      WRes Close() {
-        return Semaphore_Close(&_object);
-      }
-      operator HANDLE() {
-        return _object;
-      }
+      CSemaphore() { Semaphore_Construct(&_object); }
+      ~CSemaphore() { Close(); }
+      WRes Close() { return Semaphore_Close(&_object); }
+      operator HANDLE() { return _object; }
       WRes Create(UInt32 initiallyCount, UInt32 maxCount) {
         return Semaphore_Create(&_object, initiallyCount, maxCount);
       }
-      WRes Release() {
-        return Semaphore_Release1(&_object);
-      }
-      WRes Release(UInt32 releaseCount) {
-        return Semaphore_ReleaseN(&_object, releaseCount);
-      }
-      WRes Lock() {
-        return Semaphore_Wait(&_object);
-      }
+      WRes Release() { return Semaphore_Release1(&_object); }
+      WRes Release(UInt32 releaseCount) { return Semaphore_ReleaseN(&_object, releaseCount); }
+      WRes Lock() { return Semaphore_Wait(&_object); }
     };
 
     class CCriticalSection {
       ::CCriticalSection _object;
     public:
-      CCriticalSection() {
-        CriticalSection_Init(&_object);
-      }
-      ~CCriticalSection() {
-        CriticalSection_Delete(&_object);
-      }
-      void Enter() {
-        CriticalSection_Enter(&_object);
-      }
-      void Leave() {
-        CriticalSection_Leave(&_object);
-      }
+      CCriticalSection() { CriticalSection_Init(&_object); }
+      ~CCriticalSection() { CriticalSection_Delete(&_object); }
+      void Enter() { CriticalSection_Enter(&_object); }
+      void Leave() { CriticalSection_Leave(&_object); }
     };
 
     class CCriticalSectionLock {
       CCriticalSection *_object;
-      void Unlock() {
-        _object->Leave();
-      }
+      void Unlock() { _object->Leave(); }
     public:
-      CCriticalSectionLock(CCriticalSection &object) : _object(&object) {
-        _object->Enter();
-      }
-      ~CCriticalSectionLock() {
-        Unlock();
-      }
+      CCriticalSectionLock(CCriticalSection &object) : _object(&object) { _object->Enter(); }
+      ~CCriticalSectionLock() { Unlock(); }
     };
   }
 }

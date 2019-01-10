@@ -12,16 +12,10 @@ public:
     reset(p.release());
     return (*this);
   }
-  ~CMyAutoPtr() {
-    delete _p;
-  }
-  T& operator*() const {
-    return *_p;
-  }
+  ~CMyAutoPtr() { delete _p; }
+  T& operator*() const { return *_p; }
   // T* operator->() const { return (&**this); }
-  T* get() const {
-    return _p;
-  }
+  T* get() const { return _p; }
   T* release() {
     T *tmp = _p;
     _p = 0;

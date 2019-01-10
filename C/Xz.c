@@ -1,7 +1,7 @@
 /* Xz.c - Xz
-2015-05-01 : Igor Pavlov : Public domain */
+2017-05-12 : Igor Pavlov : Public domain */
 
-#include "Compiler.h"
+#include "Precomp.h"
 
 #include "7zCrc.h"
 #include "CpuArch.h"
@@ -9,7 +9,7 @@
 #include "XzCrc64.h"
 
 const Byte XZ_SIG[XZ_SIG_SIZE] = {0xFD, '7', 'z', 'X', 'Z', 0};
-const Byte XZ_FOOTER_SIG[XZ_FOOTER_SIG_SIZE] = {'Y', 'Z'};
+/* const Byte XZ_FOOTER_SIG[XZ_FOOTER_SIG_SIZE] = { 'Y', 'Z' }; */
 
 unsigned Xz_WriteVarInt(Byte *buf, UInt64 v) {
   unsigned i = 0;
@@ -17,20 +17,20 @@ unsigned Xz_WriteVarInt(Byte *buf, UInt64 v) {
     buf[i++] = (Byte)((v & 0x7F) | 0x80);
     v >>= 7;
   } while(v != 0);
-  buf[i - 1] &= 0x7F;
+  buf[(size_t)i - 1] &= 0x7F;
   return i;
 }
 
 void Xz_Construct(CXzStream *p) {
-  p->numBlocks = p->numBlocksAllocated = 0;
-  p->blocks = 0;
+  p->numBlocks = 0;
+  p->blocks = NULL;
   p->flags = 0;
 }
 
-void Xz_Free(CXzStream *p, ISzAlloc *alloc) {
-  alloc->Free(alloc, p->blocks);
-  p->numBlocks = p->numBlocksAllocated = 0;
-  p->blocks = 0;
+void Xz_Free(CXzStream *p, ISzAllocPtr alloc) {
+  ISzAlloc_Free(alloc, p->blocks);
+  p->numBlocks = 0;
+  p->blocks = NULL;
 }
 
 unsigned XzFlags_GetCheckSize(CXzStreamFlags f) {

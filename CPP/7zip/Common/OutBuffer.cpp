@@ -1,6 +1,6 @@
 // OutBuffer.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../C/Alloc.h"
 
@@ -55,9 +55,9 @@ HRESULT COutBuffer::FlushPart() throw() {
 
   if(_stream != 0
 #ifdef _NO_EXCEPTIONS
-     && (ErrorCode == S_OK)
+    && (ErrorCode == S_OK)
 #endif
-     ) {
+    ) {
     UInt32 processedSize = 0;
     result = _stream->Write(_buf + _streamPos, size, &processedSize);
     size = processedSize;

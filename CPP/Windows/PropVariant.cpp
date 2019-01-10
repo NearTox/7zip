@@ -1,6 +1,6 @@
 // Windows/PropVariant.cpp
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../Common/Defs.h"
 
@@ -77,7 +77,7 @@ namespace NWindows {
       return *this;
     }
 
-    static const char *kMemException = "out of memory";
+    static const char * const kMemException = "out of memory";
 
     CPropVariant& CPropVariant::operator=(LPCOLESTR lpszSrc) {
       InternalClear();
@@ -174,7 +174,7 @@ namespace NWindows {
     dest = value; return *this; }
 
     SET_PROP_FUNC(Byte, VT_UI1, bVal)
-      // SET_PROP_FUNC(Int16, VT_I2, iVal)
+    // SET_PROP_FUNC(Int16, VT_I2, iVal)
       SET_PROP_FUNC(Int32, VT_I4, lVal)
       SET_PROP_FUNC(UInt32, VT_UI4, ulVal)
       SET_PROP_FUNC(UInt64, VT_UI8, uhVal.QuadPart)
@@ -289,13 +289,13 @@ namespace NWindows {
         return MyCompare(vt, a.vt);
       switch(vt) {
         case VT_EMPTY: return 0;
-          // case VT_I1: return MyCompare(cVal, a.cVal);
+        // case VT_I1: return MyCompare(cVal, a.cVal);
         case VT_UI1: return MyCompare(bVal, a.bVal);
         case VT_I2: return MyCompare(iVal, a.iVal);
         case VT_UI2: return MyCompare(uiVal, a.uiVal);
         case VT_I4: return MyCompare(lVal, a.lVal);
         case VT_UI4: return MyCompare(ulVal, a.ulVal);
-          // case VT_UINT: return MyCompare(uintVal, a.uintVal);
+        // case VT_UINT: return MyCompare(uintVal, a.uintVal);
         case VT_I8: return MyCompare(hVal.QuadPart, a.hVal.QuadPart);
         case VT_UI8: return MyCompare(uhVal.QuadPart, a.uhVal.QuadPart);
         case VT_BOOL: return -MyCompare(boolVal, a.boolVal);

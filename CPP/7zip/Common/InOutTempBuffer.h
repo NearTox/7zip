@@ -27,9 +27,7 @@ public:
   bool Write(const void *data, UInt32 size);
 
   HRESULT WriteToStream(ISequentialOutStream *stream);
-  UInt64 GetDataSize() const {
-    return _size;
-  }
+  UInt64 GetDataSize() const { return _size; }
 };
 
 /*

@@ -1,6 +1,6 @@
 // SortUtils.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../Common/Wildcard.h"
 

@@ -1,6 +1,6 @@
 // Windows/TimeUtils.cpp
 
-#include "../Common/Common.h"
+#include "StdAfx.h"
 
 #include "Defs.h"
 #include "TimeUtils.h"
@@ -110,14 +110,22 @@ namespace NWindows {
       return true;
     }
 
+    UInt64 UnixTimeToFileTime64(UInt32 unixTime) throw() {
+      return (kUnixTimeOffset + (UInt64)unixTime) * kNumTimeQuantumsInSecond;
+    }
+
     void UnixTimeToFileTime(UInt32 unixTime, FILETIME &ft) throw() {
-      UInt64 v = (kUnixTimeOffset + (UInt64)unixTime) * kNumTimeQuantumsInSecond;
+      UInt64 v = UnixTimeToFileTime64(unixTime);
       ft.dwLowDateTime = (DWORD)v;
       ft.dwHighDateTime = (DWORD)(v >> 32);
     }
 
+    UInt64 UnixTime64ToFileTime64(Int64 unixTime) throw() {
+      return (UInt64)(kUnixTimeOffset + unixTime) * kNumTimeQuantumsInSecond;
+    }
+
     bool UnixTime64ToFileTime(Int64 unixTime, FILETIME &ft) throw() {
-      if(unixTime > kNumSecondsInFileTime - kUnixTimeOffset) {
+      if(unixTime > (Int64)(kNumSecondsInFileTime - kUnixTimeOffset)) {
         ft.dwLowDateTime = ft.dwHighDateTime = (UInt32)(Int32)-1;
         return false;
       }
@@ -134,7 +142,7 @@ namespace NWindows {
 
     Int64 FileTimeToUnixTime64(const FILETIME &ft) throw() {
       UInt64 winTime = (((UInt64)ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
-      return (Int64)(winTime / kNumTimeQuantumsInSecond) - kUnixTimeOffset;
+      return (Int64)(winTime / kNumTimeQuantumsInSecond) - (Int64)kUnixTimeOffset;
     }
 
     bool FileTimeToUnixTime(const FILETIME &ft, UInt32 &unixTime) throw() {
@@ -154,10 +162,10 @@ namespace NWindows {
     }
 
     bool GetSecondsSince1601(unsigned year, unsigned month, unsigned day,
-                             unsigned hour, unsigned min, unsigned sec, UInt64 &resSeconds) throw() {
+      unsigned hour, unsigned min, unsigned sec, UInt64 &resSeconds) throw() {
       resSeconds = 0;
       if(year < kFileTimeStartYear || year >= 10000 || month < 1 || month > 12 ||
-         day < 1 || day > 31 || hour > 23 || min > 59 || sec > 59)
+        day < 1 || day > 31 || hour > 23 || min > 59 || sec > 59)
         return false;
       UInt32 numYears = year - kFileTimeStartYear;
       UInt32 numDays = numYears * 365 + numYears / 4 - numYears / 100 + numYears / 400;

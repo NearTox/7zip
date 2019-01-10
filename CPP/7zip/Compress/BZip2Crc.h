@@ -5,39 +5,27 @@
 
 #include "../../Common/MyTypes.h"
 
-class CBZip2Crc {
+class CBZip2Crc
+{
   UInt32 _value;
   static UInt32 Table[256];
 public:
   static void InitTable();
-  CBZip2Crc() : _value(0xFFFFFFFF) {};
-  void Init() {
-    _value = 0xFFFFFFFF;
-  }
-  void UpdateByte(Byte b) {
-    _value = Table[(_value >> 24) ^ b] ^ (_value << 8);
-  }
-  void UpdateByte(unsigned int b) {
-    _value = Table[(_value >> 24) ^ b] ^ (_value << 8);
-  }
-  UInt32 GetDigest() const {
-    return _value ^ 0xFFFFFFFF;
-  }
+  CBZip2Crc(): _value(0xFFFFFFFF) {};
+  void Init() { _value = 0xFFFFFFFF; }
+  void UpdateByte(Byte b) { _value = Table[(_value >> 24) ^ b] ^ (_value << 8); }
+  void UpdateByte(unsigned int b) { _value = Table[(_value >> 24) ^ b] ^ (_value << 8); }
+  UInt32 GetDigest() const { return _value ^ 0xFFFFFFFF; }
 };
 
-class CBZip2CombinedCrc {
+class CBZip2CombinedCrc
+{
   UInt32 _value;
 public:
-  CBZip2CombinedCrc() : _value(0) {};
-  void Init() {
-    _value = 0;
-  }
-  void Update(UInt32 v) {
-    _value = ((_value << 1) | (_value >> 31)) ^ v;
-  }
-  UInt32 GetDigest() const {
-    return _value;
-  }
+  CBZip2CombinedCrc():  _value(0){};
+  void Init() { _value = 0; }
+  void Update(UInt32 v) { _value = ((_value << 1) | (_value >> 31)) ^ v; }
+  UInt32 GetDigest() const { return _value ; }
 };
 
 #endif

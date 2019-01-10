@@ -1,6 +1,6 @@
 // ExtractCallbackConsole.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "../../../Common/IntToString.h"
 #include "../../../Common/Wildcard.h"
@@ -15,17 +15,38 @@
 #include "../../../Windows/Synchronization.h"
 #endif
 
+#include "../../Common/FilePathAutoRename.h"
+
 #include "../Common/ExtractingFilePath.h"
 
+#include "ConsoleClose.h"
 #include "ExtractCallbackConsole.h"
+#include "UserInputUtils.h"
 
 using namespace NWindows;
 using namespace NFile;
 using namespace NDir;
-static const char *kError = "ERROR: ";
 
-HRESULT CExtractScanConsole::ScanProgress(const CDirItemsStat&, const FString&, bool /* isDir */) {
-  return S_OK;
+static HRESULT CheckBreak2() {
+  return NConsoleClose::TestBreakSignal() ? E_ABORT : S_OK;
+}
+
+static const char * const kError = "ERROR: ";
+
+void CExtractScanConsole::StartScanning() {
+  if(NeedPercents())
+    _percent.Command = "Scan";
+}
+
+HRESULT CExtractScanConsole::ScanProgress(const CDirItemsStat &st, const FString &path, bool /* isDir */) {
+  if(NeedPercents()) {
+    _percent.Files = st.NumDirs + st.NumFiles;
+    _percent.Completed = st.GetTotalBytes();
+    _percent.FileName = fs2us(path);
+    _percent.Print();
+  }
+
+  return CheckBreak2();
 }
 
 HRESULT CExtractScanConsole::ScanError(const FString &path, DWORD systemError) {
@@ -56,15 +77,18 @@ void PrintSize_bytes_Smart(AString &s, UInt64 val) {
   unsigned numBits = 10;
   char c = 'K';
   char temp[4] = {'K', 'i', 'B', 0};
-  if(val >= ((UInt64)10 << 30)) {
-    numBits = 30; c = 'G';
-  } else if(val >= ((UInt64)10 << 20)) {
-    numBits = 20; c = 'M';
-  }
+  if(val >= ((UInt64)10 << 30)) { numBits = 30; c = 'G'; } else if(val >= ((UInt64)10 << 20)) { numBits = 20; c = 'M'; }
   temp[0] = c;
   s += " (";
   Print_UInt64_and_String(s, ((val + ((UInt64)1 << numBits) - 1) >> numBits), temp);
   s += ')';
+}
+
+void PrintSize_bytes_Smart_comma(AString &s, UInt64 val) {
+  if(val == (UInt64)(Int64)-1)
+    return;
+  s += ", ";
+  PrintSize_bytes_Smart(s, val);
 }
 
 void Print_DirItemsStat(AString &s, const CDirItemsStat &st) {
@@ -73,13 +97,38 @@ void Print_DirItemsStat(AString &s, const CDirItemsStat &st) {
     s += ", ";
   }
   Print_UInt64_and_String(s, st.NumFiles, st.NumFiles == 1 ? "file" : "files");
-  s += ", ";
-  PrintSize_bytes_Smart(s, st.FilesSize);
+  PrintSize_bytes_Smart_comma(s, st.FilesSize);
   if(st.NumAltStreams != 0) {
     s.Add_LF();
     Print_UInt64_and_String(s, st.NumAltStreams, "alternate streams");
-    s += ", ";
-    PrintSize_bytes_Smart(s, st.AltStreamsSize);
+    PrintSize_bytes_Smart_comma(s, st.AltStreamsSize);
+  }
+}
+
+void Print_DirItemsStat2(AString &s, const CDirItemsStat2 &st) {
+  Print_DirItemsStat(s, (CDirItemsStat &)st);
+  bool needLF = true;
+  if(st.Anti_NumDirs != 0) {
+    if(needLF)
+      s.Add_LF();
+    needLF = false;
+    Print_UInt64_and_String(s, st.Anti_NumDirs, st.Anti_NumDirs == 1 ? "anti-folder" : "anti-folders");
+  }
+  if(st.Anti_NumFiles != 0) {
+    if(needLF)
+      s.Add_LF();
+    else
+      s += ", ";
+    needLF = false;
+    Print_UInt64_and_String(s, st.Anti_NumFiles, st.Anti_NumFiles == 1 ? "anti-file" : "anti-files");
+  }
+  if(st.Anti_NumAltStreams != 0) {
+    if(needLF)
+      s.Add_LF();
+    else
+      s += ", ";
+    needLF = false;
+    Print_UInt64_and_String(s, st.Anti_NumAltStreams, "anti-alternate-streams");
   }
 }
 
@@ -98,33 +147,33 @@ static NSynchronization::CCriticalSection g_CriticalSection;
 #define MT_LOCK
 #endif
 
-static const char *kTestString = "T";
-static const char *kExtractString = "-";
-static const char *kSkipString = ".";
+static const char * const kTestString = "T";
+static const char * const kExtractString = "-";
+static const char * const kSkipString = ".";
 
-// static const char *kCantAutoRename = "can not create file with auto name\n";
-// static const char *kCantRenameFile = "can not rename existing file\n";
-// static const char *kCantDeleteOutputFile = "can not delete output file ";
+// static const char * const kCantAutoRename = "can not create file with auto name\n";
+// static const char * const kCantRenameFile = "can not rename existing file\n";
+// static const char * const kCantDeleteOutputFile = "can not delete output file ";
 
-static const char *kMemoryExceptionMessage = "Can't allocate required memory!";
+static const char * const kMemoryExceptionMessage = "Can't allocate required memory!";
 
-static const char *kExtracting = "Extracting archive: ";
-static const char *kTesting = "Testing archive: ";
+static const char * const kExtracting = "Extracting archive: ";
+static const char * const kTesting = "Testing archive: ";
 
-static const char *kEverythingIsOk = "Everything is Ok";
-static const char *kNoFiles = "No files to process";
+static const char * const kEverythingIsOk = "Everything is Ok";
+static const char * const kNoFiles = "No files to process";
 
-static const char *kUnsupportedMethod = "Unsupported Method";
-static const char *kCrcFailed = "CRC Failed";
-static const char *kCrcFailedEncrypted = "CRC Failed in encrypted file. Wrong password?";
-static const char *kDataError = "Data Error";
-static const char *kDataErrorEncrypted = "Data Error in encrypted file. Wrong password?";
-static const char *kUnavailableData = "Unavailable data";
-static const char *kUnexpectedEnd = "Unexpected end of data";
-static const char *kDataAfterEnd = "There are some data after the end of the payload data";
-static const char *kIsNotArc = "Is not archive";
-static const char *kHeadersError = "Headers Error";
-static const char *kWrongPassword = "Wrong password";
+static const char * const kUnsupportedMethod = "Unsupported Method";
+static const char * const kCrcFailed = "CRC Failed";
+static const char * const kCrcFailedEncrypted = "CRC Failed in encrypted file. Wrong password?";
+static const char * const kDataError = "Data Error";
+static const char * const kDataErrorEncrypted = "Data Error in encrypted file. Wrong password?";
+static const char * const kUnavailableData = "Unavailable data";
+static const char * const kUnexpectedEnd = "Unexpected end of data";
+static const char * const kDataAfterEnd = "There are some data after the end of the payload data";
+static const char * const kIsNotArc = "Is not archive";
+static const char * const kHeadersError = "Headers Error";
+static const char * const kWrongPassword = "Wrong password";
 
 static const char * const k_ErrorFlagsMessages[] =
 {
@@ -141,19 +190,84 @@ static const char * const k_ErrorFlagsMessages[] =
   , "CRC Error"
 };
 
-STDMETHODIMP CExtractCallbackConsole::SetTotal(UInt64) {
+STDMETHODIMP CExtractCallbackConsole::SetTotal(UInt64 size) {
   MT_LOCK
-    return S_OK;
+
+    if(NeedPercents()) {
+      _percent.Total = size;
+      _percent.Print();
+    }
+  return CheckBreak2();
 }
 
-STDMETHODIMP CExtractCallbackConsole::SetCompleted(const UInt64*) {
+STDMETHODIMP CExtractCallbackConsole::SetCompleted(const UInt64 *completeValue) {
   MT_LOCK
-    return S_OK;
+
+    if(NeedPercents()) {
+      if(completeValue)
+        _percent.Completed = *completeValue;
+      _percent.Print();
+    }
+  return CheckBreak2();
 }
 
-static const char *kTab = "  ";
+static const char * const kTab = "  ";
 
-STDMETHODIMP CExtractCallbackConsole::PrepareOperation(const wchar_t *name, Int32, Int32 askExtractMode, const UInt64 *position) {
+static void PrintFileInfo(CStdOutStream *_so, const wchar_t *path, const FILETIME *ft, const UInt64 *size) {
+  *_so << kTab << "Path:     " << path << endl;
+  if(size && *size != (UInt64)(Int64)-1) {
+    AString s;
+    PrintSize_bytes_Smart(s, *size);
+    *_so << kTab << "Size:     " << s << endl;
+  }
+  if(ft) {
+    char temp[64];
+    if(ConvertUtcFileTimeToString(*ft, temp, kTimestampPrintLevel_SEC))
+      *_so << kTab << "Modified: " << temp << endl;
+  }
+}
+
+STDMETHODIMP CExtractCallbackConsole::AskOverwrite(
+  const wchar_t *existName, const FILETIME *existTime, const UInt64 *existSize,
+  const wchar_t *newName, const FILETIME *newTime, const UInt64 *newSize,
+  Int32 *answer) {
+  MT_LOCK
+
+    RINOK(CheckBreak2());
+
+  ClosePercentsAndFlush();
+
+  if(_so) {
+    *_so << endl << "Would you like to replace the existing file:\n";
+    PrintFileInfo(_so, existName, existTime, existSize);
+    *_so << "with the file from archive:\n";
+    PrintFileInfo(_so, newName, newTime, newSize);
+  }
+
+  NUserAnswerMode::EEnum overwriteAnswer = ScanUserYesNoAllQuit(_so);
+
+  switch(overwriteAnswer) {
+    case NUserAnswerMode::kQuit:  return E_ABORT;
+    case NUserAnswerMode::kNo:     *answer = NOverwriteAnswer::kNo; break;
+    case NUserAnswerMode::kNoAll:  *answer = NOverwriteAnswer::kNoToAll; break;
+    case NUserAnswerMode::kYesAll: *answer = NOverwriteAnswer::kYesToAll; break;
+    case NUserAnswerMode::kYes:    *answer = NOverwriteAnswer::kYes; break;
+    case NUserAnswerMode::kAutoRenameAll: *answer = NOverwriteAnswer::kAutoRename; break;
+    case NUserAnswerMode::kEof:  return E_ABORT;
+    case NUserAnswerMode::kError:  return E_FAIL;
+    default: return E_FAIL;
+  }
+
+  if(_so) {
+    *_so << endl;
+    if(NeedFlush)
+      _so->Flush();
+  }
+
+  return CheckBreak2();
+}
+
+STDMETHODIMP CExtractCallbackConsole::PrepareOperation(const wchar_t *name, Int32 /* isFolder */, Int32 askExtractMode, const UInt64 *position) {
   MT_LOCK
 
     _currentName = name;
@@ -168,9 +282,11 @@ STDMETHODIMP CExtractCallbackConsole::PrepareOperation(const wchar_t *name, Int3
     default: s = "???"; requiredLevel = 2;
   };
 
-  bool show2 = (0 >= requiredLevel && _so);
+  bool show2 = (LogLevel >= requiredLevel && _so);
 
   if(show2) {
+    ClosePercents_for_so();
+
     _tempA = s;
     if(name)
       _tempA.Add_Space();
@@ -187,13 +303,27 @@ STDMETHODIMP CExtractCallbackConsole::PrepareOperation(const wchar_t *name, Int3
     if(NeedFlush)
       _so->Flush();
   }
-  return S_OK;
+
+  if(NeedPercents()) {
+    if(PercentsNameLevel >= 1) {
+      _percent.FileName.Empty();
+      _percent.Command.Empty();
+      if(PercentsNameLevel > 1 || !show2) {
+        _percent.Command = s;
+        if(name)
+          _percent.FileName = name;
+      }
+    }
+    _percent.Print();
+  }
+
+  return CheckBreak2();
 }
 
 STDMETHODIMP CExtractCallbackConsole::MessageError(const wchar_t *message) {
   MT_LOCK
 
-    RINOK(S_OK);
+    RINOK(CheckBreak2());
 
   NumFileErrors_in_Current++;
   NumFileErrors++;
@@ -204,7 +334,7 @@ STDMETHODIMP CExtractCallbackConsole::MessageError(const wchar_t *message) {
     _se->Flush();
   }
 
-  return S_OK;
+  return CheckBreak2();
 }
 
 void SetExtractErrorMessage(Int32 opRes, Int32 encrypted, AString &dest) {
@@ -245,10 +375,8 @@ void SetExtractErrorMessage(Int32 opRes, Int32 encrypted, AString &dest) {
   if(s)
     dest += s;
   else {
-    char temp[16];
-    ConvertUInt32ToString(opRes, temp);
     dest += "Error #";
-    dest += temp;
+    dest.Add_UInt32(opRes);
   }
 }
 
@@ -256,6 +384,11 @@ STDMETHODIMP CExtractCallbackConsole::SetOperationResult(Int32 opRes, Int32 encr
   MT_LOCK
 
     if(opRes == NArchive::NExtract::NOperationResult::kOK) {
+      if(NeedPercents()) {
+        _percent.Command.Empty();
+        _percent.FileName.Empty();
+        _percent.Files++;
+      }
     } else {
       NumFileErrors_in_Current++;
       NumFileErrors++;
@@ -274,7 +407,7 @@ STDMETHODIMP CExtractCallbackConsole::SetOperationResult(Int32 opRes, Int32 encr
       }
     }
 
-  return S_OK;
+  return CheckBreak2();
 }
 
 STDMETHODIMP CExtractCallbackConsole::ReportExtractResult(Int32 opRes, Int32 encrypted, const wchar_t *name) {
@@ -283,8 +416,10 @@ STDMETHODIMP CExtractCallbackConsole::ReportExtractResult(Int32 opRes, Int32 enc
     return SetOperationResult(opRes, encrypted);
   }
 
-  return S_OK;
+  return CheckBreak2();
 }
+
+#ifndef _NO_CRYPTO
 
 HRESULT CExtractCallbackConsole::SetPassword(const UString &password) {
   PasswordIsDefined = true;
@@ -299,15 +434,22 @@ STDMETHODIMP CExtractCallbackConsole::CryptoGetTextPassword(BSTR *password) {
   COM_TRY_END
 }
 
+#endif
+
 HRESULT CExtractCallbackConsole::BeforeOpen(const wchar_t *name, bool testMode) {
-  RINOK(S_OK);
+  RINOK(CheckBreak2());
 
   NumTryArcs++;
   ThereIsError_in_Current = false;
   ThereIsWarning_in_Current = false;
   NumFileErrors_in_Current = 0;
+
+  ClosePercents_for_so();
   if(_so)
     *_so << endl << (testMode ? kTesting : kExtracting) << name << endl;
+
+  if(NeedPercents())
+    _percent.Command = "Open";
   return S_OK;
 }
 
@@ -349,20 +491,20 @@ void PrintErrorFlags(CStdOutStream &so, const char *s, UInt32 errorFlags) {
 
 void Add_Messsage_Pre_ArcType(UString &s, const char *pre, const wchar_t *arcType) {
   s.Add_LF();
-  s.AddAscii(pre);
-  s.AddAscii(" as [");
+  s += pre;
+  s += " as [";
   s += arcType;
-  s.AddAscii("] archive");
+  s += "] archive";
 }
 
 void Print_ErrorFormatIndex_Warning(CStdOutStream *_so, const CCodecs *codecs, const CArc &arc) {
   const CArcErrorInfo &er = arc.ErrorInfo;
 
-  UString s = L"WARNING:\n";
+  UString s("WARNING:\n");
   s += arc.Path;
   if(arc.FormatIndex == er.ErrorFormatIndex) {
     s.Add_LF();
-    s.AddAscii("The archive is open with offset");
+    s += "The archive is open with offset";
   } else {
     Add_Messsage_Pre_ArcType(s, "Can not open the file", codecs->GetFormatNamePtr(er.ErrorFormatIndex));
     Add_Messsage_Pre_ArcType(s, "The file is open", codecs->GetFormatNamePtr(arc.FormatIndex));
@@ -371,7 +513,17 @@ void Print_ErrorFormatIndex_Warning(CStdOutStream *_so, const CCodecs *codecs, c
   *_so << s << endl << endl;
 }
 
-HRESULT CExtractCallbackConsole::OpenResult(const CCodecs *codecs, const CArchiveLink &arcLink, const wchar_t *name, HRESULT result) {
+HRESULT CExtractCallbackConsole::OpenResult(
+  const CCodecs *codecs, const CArchiveLink &arcLink,
+  const wchar_t *name, HRESULT result) {
+  ClosePercents();
+
+  if(NeedPercents()) {
+    _percent.Files = 0;
+    _percent.Command.Empty();
+    _percent.FileName.Empty();
+  }
+
   ClosePercentsAndFlush();
 
   FOR_VECTOR(level, arcLink.Arcs) {
@@ -472,22 +624,31 @@ HRESULT CExtractCallbackConsole::OpenResult(const CCodecs *codecs, const CArchiv
     }
   }
 
-  return S_OK;
+  return CheckBreak2();
 }
 
 HRESULT CExtractCallbackConsole::ThereAreNoFiles() {
+  ClosePercents_for_so();
+
   if(_so) {
     *_so << endl << kNoFiles << endl;
     if(NeedFlush)
       _so->Flush();
   }
-  return S_OK;
+  return CheckBreak2();
 }
 
 HRESULT CExtractCallbackConsole::ExtractResult(HRESULT result) {
   MT_LOCK
-    if(_so)
-      _so->Flush();
+
+    if(NeedPercents()) {
+      _percent.ClosePrint(true);
+      _percent.Command.Empty();
+      _percent.FileName.Empty();
+    }
+
+  if(_so)
+    _so->Flush();
 
   if(result == S_OK) {
     if(NumFileErrors_in_Current == 0 && !ThereIsError_in_Current) {
@@ -523,5 +684,5 @@ HRESULT CExtractCallbackConsole::ExtractResult(HRESULT result) {
     }
   }
 
-  return S_OK;
+  return CheckBreak2();
 }

@@ -1,15 +1,17 @@
 // OutMemStream.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "OutMemStream.h"
 
-void COutMemStream::Free() {
+void COutMemStream::Free()
+{
   Blocks.Free(_memManager);
   Blocks.LockMode = true;
 }
 
-void COutMemStream::Init() {
+void COutMemStream::Init()
+{
   WriteToRealStreamEvent.Reset();
   _unlockEventWasSent = false;
   _realStreamMode = false;
@@ -18,47 +20,55 @@ void COutMemStream::Init() {
   _curBlockIndex = 0;
 }
 
-void COutMemStream::DetachData(CMemLockBlocks &blocks) {
+void COutMemStream::DetachData(CMemLockBlocks &blocks)
+{
   Blocks.Detach(blocks, _memManager);
   Free();
 }
 
-HRESULT COutMemStream::WriteToRealStream() {
+
+HRESULT COutMemStream::WriteToRealStream()
+{
   RINOK(Blocks.WriteToStream(_memManager->GetBlockSize(), OutSeqStream));
   Blocks.Free(_memManager);
   return S_OK;
 }
 
-STDMETHODIMP COutMemStream::Write(const void *data, UInt32 size, UInt32 *processedSize) {
-  if(_realStreamMode)
+STDMETHODIMP COutMemStream::Write(const void *data, UInt32 size, UInt32 *processedSize)
+{
+  if (_realStreamMode)
     return OutSeqStream->Write(data, size, processedSize);
-  if(processedSize != 0)
+  if (processedSize != 0)
     *processedSize = 0;
-  while(size != 0) {
-    if(_curBlockIndex < Blocks.Blocks.Size()) {
+  while (size != 0)
+  {
+    if (_curBlockIndex < Blocks.Blocks.Size())
+    {
       Byte *p = (Byte *)Blocks.Blocks[_curBlockIndex] + _curBlockPos;
       size_t curSize = _memManager->GetBlockSize() - _curBlockPos;
-      if(size < curSize)
+      if (size < curSize)
         curSize = size;
       memcpy(p, data, curSize);
-      if(processedSize != 0)
+      if (processedSize != 0)
         *processedSize += (UInt32)curSize;
       data = (const void *)((const Byte *)data + curSize);
       size -= (UInt32)curSize;
       _curBlockPos += curSize;
 
       UInt64 pos64 = GetPos();
-      if(pos64 > Blocks.TotalSize)
+      if (pos64 > Blocks.TotalSize)
         Blocks.TotalSize = pos64;
-      if(_curBlockPos == _memManager->GetBlockSize()) {
+      if (_curBlockPos == _memManager->GetBlockSize())
+      {
         _curBlockIndex++;
         _curBlockPos = 0;
       }
       continue;
     }
-    HANDLE events[3] = {StopWritingEvent, WriteToRealStreamEvent, /* NoLockEvent, */ _memManager->Semaphore};
+    HANDLE events[3] = { StopWritingEvent, WriteToRealStreamEvent, /* NoLockEvent, */ _memManager->Semaphore };
     DWORD waitResult = ::WaitForMultipleObjects((Blocks.LockMode ? 3 : 2), events, FALSE, INFINITE);
-    switch(waitResult) {
+    switch (waitResult)
+    {
       case (WAIT_OBJECT_0 + 0):
         return StopWriteResult;
       case (WAIT_OBJECT_0 + 1):
@@ -67,7 +77,7 @@ STDMETHODIMP COutMemStream::Write(const void *data, UInt32 size, UInt32 *process
         RINOK(WriteToRealStream());
         UInt32 processedSize2;
         HRESULT res = OutSeqStream->Write(data, size, &processedSize2);
-        if(processedSize != 0)
+        if (processedSize != 0)
           *processedSize += processedSize2;
         return res;
       }
@@ -86,36 +96,44 @@ STDMETHODIMP COutMemStream::Write(const void *data, UInt32 size, UInt32 *process
         return E_FAIL;
     }
     Blocks.Blocks.Add(_memManager->AllocateBlock());
-    if(Blocks.Blocks.Back() == 0)
+    if (Blocks.Blocks.Back() == 0)
       return E_FAIL;
   }
   return S_OK;
 }
 
-STDMETHODIMP COutMemStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition) {
-  if(_realStreamMode) {
-    if(!OutStream)
+STDMETHODIMP COutMemStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition)
+{
+  if (_realStreamMode)
+  {
+    if (!OutStream)
       return E_FAIL;
     return OutStream->Seek(offset, seekOrigin, newPosition);
   }
-  if(seekOrigin == STREAM_SEEK_CUR) {
-    if(offset != 0)
+  if (seekOrigin == STREAM_SEEK_CUR)
+  {
+    if (offset != 0)
       return E_NOTIMPL;
-  } else if(seekOrigin == STREAM_SEEK_SET) {
-    if(offset != 0)
+  }
+  else if (seekOrigin == STREAM_SEEK_SET)
+  {
+    if (offset != 0)
       return E_NOTIMPL;
     _curBlockIndex = 0;
     _curBlockPos = 0;
-  } else
+  }
+  else
     return E_NOTIMPL;
-  if(newPosition)
+  if (newPosition)
     *newPosition = GetPos();
   return S_OK;
 }
 
-STDMETHODIMP COutMemStream::SetSize(UInt64 newSize) {
-  if(_realStreamMode) {
-    if(!OutStream)
+STDMETHODIMP COutMemStream::SetSize(UInt64 newSize)
+{
+  if (_realStreamMode)
+  {
+    if (!OutStream)
       return E_FAIL;
     return OutStream->SetSize(newSize);
   }

@@ -7,49 +7,67 @@
 
 #include "../ICoder.h"
 
-#include "ImplodeHuffmanDecoder.h"
+#include "../Common/InBuffer.h"
+
+#include "BitlDecoder.h"
 #include "LzOutWindow.h"
 
 namespace NCompress {
-  namespace NImplode {
-    namespace NDecoder {
-      class CCoder :
-        public ICompressCoder,
-        public ICompressSetDecoderProperties2,
-        public CMyUnknownImp {
-        CLzOutWindow m_OutWindowStream;
-        NBitl::CDecoder<CInBuffer> m_InBitStream;
+namespace NImplode {
+namespace NDecoder {
 
-        NImplode::NHuffman::CDecoder m_LiteralDecoder;
-        NImplode::NHuffman::CDecoder m_LengthDecoder;
-        NImplode::NHuffman::CDecoder m_DistanceDecoder;
+typedef NBitl::CDecoder<CInBuffer> CInBit;
 
-        bool m_BigDictionaryOn;
-        bool m_LiteralsOn;
+const unsigned kNumHuffmanBits = 16;
+const unsigned kMaxHuffTableSize = 1 << 8;
 
-        int m_NumDistanceLowDirectBits;
-        UInt32 m_MinMatchLength;
+class CHuffmanDecoder
+{
+  UInt32 _limits[kNumHuffmanBits + 1];
+  UInt32 _poses[kNumHuffmanBits + 1];
+  Byte _symbols[kMaxHuffTableSize];
+public:
+  bool Build(const Byte *lens, unsigned numSymbols) throw();
+  UInt32 Decode(CInBit *inStream) const throw();
+};
 
-        bool ReadLevelItems(NImplode::NHuffman::CDecoder &table, Byte *levels, int numLevelItems);
-        bool ReadTables();
-        void DeCodeLevelTable(Byte *newLevels, int numLevels);
-      public:
-        CCoder();
 
-        MY_UNKNOWN_IMP1(ICompressSetDecoderProperties2)
+class CCoder:
+  public ICompressCoder,
+  public ICompressSetDecoderProperties2,
+  public ICompressSetFinishMode,
+  public ICompressGetInStreamProcessedSize,
+  public CMyUnknownImp
+{
+  CLzOutWindow _outWindowStream;
+  CInBit _inBitStream;
+  
+  CHuffmanDecoder _litDecoder;
+  CHuffmanDecoder _lenDecoder;
+  CHuffmanDecoder _distDecoder;
 
-          // void ReleaseStreams();
+  Byte _flags;
+  bool _fullStreamMode;
 
-          HRESULT CodeReal(ISequentialInStream *inStream, ISequentialOutStream *outStream,
-                           const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
+  bool BuildHuff(CHuffmanDecoder &table, unsigned numSymbols);
+  HRESULT CodeReal(ISequentialInStream *inStream, ISequentialOutStream *outStream,
+      const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
 
-        STDMETHOD(Code)(ISequentialInStream *inStream, ISequentialOutStream *outStream,
-                        const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
+public:
+  MY_UNKNOWN_IMP3(
+      ICompressSetDecoderProperties2,
+      ICompressSetFinishMode,
+      ICompressGetInStreamProcessedSize)
 
-        STDMETHOD(SetDecoderProperties2)(const Byte *data, UInt32 size);
-      };
-    }
-  }
-}
+  STDMETHOD(Code)(ISequentialInStream *inStream, ISequentialOutStream *outStream,
+      const UInt64 *inSize, const UInt64 *outSize, ICompressProgressInfo *progress);
+  STDMETHOD(SetDecoderProperties2)(const Byte *data, UInt32 size);
+  STDMETHOD(SetFinishMode)(UInt32 finishMode);
+  STDMETHOD(GetInStreamProcessedSize)(UInt64 *value);
+
+  CCoder();
+};
+
+}}}
 
 #endif

@@ -1,6 +1,6 @@
 // StreamUtils.cpp
 
-#include "../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "StreamUtils.h"
 

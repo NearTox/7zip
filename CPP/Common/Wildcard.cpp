@@ -1,6 +1,6 @@
 // Common/Wildcard.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "Wildcard.h"
 
@@ -19,15 +19,17 @@ bool IsPath1PrefixedByPath2(const wchar_t *s1, const wchar_t *s2) {
 
 int CompareFileNames(const wchar_t *s1, const wchar_t *s2) STRING_UNICODE_THROW {
   if(g_CaseSensitive)
-    return wcscmp(s1, s2);
+    return MyStringCompare(s1, s2);
   return MyStringCompareNoCase(s1, s2);
 }
 
 #ifndef USE_UNICODE_FSTRING
 int CompareFileNames(const char *s1, const char *s2) {
+  const UString u1 = fs2us(s1);
+  const UString u2 = fs2us(s2);
   if(g_CaseSensitive)
-    return wcscmp(fs2us(s1), fs2us(s2));
-  return MyStringCompareNoCase(fs2us(s1), fs2us(s2));
+    return MyStringCompare(u1, u2);
+  return MyStringCompareNoCase(u1, u2);
 }
 #endif
 
@@ -104,22 +106,15 @@ void SplitPathToParts_Smart(const UString &path, UString &dirPrefix, UString &na
   name = p;
 }
 
-UString ExtractDirPrefixFromPath(const UString &path) {
-  const wchar_t *start = path;
-  const wchar_t *p = start + path.Len();
-  for(; p != start; p--)
-    if(IsPathSepar(*(p - 1)))
-      break;
-  return path.Left((unsigned)(p - start));
+/*
+UString ExtractDirPrefixFromPath(const UString &path)
+{
+  return path.Left(path.ReverseFind_PathSepar() + 1));
 }
+*/
 
 UString ExtractFileNameFromPath(const UString &path) {
-  const wchar_t *start = path;
-  const wchar_t *p = start + path.Len();
-  for(; p != start; p--)
-    if(IsPathSepar(*(p - 1)))
-      break;
-  return p;
+  return UString(path.Ptr(path.ReverseFind_PathSepar() + 1));
 }
 
 bool DoesWildcardMatchName(const UString &mask, const UString &name) {
@@ -139,22 +134,22 @@ bool DoesNameContainWildcard(const UString &path) {
 // NWildcard
 
 namespace NWildcard {
-  /*
+/*
 
-  M = MaskParts.Size();
-  N = TestNameParts.Size();
+M = MaskParts.Size();
+N = TestNameParts.Size();
 
-                             File                          Dir
-  ForFile     rec   M<=N  [N-M, N)                          -
-  !ForDir  nonrec   M=N   [0, M)                            -
+                           File                          Dir
+ForFile     rec   M<=N  [N-M, N)                          -
+!ForDir  nonrec   M=N   [0, M)                            -
 
-  ForDir      rec   M<N   [0, M) ... [N-M-1, N-1)  same as ForBoth-File
-  !ForFile nonrec         [0, M)                   same as ForBoth-File
+ForDir      rec   M<N   [0, M) ... [N-M-1, N-1)  same as ForBoth-File
+!ForFile nonrec         [0, M)                   same as ForBoth-File
 
-  ForFile     rec   m<=N  [0, M) ... [N-M, N)      same as ForBoth-File
-  ForDir   nonrec         [0, M)                   same as ForBoth-File
+ForFile     rec   m<=N  [0, M) ... [N-M, N)      same as ForBoth-File
+ForDir   nonrec         [0, M)                   same as ForBoth-File
 
-  */
+*/
 
   bool CItem::AreAllAllowed() const {
     return ForFile && ForDir && WildcardMatching && PathParts.Size() == 1 && PathParts.Front() == L"*";
@@ -218,9 +213,9 @@ namespace NWildcard {
 
   bool CCensorNode::AreAllAllowed() const {
     if(!Name.IsEmpty() ||
-       !SubNodes.IsEmpty() ||
-       !ExcludeItems.IsEmpty() ||
-       IncludeItems.Size() != 1)
+      !SubNodes.IsEmpty() ||
+      !ExcludeItems.IsEmpty() ||
+      IncludeItems.Size() != 1)
       return false;
     return IncludeItems.Front().AreAllAllowed();
   }
@@ -252,8 +247,8 @@ namespace NWildcard {
 
     // WIN32 doesn't support wildcards in file names
     if(item.WildcardMatching
-       && ignoreWildcardIndex != 0
-       && DoesNameContainWildcard(front)) {
+      && ignoreWildcardIndex != 0
+      && DoesNameContainWildcard(front)) {
       AddItemSimple(include, item);
       return;
     }
@@ -374,7 +369,7 @@ namespace NWildcard {
       return;
     bool forFile = true;
     bool forFolder = true;
-    UString path2 = path;
+    UString path2(path);
     if(IsPathSepar(path.Back())) {
       path2.DeleteBack();
       forFile = false;
@@ -414,8 +409,8 @@ namespace NWildcard {
     unsigned testIndex = 0;
     if(pathParts[0].IsEmpty()) {
       if(pathParts.Size() < 4
-         || !pathParts[1].IsEmpty()
-         || pathParts[2] != L"?")
+        || !pathParts[1].IsEmpty()
+        || pathParts[2] != L"?")
         return 0;
       testIndex = 3;
     }
@@ -458,7 +453,7 @@ namespace NWildcard {
     }
 
     networkParts +=
-      // 2; // server/share
+        // 2; // server/share
       1; // server
     if(pathParts.Size() <= networkParts)
       return pathParts.Size();
@@ -491,9 +486,9 @@ namespace NWildcard {
     // #ifdef _WIN32
     // we ignore "?" wildcard in "\\?\" prefix.
     if(pathParts.Size() >= 3
-       && pathParts[0].IsEmpty()
-       && pathParts[1].IsEmpty()
-       && pathParts[2] == L"?")
+      && pathParts[0].IsEmpty()
+      && pathParts[1].IsEmpty()
+      && pathParts[2] == L"?")
       ignoreWildcardIndex = 2;
     // #endif
 
@@ -544,7 +539,7 @@ namespace NWildcard {
       if(pathParts.IsEmpty() || pathParts.Size() == 1 && pathParts[0].IsEmpty()) {
         // we create universal item, if we skip all parts as prefix (like \ or L:\ )
         pathParts.Clear();
-        pathParts.Add(L"*");
+        pathParts.Add(UString("*"));
         forFile = true;
         wildcardMatching = true;
         recursive = false;

@@ -40,7 +40,7 @@ namespace NArchive {
       CDecoder(bool useMixerMT);
 
       HRESULT Decode(
-
+        DECL_EXTERNAL_CODECS_LOC_VARS
         IInStream *inStream,
         UInt64 startPos,
         const CFolders &folders, unsigned folderIndex,
@@ -49,12 +49,14 @@ namespace NArchive {
 
         , ISequentialOutStream *outStream
         , ICompressProgressInfo *compressProgress
+
         , ISequentialInStream **inStreamMainRes
+        , bool &dataAfterEnd_Error
 
         _7Z_DECODER_CRYPRO_VARS_DECL
 
-#if !defined(_7ZIP_ST) && !defined(_SFX)
-        , bool mtMode, UInt32 numThreads
+#if !defined(_7ZIP_ST)
+        , bool mtMode, UInt32 numThreads, UInt64 memUsage
 #endif
       );
     };

@@ -1,6 +1,6 @@
 // 7zHeader.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "7zHeader.h"
 
@@ -11,8 +11,8 @@ namespace NArchive {
     Byte kFinishSignature[kSignatureSize] = {'7', 'z', 0xBC, 0xAF, 0x27, 0x1C + 1};
 #endif
 
-    // We can change signature. So file doesn't contain correct signature.
-    // struct SignatureInitializer { SignatureInitializer() { kSignature[0]--; } };
-    // static SignatureInitializer g_SignatureInitializer;
+// We can change signature. So file doesn't contain correct signature.
+// struct SignatureInitializer { SignatureInitializer() { kSignature[0]--; } };
+// static SignatureInitializer g_SignatureInitializer;
   }
 }

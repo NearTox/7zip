@@ -1,11 +1,7 @@
 // Common/CRC.cpp
 
-#include "Common.h"
+#include "StdAfx.h"
 
 #include "../../C/7zCrc.h"
 
-struct CCRCTableInit {
-  CCRCTableInit() {
-    CrcGenerateTable();
-  }
-} g_CRCTableInit;
+struct CCRCTableInit { CCRCTableInit() { CrcGenerateTable(); } } g_CRCTableInit;

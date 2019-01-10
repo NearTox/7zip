@@ -1,6 +1,6 @@
 // CoderMixer2.cpp
 
-#include "../../../Common/Common.h"
+#include "StdAfx.h"
 
 #include "CoderMixer2.h"
 
@@ -48,6 +48,49 @@ namespace NCoderMixer2 {
     bool *p = &v[0];
     for(unsigned i = 0; i < size; i++)
       p[i] = false;
+  }
+
+  HRESULT CCoder::CheckDataAfterEnd(bool &dataAfterEnd_Error /* , bool &InternalPackSizeError */) const {
+    if(Coder) {
+      if(PackSizePointers.IsEmpty() || !PackSizePointers[0])
+        return S_OK;
+      CMyComPtr<ICompressGetInStreamProcessedSize> getInStreamProcessedSize;
+      Coder.QueryInterface(IID_ICompressGetInStreamProcessedSize, (void **)&getInStreamProcessedSize);
+      // if (!getInStreamProcessedSize) return E_FAIL;
+      if(getInStreamProcessedSize) {
+        UInt64 processed;
+        RINOK(getInStreamProcessedSize->GetInStreamProcessedSize(&processed));
+        if(processed != (UInt64)(Int64)-1) {
+          const UInt64 size = PackSizes[0];
+          if(processed < size && Finish)
+            dataAfterEnd_Error = true;
+          if(processed > size) {
+            // InternalPackSizeError = true;
+            // return S_FALSE;
+          }
+        }
+      }
+    } else if(Coder2) {
+      CMyComPtr<ICompressGetInStreamProcessedSize2> getInStreamProcessedSize2;
+      Coder2.QueryInterface(IID_ICompressGetInStreamProcessedSize2, (void **)&getInStreamProcessedSize2);
+      FOR_VECTOR(i, PackSizePointers) {
+        if(!PackSizePointers[i])
+          continue;
+        UInt64 processed;
+        RINOK(getInStreamProcessedSize2->GetInStreamProcessedSize2(i, &processed));
+        if(processed != (UInt64)(Int64)-1) {
+          const UInt64 size = PackSizes[i];
+          if(processed < size && Finish)
+            dataAfterEnd_Error = true;
+          else if(processed > size) {
+            // InternalPackSizeError = true;
+            // return S_FALSE;
+          }
+        }
+      }
+    }
+
+    return S_OK;
   }
 
   class CBondsChecks {
@@ -133,7 +176,9 @@ namespace NCoderMixer2 {
     return bc.Check();
   }
 
-  void CCoder::SetCoderInfo(const UInt64 *unpackSize, const UInt64 * const *packSizes) {
+  void CCoder::SetCoderInfo(const UInt64 *unpackSize, const UInt64 * const *packSizes, bool finish) {
+    Finish = finish;
+
     if(unpackSize) {
       UnpackSize = *unpackSize;
       UnpackSizePointer = &UnpackSize;
@@ -344,7 +389,7 @@ namespace NCoderMixer2 {
       return E_INVALIDARG;
 
     RINOK(GetInStream2(inStreams, /* inSizes, */
-                       _bi.Bonds[bond].Get_OutIndex(EncodeMode), &seqInStream));
+      _bi.Bonds[bond].Get_OutIndex(EncodeMode), &seqInStream));
 
     while(_binderStreams.Size() <= (unsigned)bond)
       _binderStreams.AddNew();
@@ -569,7 +614,11 @@ namespace NCoderMixer2 {
   HRESULT CMixerST::Code(
     ISequentialInStream * const *inStreams,
     ISequentialOutStream * const *outStreams,
-    ICompressProgressInfo *progress) {
+    ICompressProgressInfo *progress,
+    bool &dataAfterEnd_Error) {
+  // InternalPackSizeError = false;
+    dataAfterEnd_Error = false;
+
     _binderStreams.Clear();
     unsigned ci = MainCoderIndex;
 
@@ -659,7 +708,15 @@ namespace NCoderMixer2 {
 
     if(res == k_My_HRESULT_WritingWasCut)
       res = S_OK;
-    return res;
+
+    if(res != S_OK)
+      return res;
+
+    for(i = 0; i < _coders.Size(); i++) {
+      RINOK(_coders[i].CheckDataAfterEnd(dataAfterEnd_Error /*, InternalPackSizeError */));
+    }
+
+    return S_OK;
   }
 
   HRESULT CMixerST::GetMainUnpackStream(
@@ -668,7 +725,7 @@ namespace NCoderMixer2 {
     CMyComPtr<ISequentialInStream> seqInStream;
 
     RINOK(GetInStream2(inStreams, /* inSizes, */
-                       _bi.UnpackCoder, &seqInStream))
+      _bi.UnpackCoder, &seqInStream))
 
       FOR_VECTOR(i, _coders) {
       CCoder &coder = _coders[i];
@@ -730,9 +787,9 @@ namespace NCoderMixer2 {
 
     if(Coder)
       Result = Coder->Code(InStreamPointers[0], OutStreamPointers[0],
-                           EncodeMode ? UnpackSizePointer : PackSizePointers[0],
-                           EncodeMode ? PackSizePointers[0] : UnpackSizePointer,
-                           progress);
+        EncodeMode ? UnpackSizePointer : PackSizePointers[0],
+        EncodeMode ? PackSizePointers[0] : UnpackSizePointer,
+        progress);
     else
       Result = Coder2->Code(
         &InStreamPointers.Front(), EncodeMode ? &UnpackSizePointer : &PackSizePointers.Front(), numInStreams,
@@ -875,7 +932,11 @@ namespace NCoderMixer2 {
   HRESULT CMixerMT::Code(
     ISequentialInStream * const *inStreams,
     ISequentialOutStream * const *outStreams,
-    ICompressProgressInfo *progress) {
+    ICompressProgressInfo *progress,
+    bool &dataAfterEnd_Error) {
+  // InternalPackSizeError = false;
+    dataAfterEnd_Error = false;
+
     Init(inStreams, outStreams);
 
     unsigned i;
@@ -900,9 +961,9 @@ namespace NCoderMixer2 {
     for(i = 0; i < _coders.Size(); i++) {
       HRESULT result = _coders[i].Result;
       if(result != S_OK
-         && result != k_My_HRESULT_WritingWasCut
-         && result != S_FALSE
-         && result != E_FAIL)
+        && result != k_My_HRESULT_WritingWasCut
+        && result != S_FALSE
+        && result != E_FAIL)
         return result;
     }
 
@@ -912,6 +973,10 @@ namespace NCoderMixer2 {
       HRESULT result = _coders[i].Result;
       if(result != S_OK && result != k_My_HRESULT_WritingWasCut)
         return result;
+    }
+
+    for(i = 0; i < _coders.Size(); i++) {
+      RINOK(_coders[i].CheckDataAfterEnd(dataAfterEnd_Error /* , InternalPackSizeError */));
     }
 
     return S_OK;

@@ -1,8 +1,8 @@
 /* Crypto/Sha256.c -- SHA-256 Hash
-2015-11-14 : Igor Pavlov : Public domain
+2017-04-03 : Igor Pavlov : Public domain
 This code is based on public domain code from Wei Dai's Crypto++ library. */
 
-#include "Compiler.h"
+#include "Precomp.h"
 
 #include <string.h>
 
@@ -44,7 +44,7 @@ void Sha256_Init(CSha256 *p) {
 #ifdef _SHA256_UNROLL2
 
 #define R(a,b,c,d,e,f,g,h, i) \
-    h += S1(e) + Ch(e,f,g) + K[(i)+(j)] + (j ? blk2(i) : blk0(i)); \
+    h += S1(e) + Ch(e,f,g) + K[(i)+(size_t)(j)] + (j ? blk2(i) : blk0(i)); \
     d += h; \
     h += S0(a) + Maj(a, b, c)
 
@@ -72,7 +72,7 @@ void Sha256_Init(CSha256 *p) {
 #define h(i) T[(7-(i))&7]
 
 #define R(i) \
-    h(i) += S1(e(i)) + Ch(e(i),f(i),g(i)) + K[(i)+(j)] + (j ? blk2(i) : blk0(i)); \
+    h(i) += S1(e(i)) + Ch(e(i),f(i),g(i)) + K[(i)+(size_t)(j)] + (j ? blk2(i) : blk0(i)); \
     d(i) += h(i); \
     h(i) += S0(a(i)) + Maj(a(i), b(i), c(i)) \
 
@@ -161,9 +161,9 @@ static void Sha256_WriteByteBlock(CSha256 *p) {
     state[j] += T[j];
 #endif
 
-  /* Wipe variables */
-  /* memset(W, 0, sizeof(W)); */
-  /* memset(T, 0, sizeof(T)); */
+/* Wipe variables */
+/* memset(W, 0, sizeof(W)); */
+/* memset(T, 0, sizeof(T)); */
 }
 
 #undef S0

@@ -7,41 +7,37 @@
 #include "../../IStream.h"
 
 namespace NArchive {
-  namespace NCab {
-    class CCabBlockInStream :
-      public ISequentialInStream,
-      public CMyUnknownImp {
-      Byte *_buf;
-      UInt32 _size;
-      UInt32 _pos;
+namespace NCab {
 
-    public:
-      UInt32 ReservedSize; // < 256
-      bool MsZip;
+class CCabBlockInStream:
+  public ISequentialInStream,
+  public CMyUnknownImp
+{
+  Byte *_buf;
+  UInt32 _size;
+  UInt32 _pos;
 
-      MY_UNKNOWN_IMP
+public:
+  UInt32 ReservedSize; // < 256
+  bool MsZip;
 
-        CCabBlockInStream() : _buf(0), ReservedSize(0), MsZip(false) {}
-      ~CCabBlockInStream();
+  MY_UNKNOWN_IMP
 
-      bool Create();
+  CCabBlockInStream(): _buf(0), ReservedSize(0), MsZip(false) {}
+  ~CCabBlockInStream();
+  
+  bool Create();
+  
+  void InitForNewBlock() { _size = 0; _pos = 0; }
+  
+  HRESULT PreRead(ISequentialInStream *stream, UInt32 &packSize, UInt32 &unpackSize);
 
-      void InitForNewBlock() {
-        _size = 0; _pos = 0;
-      }
+  UInt32 GetPackSizeAvail() const { return _size - _pos; }
+  const Byte *GetData() const { return _buf + _pos; }
 
-      HRESULT PreRead(ISequentialInStream *stream, UInt32 &packSize, UInt32 &unpackSize);
+  STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
+};
 
-      UInt32 GetPackSizeAvail() const {
-        return _size - _pos;
-      }
-      const Byte *GetData() const {
-        return _buf + _pos;
-      }
-
-      STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
-    };
-  }
-}
+}}
 
 #endif

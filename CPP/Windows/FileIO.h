@@ -42,17 +42,15 @@ namespace NWindows {
       UString PrintName;
 
       CReparseAttr() : Tag(0), Flags(0) {}
-      bool Parse(const Byte *p, size_t size);
 
-      bool IsMountPoint() const {
-        return Tag == _my_IO_REPARSE_TAG_MOUNT_POINT;
-      } // it's Junction
-      bool IsSymLink() const {
-        return Tag == _my_IO_REPARSE_TAG_SYMLINK;
-      }
-      bool IsRelative() const {
-        return Flags == _my_SYMLINK_FLAG_RELATIVE;
-      }
+      // Parse()
+      // returns true and (errorCode = 0), if (correct MOUNT_POINT or SYMLINK)
+      // returns false and (errorCode = ERROR_REPARSE_TAG_MISMATCH), if not (MOUNT_POINT or SYMLINK)
+      bool Parse(const Byte *p, size_t size, DWORD &errorCode);
+
+      bool IsMountPoint() const { return Tag == _my_IO_REPARSE_TAG_MOUNT_POINT; } // it's Junction
+      bool IsSymLink() const { return Tag == _my_IO_REPARSE_TAG_SYMLINK; }
+      bool IsRelative() const { return Flags == _my_SYMLINK_FLAG_RELATIVE; }
       // bool IsVolume() const;
 
       bool IsOkNamePair() const;
@@ -68,14 +66,14 @@ namespace NWindows {
         HANDLE _handle;
 
         bool Create(CFSTR path, DWORD desiredAccess,
-                    DWORD shareMode, DWORD creationDisposition, DWORD flagsAndAttributes);
+          DWORD shareMode, DWORD creationDisposition, DWORD flagsAndAttributes);
 
       public:
 
         bool DeviceIoControl(DWORD controlCode, LPVOID inBuffer, DWORD inSize,
-                             LPVOID outBuffer, DWORD outSize, LPDWORD bytesReturned, LPOVERLAPPED overlapped = nullptr) const {
+          LPVOID outBuffer, DWORD outSize, LPDWORD bytesReturned, LPOVERLAPPED overlapped = nullptr) const {
           return BOOLToBool(::DeviceIoControl(_handle, controlCode, inBuffer, inSize,
-                                              outBuffer, outSize, bytesReturned, overlapped));
+            outBuffer, outSize, bytesReturned, overlapped));
         }
 
         bool DeviceIoControlOut(DWORD controlCode, LPVOID outBuffer, DWORD outSize, LPDWORD bytesReturned) const {
@@ -95,9 +93,7 @@ namespace NWindows {
 #endif
 
         CFileBase() : _handle(INVALID_HANDLE_VALUE) {};
-        ~CFileBase() {
-          Close();
-        }
+        ~CFileBase() { Close(); }
 
         bool Close() throw();
 
@@ -124,9 +120,9 @@ namespace NWindows {
 #ifndef UNDER_CE
 #define IOCTL_CDROM_BASE  FILE_DEVICE_CD_ROM
 #define IOCTL_CDROM_GET_DRIVE_GEOMETRY  CTL_CODE(IOCTL_CDROM_BASE, 0x0013, METHOD_BUFFERED, FILE_READ_ACCESS)
-      // #define IOCTL_CDROM_MEDIA_REMOVAL  CTL_CODE(IOCTL_CDROM_BASE, 0x0201, METHOD_BUFFERED, FILE_READ_ACCESS)
+// #define IOCTL_CDROM_MEDIA_REMOVAL  CTL_CODE(IOCTL_CDROM_BASE, 0x0201, METHOD_BUFFERED, FILE_READ_ACCESS)
 
-      // IOCTL_DISK_GET_DRIVE_GEOMETRY_EX works since WinXP
+// IOCTL_DISK_GET_DRIVE_GEOMETRY_EX works since WinXP
 #define my_IOCTL_DISK_GET_DRIVE_GEOMETRY_EX  CTL_CODE(IOCTL_DISK_BASE, 0x0028, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
       struct my_DISK_GEOMETRY_EX {
@@ -172,8 +168,13 @@ namespace NWindows {
 #ifndef UNDER_CE
 
         bool OpenReparse(CFSTR fileName) {
-          return Open(fileName, FILE_SHARE_READ, OPEN_EXISTING,
-                      FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS);
+          // 17.02 fix: to support Windows XP compatibility junctions:
+          //   we use Create() with (desiredAccess = 0) instead of Open() with GENERIC_READ
+          return
+            Create(fileName, 0,
+            // Open(fileName,
+              FILE_SHARE_READ, OPEN_EXISTING,
+              FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS);
         }
 
 #endif
