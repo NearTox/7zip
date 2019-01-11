@@ -4,25 +4,27 @@
 #define __CONSOLE_CLOSE_H
 
 namespace NConsoleClose {
-  extern unsigned g_BreakCounter;
 
-  inline bool TestBreakSignal() {
+extern unsigned g_BreakCounter;
+
+inline bool TestBreakSignal() {
 #ifdef UNDER_CE
-    return false;
+  return false;
 #else
-    return (g_BreakCounter != 0);
+  return (g_BreakCounter != 0);
 #endif
-  }
-
-  class CCtrlHandlerSetter {
-  public:
-    CCtrlHandlerSetter();
-    virtual ~CCtrlHandlerSetter();
-  };
-
-  class CCtrlBreakException {};
-
-  // void CheckCtrlBreak();
 }
+
+class CCtrlHandlerSetter {
+ public:
+  CCtrlHandlerSetter();
+  virtual ~CCtrlHandlerSetter();
+};
+
+class CCtrlBreakException {};
+
+// void CheckCtrlBreak();
+
+}  // namespace NConsoleClose
 
 #endif

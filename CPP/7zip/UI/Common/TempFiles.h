@@ -7,7 +7,8 @@
 
 class CTempFiles {
   void Clear();
-public:
+
+ public:
   FStringVector Paths;
   ~CTempFiles() { Clear(); }
 };

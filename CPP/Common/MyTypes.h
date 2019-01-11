@@ -13,7 +13,7 @@ struct CBoolPair
   bool Def;
 
   CBoolPair(): Val(false), Def(false) {}
-  
+
   void Init()
   {
     Val = false;

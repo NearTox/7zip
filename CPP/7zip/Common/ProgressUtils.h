@@ -8,9 +8,10 @@
 #include "../ICoder.h"
 #include "../IProgress.h"
 
-class CLocalProgress :
+class CLocalProgress:
   public ICompressProgressInfo,
-  public CMyUnknownImp {
+  public CMyUnknownImp
+{
   CMyComPtr<IProgress> _progress;
   CMyComPtr<ICompressProgressInfo> _ratioProgress;
   bool _inSizeIsMain;
@@ -28,7 +29,7 @@ public:
 
   MY_UNKNOWN_IMP1(ICompressProgressInfo)
 
-    STDMETHOD(SetRatioInfo)(const UInt64 *inSize, const UInt64 *outSize);
+  STDMETHOD(SetRatioInfo)(const UInt64 *inSize, const UInt64 *outSize);
 };
 
 #endif

@@ -6,15 +6,17 @@
 #include "../../PropID.h"
 
 namespace NArchive {
-  namespace N7z {
-    enum {
-      kpidPackedSize0 = kpidUserDefined,
-      kpidPackedSize1,
-      kpidPackedSize2,
-      kpidPackedSize3,
-      kpidPackedSize4
-    };
-  }
-}
+namespace N7z {
+
+enum
+{
+  kpidPackedSize0 = kpidUserDefined,
+  kpidPackedSize1,
+  kpidPackedSize2,
+  kpidPackedSize3,
+  kpidPackedSize4
+};
+
+}}
 
 #endif

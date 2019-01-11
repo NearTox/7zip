@@ -1,6 +1,6 @@
 // Common/StdInStream.cpp
 
-#include "StdAfx.h"
+#include "../Common/Common.h"
 
 #include <tchar.h>
 
@@ -26,35 +26,30 @@ bool CStdInStream::Open(LPCTSTR fileName) throw() {
 }
 
 bool CStdInStream::Close() throw() {
-  if(!_streamIsOpen)
-    return true;
+  if (!_streamIsOpen) return true;
   _streamIsOpen = (fclose(_stream) != 0);
   return !_streamIsOpen;
 }
 
-bool CStdInStream::ScanAStringUntilNewLine(AString &s) {
+bool CStdInStream::ScanAStringUntilNewLine(AString& s) {
   s.Empty();
-  for(;;) {
+  for (;;) {
     int intChar = GetChar();
-    if(intChar == EOF)
-      return true;
+    if (intChar == EOF) return true;
     char c = (char)intChar;
-    if(c == 0)
-      return false;
-    if(c == '\n')
-      return true;
+    if (c == 0) return false;
+    if (c == '\n') return true;
     s += c;
   }
 }
 
-bool CStdInStream::ScanUStringUntilNewLine(UString &dest) {
+bool CStdInStream::ScanUStringUntilNewLine(UString& dest) {
   dest.Empty();
   AString s;
   bool res = ScanAStringUntilNewLine(s);
   int codePage = g_CodePage;
-  if(codePage == -1)
-    codePage = CP_OEMCP;
-  if(codePage == CP_UTF8)
+  if (codePage == -1) codePage = CP_OEMCP;
+  if (codePage == CP_UTF8)
     ConvertUTF8ToUnicode(s, dest);
   else
     MultiByteToUnicodeString2(dest, s, (UINT)codePage);
@@ -79,5 +74,5 @@ bool CStdInStream::ReadToString(AString &resultString)
 */
 
 int CStdInStream::GetChar() {
-  return fgetc(_stream); // getc() doesn't work in BeOS?
+  return fgetc(_stream);  // getc() doesn't work in BeOS?
 }

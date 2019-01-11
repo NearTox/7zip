@@ -18,18 +18,12 @@ struct CExtractOptionsBase {
   CBoolPair ElimDup;
 
   bool PathMode_Force;
-  bool OverwriteMode_Force;
   NExtract::NPathMode::EEnum PathMode;
-  NExtract::NOverwriteMode::EEnum OverwriteMode;
 
   FString OutputDir;
   CExtractNtOptions NtOptions;
 
-  CExtractOptionsBase() :
-    PathMode_Force(false),
-    OverwriteMode_Force(false),
-    PathMode(NExtract::NPathMode::kFullPaths),
-    OverwriteMode(NExtract::NOverwriteMode::kAsk) {}
+  CExtractOptionsBase() : PathMode_Force(false), PathMode(NExtract::NPathMode::kFullPaths) {}
 };
 
 struct CExtractOptions : public CExtractOptionsBase {
@@ -38,22 +32,14 @@ struct CExtractOptions : public CExtractOptionsBase {
   bool YesToAll;
   bool TestMode;
 
-  // bool ShowDialog;
-  // bool PasswordEnabled;
-  // UString Password;
+// bool ShowDialog;
+// bool PasswordEnabled;
+// UString Password;
 #ifndef _SFX
   CObjectVector<CProperty> Properties;
 #endif
 
-#ifdef EXTERNAL_CODECS
-  CCodecs *Codecs;
-#endif
-
-  CExtractOptions() :
-    TestMode(false),
-    StdInMode(false),
-    StdOutMode(false),
-    YesToAll(false) {}
+  CExtractOptions() : TestMode(false), StdInMode(false), StdOutMode(false), YesToAll(false) {}
 };
 
 struct CDecompressStat {
@@ -66,23 +52,19 @@ struct CDecompressStat {
   UInt64 NumAltStreams;
 
   void Clear() {
-    NumArchives = UnpackSize = AltStreams_UnpackSize = PackSize = NumFolders = NumFiles = NumAltStreams = 0;
+    NumArchives = UnpackSize = AltStreams_UnpackSize = PackSize = NumFolders = NumFiles =
+        NumAltStreams = 0;
   }
 };
 
 HRESULT Extract(
-  CCodecs *codecs,
-  const CObjectVector<COpenType> &types,
-  const CIntVector &excludedFormats,
-  UStringVector &archivePaths, UStringVector &archivePathsFull,
-  const NWildcard::CCensorNode &wildcardCensor,
-  const CExtractOptions &options,
-  IOpenCallbackUI *openCallback,
-  IExtractCallbackUI *extractCallback,
+    CCodecs* codecs, const CObjectVector<COpenType>& types, const CIntVector& excludedFormats,
+    UStringVector& archivePaths, UStringVector& archivePathsFull,
+    const NWildcard::CCensorNode& wildcardCensor, const CExtractOptions& options,
+    IOpenCallbackUI* openCallback, IExtractCallbackUI* extractCallback,
 #ifndef _SFX
-  IHashCalc *hash,
+    IHashCalc* hash,
 #endif
-  UString &errorMessage,
-  CDecompressStat &st);
+    UString& errorMessage, CDecompressStat& st);
 
 #endif

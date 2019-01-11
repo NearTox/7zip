@@ -11,17 +11,15 @@ namespace NFile {
 namespace NSystem {
 
 bool MyGetVolumeInformation(
-    CFSTR rootPath  ,
-    UString &volumeName,
-    LPDWORD volumeSerialNumber,
-    LPDWORD maximumComponentLength,
-    LPDWORD fileSystemFlags,
-    UString &fileSystemName);
+    CFSTR rootPath, UString& volumeName, LPDWORD volumeSerialNumber, LPDWORD maximumComponentLength,
+    LPDWORD fileSystemFlags, UString& fileSystemName);
 
 UINT MyGetDriveType(CFSTR pathName);
 
-bool MyGetDiskFreeSpace(CFSTR rootPath, UInt64 &clusterSize, UInt64 &totalSize, UInt64 &freeSize);
+bool MyGetDiskFreeSpace(CFSTR rootPath, UInt64& clusterSize, UInt64& totalSize, UInt64& freeSize);
 
-}}}
+}  // namespace NSystem
+}  // namespace NFile
+}  // namespace NWindows
 
 #endif

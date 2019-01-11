@@ -7,15 +7,17 @@
 
 #include "../../ICoder.h"
 
-class CSequentialInStreamSizeCount2 :
+class CSequentialInStreamSizeCount2:
   public ISequentialInStream,
   public ICompressGetSubStreamSize,
-  public CMyUnknownImp {
+  public CMyUnknownImp
+{
   CMyComPtr<ISequentialInStream> _stream;
   CMyComPtr<ICompressGetSubStreamSize> _getSubStreamSize;
   UInt64 _size;
 public:
-  void Init(ISequentialInStream *stream) {
+  void Init(ISequentialInStream *stream)
+  {
     _size = 0;
     _getSubStreamSize.Release();
     _stream = stream;
@@ -25,7 +27,7 @@ public:
 
   MY_UNKNOWN_IMP2(ISequentialInStream, ICompressGetSubStreamSize)
 
-    STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
+  STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
 
   STDMETHOD(GetSubStreamSize)(UInt64 subStream, UInt64 *value);
 };

@@ -1,37 +1,42 @@
 // ProgressUtils.cpp
 
-#include "StdAfx.h"
+#include "../../Common/Common.h"
 
 #include "ProgressUtils.h"
 
-CLocalProgress::CLocalProgress() :
-  ProgressOffset(0),
-  InSize(0),
-  OutSize(0),
-  SendRatio(true),
-  SendProgress(true) {}
+CLocalProgress::CLocalProgress():
+    ProgressOffset(0),
+    InSize(0),
+    OutSize(0),
+    SendRatio(true),
+    SendProgress(true)
+  {}
 
-void CLocalProgress::Init(IProgress *progress, bool inSizeIsMain) {
+void CLocalProgress::Init(IProgress *progress, bool inSizeIsMain)
+{
   _ratioProgress.Release();
   _progress = progress;
   _progress.QueryInterface(IID_ICompressProgressInfo, &_ratioProgress);
   _inSizeIsMain = inSizeIsMain;
 }
 
-STDMETHODIMP CLocalProgress::SetRatioInfo(const UInt64 *inSize, const UInt64 *outSize) {
+STDMETHODIMP CLocalProgress::SetRatioInfo(const UInt64 *inSize, const UInt64 *outSize)
+{
   UInt64 inSize2 = InSize;
   UInt64 outSize2 = OutSize;
 
-  if(inSize)
+  if (inSize)
     inSize2 += (*inSize);
-  if(outSize)
+  if (outSize)
     outSize2 += (*outSize);
 
-  if(SendRatio && _ratioProgress) {
+  if (SendRatio && _ratioProgress)
+  {
     RINOK(_ratioProgress->SetRatioInfo(&inSize2, &outSize2));
   }
 
-  if(SendProgress) {
+  if (SendProgress)
+  {
     inSize2 += ProgressOffset;
     outSize2 += ProgressOffset;
     return _progress->SetCompleted(_inSizeIsMain ? &inSize2 : &outSize2);
@@ -40,6 +45,7 @@ STDMETHODIMP CLocalProgress::SetRatioInfo(const UInt64 *inSize, const UInt64 *ou
   return S_OK;
 }
 
-HRESULT CLocalProgress::SetCur() {
-  return SetRatioInfo(nullptr, nullptr);
+HRESULT CLocalProgress::SetCur()
+{
+  return SetRatioInfo(NULL, NULL);
 }

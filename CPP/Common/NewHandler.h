@@ -36,8 +36,8 @@ void my_delete(void *p) throw();
 #endif
 
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
-  // If you want to use default operator new(), you can disable the following line
-#define _7ZIP_REDEFINE_OPERATOR_NEW
+// If you want to use default operator new(), you can disable the following line
+#  define _7ZIP_REDEFINE_OPERATOR_NEW
 #endif
 
 #ifdef _7ZIP_REDEFINE_OPERATOR_NEW
@@ -47,23 +47,23 @@ void my_delete(void *p) throw();
 
 class CNewException {};
 
-void *
-#ifdef _MSC_VER
-__cdecl
-#endif
-operator new(size_t size);
+void*
+#  ifdef _MSC_VER
+    __cdecl
+#  endif
+    operator new(size_t size);
 
 void
-#ifdef _MSC_VER
-__cdecl
-#endif
-operator delete(void *p) throw();
+#  ifdef _MSC_VER
+    __cdecl
+#  endif
+    operator delete(void* p) throw();
 
 #else
 
-#include <new>
+#  include <new>
 
-#define CNewException std::bad_alloc
+#  define CNewException std::bad_alloc
 
 #endif
 

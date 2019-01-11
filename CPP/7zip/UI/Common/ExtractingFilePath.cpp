@@ -1,6 +1,6 @@
 // ExtractingFilePath.cpp
 
-#include "StdAfx.h"
+#include "../../../Common/Common.h"
 
 #include "../../../Common/Wildcard.h"
 
@@ -10,29 +10,30 @@
 
 bool g_PathTrailReplaceMode =
 #ifdef _WIN32
-true
+    true
 #else
-false
+    false
 #endif
-;
+    ;
 
-static void ReplaceIncorrectChars(UString &s) {
+static void ReplaceIncorrectChars(UString& s) {
   {
-    for(unsigned i = 0; i < s.Len(); i++) {
+    for (unsigned i = 0; i < s.Len(); i++) {
       wchar_t c = s[i];
-      if(
+      if (
 #ifdef _WIN32
-        c == ':' || c == '*' || c == '?' || c < 0x20 || c == '<' || c == '>' || c == '|' || c == '"'
-        || c == '/'
-        // || c == 0x202E // RLO
-        ||
+          c == ':' || c == '*' || c == '?' || c < 0x20 || c == '<' || c == '>' || c == '|' ||
+          c == '"' ||
+          c == '/'
+          // || c == 0x202E // RLO
+          ||
 #endif
-        c == WCHAR_PATH_SEPARATOR)
+          c == WCHAR_PATH_SEPARATOR)
         s.ReplaceOneCharAtPos(i, '_');
     }
   }
 
-  if(g_PathTrailReplaceMode) {
+  if (g_PathTrailReplaceMode) {
     /*
     // if (g_PathTrailReplaceMode == 1)
     {
@@ -50,10 +51,9 @@ static void ReplaceIncorrectChars(UString &s) {
     */
     {
       unsigned i;
-      for(i = s.Len(); i != 0;) {
+      for (i = s.Len(); i != 0;) {
         wchar_t c = s[i - 1];
-        if(c != '.' && c != ' ')
-          break;
+        if (c != '.' && c != ' ') break;
         i--;
         s.ReplaceOneCharAtPos(i, '_');
         // s.ReplaceOneCharAtPos(i, (c == ' ' ? (wchar_t)(0x2423) : (wchar_t)0x00B7));
@@ -74,70 +74,55 @@ static void ReplaceIncorrectChars(UString &s) {
    But colon in postfix ":$DATA" is allowed.
    WIN32 functions don't allow empty alt stream name "name:" */
 
-void Correct_AltStream_Name(UString &s) {
+void Correct_AltStream_Name(UString& s) {
   unsigned len = s.Len();
   const unsigned kPostfixSize = 6;
-  if(s.Len() >= kPostfixSize
-    && StringsAreEqualNoCase_Ascii(s.RightPtr(kPostfixSize), ":$DATA"))
+  if (s.Len() >= kPostfixSize && StringsAreEqualNoCase_Ascii(s.RightPtr(kPostfixSize), ":$DATA"))
     len -= kPostfixSize;
-  for(unsigned i = 0; i < len; i++) {
+  for (unsigned i = 0; i < len; i++) {
     wchar_t c = s[i];
-    if(c == ':' || c == '\\' || c == '/'
-      || c == 0x202E // RLO
-      )
+    if (c == ':' || c == '\\' || c == '/' || c == 0x202E  // RLO
+    )
       s.ReplaceOneCharAtPos(i, '_');
   }
-  if(s.IsEmpty())
-    s = '_';
+  if (s.IsEmpty()) s = '_';
 }
 
 static const unsigned g_ReservedWithNum_Index = 4;
 
-static const char * const g_ReservedNames[] =
-{
-  "CON", "PRN", "AUX", "NUL",
-  "COM", "LPT"
-};
+static const char* const g_ReservedNames[] = {"CON", "PRN", "AUX", "NUL", "COM", "LPT"};
 
-static bool IsSupportedName(const UString &name) {
-  for(unsigned i = 0; i < ARRAY_SIZE(g_ReservedNames); i++) {
-    const char *reservedName = g_ReservedNames[i];
+static bool IsSupportedName(const UString& name) {
+  for (unsigned i = 0; i < ARRAY_SIZE(g_ReservedNames); i++) {
+    const char* reservedName = g_ReservedNames[i];
     unsigned len = MyStringLen(reservedName);
-    if(name.Len() < len)
-      continue;
-    if(!name.IsPrefixedBy_Ascii_NoCase(reservedName))
-      continue;
-    if(i >= g_ReservedWithNum_Index) {
+    if (name.Len() < len) continue;
+    if (!name.IsPrefixedBy_Ascii_NoCase(reservedName)) continue;
+    if (i >= g_ReservedWithNum_Index) {
       wchar_t c = name[len];
-      if(c < L'0' || c > L'9')
-        continue;
+      if (c < L'0' || c > L'9') continue;
       len++;
     }
-    for(;;) {
+    for (;;) {
       wchar_t c = name[len++];
-      if(c == 0 || c == '.')
-        return false;
-      if(c != ' ')
-        break;
+      if (c == 0 || c == '.') return false;
+      if (c != ' ') break;
     }
   }
   return true;
 }
 
-static void CorrectUnsupportedName(UString &name) {
-  if(!IsSupportedName(name))
-    name.InsertAtFront(L'_');
+static void CorrectUnsupportedName(UString& name) {
+  if (!IsSupportedName(name)) name.InsertAtFront(L'_');
 }
 
 #endif
 
-static void Correct_PathPart(UString &s) {
+static void Correct_PathPart(UString& s) {
   // "." and ".."
-  if(s.IsEmpty())
-    return;
+  if (s.IsEmpty()) return;
 
-  if(s[0] == '.' && (s[1] == 0 || s[1] == '.' && s[2] == 0))
-    s.Empty();
+  if (s[0] == '.' && (s[1] == 0 || s[1] == '.' && s[2] == 0)) s.Empty();
 #ifdef _WIN32
   else
     ReplaceIncorrectChars(s);
@@ -147,7 +132,7 @@ static void Correct_PathPart(UString &s) {
 // static const char * const k_EmptyReplaceName = "[]";
 static const char k_EmptyReplaceName = '_';
 
-UString Get_Correct_FsFile_Name(const UString &name) {
+UString Get_Correct_FsFile_Name(const UString& name) {
   UString res = name;
   Correct_PathPart(res);
 
@@ -155,27 +140,27 @@ UString Get_Correct_FsFile_Name(const UString &name) {
   CorrectUnsupportedName(res);
 #endif
 
-  if(res.IsEmpty())
-    res = k_EmptyReplaceName;
+  if (res.IsEmpty()) res = k_EmptyReplaceName;
   return res;
 }
 
-void Correct_FsPath(bool absIsAllowed, bool keepAndReplaceEmptyPrefixes, UStringVector &parts, bool isDir) {
+void Correct_FsPath(
+    bool absIsAllowed, bool keepAndReplaceEmptyPrefixes, UStringVector& parts, bool isDir) {
   unsigned i = 0;
 
-  if(absIsAllowed) {
+  if (absIsAllowed) {
 #if defined(_WIN32) && !defined(UNDER_CE)
     bool isDrive = false;
 #endif
 
-    if(parts[0].IsEmpty()) {
+    if (parts[0].IsEmpty()) {
       i = 1;
 #if defined(_WIN32) && !defined(UNDER_CE)
-      if(parts.Size() > 1 && parts[1].IsEmpty()) {
+      if (parts.Size() > 1 && parts[1].IsEmpty()) {
         i = 2;
-        if(parts.Size() > 2 && parts[2] == L"?") {
+        if (parts.Size() > 2 && parts[2] == L"?") {
           i = 3;
-          if(parts.Size() > 3 && NWindows::NFile::NName::IsDrivePath2(parts[3])) {
+          if (parts.Size() > 3 && NWindows::NFile::NName::IsDrivePath2(parts[3])) {
             isDrive = true;
             i = 4;
           }
@@ -184,15 +169,15 @@ void Correct_FsPath(bool absIsAllowed, bool keepAndReplaceEmptyPrefixes, UString
 #endif
     }
 #if defined(_WIN32) && !defined(UNDER_CE)
-    else if(NWindows::NFile::NName::IsDrivePath2(parts[0])) {
+    else if (NWindows::NFile::NName::IsDrivePath2(parts[0])) {
       isDrive = true;
       i = 1;
     }
 
-    if(isDrive) {
+    if (isDrive) {
       // we convert "c:name" to "c:\name", if absIsAllowed path.
-      UString &ds = parts[i - 1];
-      if(ds.Len() > 2) {
+      UString& ds = parts[i - 1];
+      if (ds.Len() > 2) {
         parts.Insert(i, ds.Ptr(2));
         ds.DeleteFrom(2);
       }
@@ -200,17 +185,16 @@ void Correct_FsPath(bool absIsAllowed, bool keepAndReplaceEmptyPrefixes, UString
 #endif
   }
 
-  if(i != 0)
-    keepAndReplaceEmptyPrefixes = false;
+  if (i != 0) keepAndReplaceEmptyPrefixes = false;
 
-  for(; i < parts.Size();) {
-    UString &s = parts[i];
+  for (; i < parts.Size();) {
+    UString& s = parts[i];
 
     Correct_PathPart(s);
 
-    if(s.IsEmpty()) {
-      if(!keepAndReplaceEmptyPrefixes)
-        if(isDir || i != parts.Size() - 1) {
+    if (s.IsEmpty()) {
+      if (!keepAndReplaceEmptyPrefixes)
+        if (isDir || i != parts.Size() - 1) {
           parts.Delete(i);
           continue;
         }
@@ -225,22 +209,20 @@ void Correct_FsPath(bool absIsAllowed, bool keepAndReplaceEmptyPrefixes, UString
     i++;
   }
 
-  if(!isDir) {
-    if(parts.IsEmpty())
+  if (!isDir) {
+    if (parts.IsEmpty())
       parts.Add((UString)k_EmptyReplaceName);
     else {
-      UString &s = parts.Back();
-      if(s.IsEmpty())
-        s = k_EmptyReplaceName;
+      UString& s = parts.Back();
+      if (s.IsEmpty()) s = k_EmptyReplaceName;
     }
   }
 }
 
-UString MakePathFromParts(const UStringVector &parts) {
+UString MakePathFromParts(const UStringVector& parts) {
   UString s;
   FOR_VECTOR(i, parts) {
-    if(i != 0)
-      s.Add_PathSepar();
+    if (i != 0) s.Add_PathSepar();
     s += parts[i];
   }
   return s;

@@ -10,20 +10,27 @@
 #include "../ICoder.h"
 
 namespace NCompress {
-  namespace NBcj {
-    class CCoder :
-      public ICompressFilter,
-      public CMyUnknownImp {
-      UInt32 _bufferPos;
-      UInt32 _prevMask;
-      int _encode;
-    public:
-      MY_UNKNOWN_IMP1(ICompressFilter);
-      INTERFACE_ICompressFilter(;)
+namespace NBcj {
 
-        CCoder(int encode) : _bufferPos(0), _encode(encode) { x86_Convert_Init(_prevMask); }
-    };
+class CCoder
+    : public ICompressFilter
+    , public CMyUnknownImp {
+  UInt32 _bufferPos;
+  UInt32 _prevMask;
+  int _encode;
+
+ public:
+  MY_UNKNOWN_IMP1(ICompressFilter);
+  INTERFACE_ICompressFilter(;)
+
+      CCoder(int encode) :
+      _bufferPos(0),
+      _encode(encode) {
+    x86_Convert_Init(_prevMask);
   }
-}
+};
+
+}  // namespace NBcj
+}  // namespace NCompress
 
 #endif

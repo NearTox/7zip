@@ -9,17 +9,18 @@
 
 #include "../../IStream.h"
 
-class COutStreamWithCRC :
-  public ISequentialOutStream,
-  public CMyUnknownImp {
+class COutStreamWithCRC
+    : public ISequentialOutStream
+    , public CMyUnknownImp {
   CMyComPtr<ISequentialOutStream> _stream;
   UInt64 _size;
   UInt32 _crc;
   bool _calculate;
-public:
+
+ public:
   MY_UNKNOWN_IMP
-    STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
-  void SetStream(ISequentialOutStream *stream) { _stream = stream; }
+  STDMETHOD(Write)(const void* data, UInt32 size, UInt32* processedSize);
+  void SetStream(ISequentialOutStream* stream) { _stream = stream; }
   void ReleaseStream() { _stream.Release(); }
   void Init(bool calculate = true) {
     _size = 0;

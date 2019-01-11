@@ -1,6 +1,6 @@
 // TempFiles.cpp
 
-#include "StdAfx.h"
+#include "../../../Common/Common.h"
 
 #include "../../../Windows/FileDir.h"
 
@@ -10,7 +10,7 @@ using namespace NWindows;
 using namespace NFile;
 
 void CTempFiles::Clear() {
-  while(!Paths.IsEmpty()) {
+  while (!Paths.IsEmpty()) {
     NDir::DeleteFileAlways(Paths.Back());
     Paths.DeleteBack();
   }

@@ -3,10 +3,17 @@
 #ifndef __COMMON_DEFS_H
 #define __COMMON_DEFS_H
 
-template <class T> inline T MyMin(T a, T b) { return a < b ? a : b; }
-template <class T> inline T MyMax(T a, T b) { return a > b ? a : b; }
+template<class T>
+inline T MyMin(T a, T b) {
+  return a < b ? a : b;
+}
+template<class T>
+inline T MyMax(T a, T b) {
+  return a > b ? a : b;
+}
 
-template <class T> inline int MyCompare(T a, T b) {
+template<class T>
+inline int MyCompare(T a, T b) {
   return a == b ? 0 : (a < b ? -1 : 1);
 }
 

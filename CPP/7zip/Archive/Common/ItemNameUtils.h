@@ -6,22 +6,23 @@
 #include "../../../Common/MyString.h"
 
 namespace NArchive {
-  namespace NItemName {
-    void ReplaceSlashes_OsToUnix(UString &name);
+namespace NItemName {
 
-    UString GetOsPath(const UString &name);
-    UString GetOsPath_Remove_TailSlash(const UString &name);
+void ReplaceSlashes_OsToUnix(UString &name);
 
-    void ReplaceToOsSlashes_Remove_TailSlash(UString &name);
+UString GetOsPath(const UString &name);
+UString GetOsPath_Remove_TailSlash(const UString &name);
 
-    bool HasTailSlash(const AString &name, UINT codePage);
+void ReplaceToOsSlashes_Remove_TailSlash(UString &name);
+
+bool HasTailSlash(const AString &name, UINT codePage);
 
 #ifdef _WIN32
-    inline UString WinPathToOsPath(const UString &name) { return name; }
+  inline UString WinPathToOsPath(const UString &name)  { return name; }
 #else
-    UString WinPathToOsPath(const UString &name);
+  UString WinPathToOsPath(const UString &name);
 #endif
-  }
-}
+
+}}
 
 #endif

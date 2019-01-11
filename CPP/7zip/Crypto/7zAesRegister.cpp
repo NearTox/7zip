@@ -1,6 +1,6 @@
 // 7zAesRegister.cpp
 
-#include "StdAfx.h"
+#include "../../Common/Common.h"
 
 #include "../Common/RegisterCodec.h"
 
@@ -9,9 +9,7 @@
 namespace NCrypto {
 namespace N7z {
 
-REGISTER_FILTER_E(7zAES,
-    CDecoder(),
-    CEncoder(),
-    0x6F10701, "7zAES")
+REGISTER_FILTER_E(7zAES, CDecoder(), CEncoder(), 0x6F10701, "7zAES")
 
-}}
+}
+}  // namespace NCrypto

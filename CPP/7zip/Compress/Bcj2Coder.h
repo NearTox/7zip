@@ -10,106 +10,72 @@
 #include "../ICoder.h"
 
 namespace NCompress {
-  namespace NBcj2 {
-    class CBaseCoder {
-    protected:
-      Byte * _bufs[BCJ2_NUM_STREAMS + 1];
-      UInt32 _bufsCurSizes[BCJ2_NUM_STREAMS + 1];
-      UInt32 _bufsNewSizes[BCJ2_NUM_STREAMS + 1];
+namespace NBcj2 {
 
-      HRESULT Alloc(bool allocForOrig = true);
-    public:
-      CBaseCoder();
-      ~CBaseCoder();
-    };
+class CBaseCoder {
+ protected:
+  Byte* _bufs[BCJ2_NUM_STREAMS + 1];
+  UInt32 _bufsCurSizes[BCJ2_NUM_STREAMS + 1];
+  UInt32 _bufsNewSizes[BCJ2_NUM_STREAMS + 1];
 
-#ifndef EXTRACT_ONLY
+  HRESULT Alloc(bool allocForOrig = true);
 
-    class CEncoder :
-      public ICompressCoder2,
-      public ICompressSetCoderProperties,
-      public ICompressSetBufSize,
-      public CMyUnknownImp,
-      public CBaseCoder {
-      UInt32 _relatLim;
+ public:
+  CBaseCoder();
+  ~CBaseCoder();
+};
 
-      HRESULT CodeReal(ISequentialInStream * const *inStreams, const UInt64 * const *inSizes, UInt32 numInStreams,
-        ISequentialOutStream * const *outStreams, const UInt64 * const *outSizes, UInt32 numOutStreams,
-        ICompressProgressInfo *progress);
+class CDecoder
+    : public ICompressCoder2
+    , public ICompressSetFinishMode
+    , public ICompressGetInStreamProcessedSize2
+    , public ICompressSetInStream2
+    , public ISequentialInStream
+    , public ICompressSetOutStreamSize
+    , public ICompressSetBufSize
+    , public CMyUnknownImp
+    , public CBaseCoder {
+  unsigned _extraReadSizes[BCJ2_NUM_STREAMS];
+  UInt64 _inStreamsProcessed[BCJ2_NUM_STREAMS];
+  HRESULT _readRes[BCJ2_NUM_STREAMS];
+  CMyComPtr<ISequentialInStream> _inStreams[BCJ2_NUM_STREAMS];
 
-    public:
-      MY_UNKNOWN_IMP3(ICompressCoder2, ICompressSetCoderProperties, ICompressSetBufSize)
+  bool _finishMode;
+  bool _outSizeDefined;
+  UInt64 _outSize;
+  UInt64 _outSize_Processed;
+  CBcj2Dec dec;
 
-        STDMETHOD(Code)(ISequentialInStream * const *inStreams, const UInt64 * const *inSizes, UInt32 numInStreams,
-          ISequentialOutStream * const *outStreams, const UInt64 * const *outSizes, UInt32 numOutStreams,
-          ICompressProgressInfo *progress);
+  void InitCommon();
+  // HRESULT ReadSpec();
 
-      STDMETHOD(SetCoderProperties)(const PROPID *propIDs, const PROPVARIANT *props, UInt32 numProps);
+ public:
+  MY_UNKNOWN_IMP7(
+      ICompressCoder2, ICompressSetFinishMode, ICompressGetInStreamProcessedSize2,
+      ICompressSetInStream2, ISequentialInStream, ICompressSetOutStreamSize, ICompressSetBufSize);
 
-      STDMETHOD(SetInBufSize)(UInt32 streamIndex, UInt32 size);
-      STDMETHOD(SetOutBufSize)(UInt32 streamIndex, UInt32 size);
+  STDMETHOD(Code)
+  (ISequentialInStream* const* inStreams, const UInt64* const* inSizes, UInt32 numInStreams,
+   ISequentialOutStream* const* outStreams, const UInt64* const* outSizes, UInt32 numOutStreams,
+   ICompressProgressInfo* progress);
 
-      CEncoder();
-      ~CEncoder();
-    };
+  STDMETHOD(SetFinishMode)(UInt32 finishMode);
+  STDMETHOD(GetInStreamProcessedSize2)(UInt32 streamIndex, UInt64* value);
 
-#endif
+  STDMETHOD(SetInStream2)(UInt32 streamIndex, ISequentialInStream* inStream);
+  STDMETHOD(ReleaseInStream2)(UInt32 streamIndex);
 
-    class CDecoder :
-      public ICompressCoder2,
-      public ICompressSetFinishMode,
-      public ICompressGetInStreamProcessedSize2,
-      public ICompressSetInStream2,
-      public ISequentialInStream,
-      public ICompressSetOutStreamSize,
-      public ICompressSetBufSize,
-      public CMyUnknownImp,
-      public CBaseCoder {
-      unsigned _extraReadSizes[BCJ2_NUM_STREAMS];
-      UInt64 _inStreamsProcessed[BCJ2_NUM_STREAMS];
-      HRESULT _readRes[BCJ2_NUM_STREAMS];
-      CMyComPtr<ISequentialInStream> _inStreams[BCJ2_NUM_STREAMS];
+  STDMETHOD(Read)(void* data, UInt32 size, UInt32* processedSize);
 
-      bool _finishMode;
-      bool _outSizeDefined;
-      UInt64 _outSize;
-      UInt64 _outSize_Processed;
-      CBcj2Dec dec;
+  STDMETHOD(SetOutStreamSize)(const UInt64* outSize);
 
-      void InitCommon();
-      // HRESULT ReadSpec();
+  STDMETHOD(SetInBufSize)(UInt32 streamIndex, UInt32 size);
+  STDMETHOD(SetOutBufSize)(UInt32 streamIndex, UInt32 size);
 
-    public:
-      MY_UNKNOWN_IMP7(
-        ICompressCoder2,
-        ICompressSetFinishMode,
-        ICompressGetInStreamProcessedSize2,
-        ICompressSetInStream2,
-        ISequentialInStream,
-        ICompressSetOutStreamSize,
-        ICompressSetBufSize
-      );
+  CDecoder();
+};
 
-      STDMETHOD(Code)(ISequentialInStream * const *inStreams, const UInt64 * const *inSizes, UInt32 numInStreams,
-        ISequentialOutStream * const *outStreams, const UInt64 * const *outSizes, UInt32 numOutStreams,
-        ICompressProgressInfo *progress);
-
-      STDMETHOD(SetFinishMode)(UInt32 finishMode);
-      STDMETHOD(GetInStreamProcessedSize2)(UInt32 streamIndex, UInt64 *value);
-
-      STDMETHOD(SetInStream2)(UInt32 streamIndex, ISequentialInStream *inStream);
-      STDMETHOD(ReleaseInStream2)(UInt32 streamIndex);
-
-      STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
-
-      STDMETHOD(SetOutStreamSize)(const UInt64 *outSize);
-
-      STDMETHOD(SetInBufSize)(UInt32 streamIndex, UInt32 size);
-      STDMETHOD(SetOutBufSize)(UInt32 streamIndex, UInt32 size);
-
-      CDecoder();
-    };
-  }
-}
+}  // namespace NBcj2
+}  // namespace NCompress
 
 #endif

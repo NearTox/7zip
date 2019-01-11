@@ -6,49 +6,32 @@
 #include "../../../Common/CommandLineParser.h"
 #include "../../../Common/Wildcard.h"
 
+#include "EnumDirItems.h"
+
 #include "Extract.h"
 #include "HashCalc.h"
 #include "Update.h"
 
-struct CArcCmdLineException : public UString {
-  CArcCmdLineException(const char *a, const wchar_t *u = nullptr);
-};
+typedef CMessagePathException CArcCmdLineException;
 
 namespace NCommandType {
-  enum EEnum {
-    kAdd = 0,
-    kUpdate,
-    kDelete,
-    kTest,
-    kExtract,
-    kExtractFull,
-    kList,
-    kBenchmark,
-    kInfo,
-    kHash,
-    kRename
-  };
+enum EEnum { kTest = 0, kExtractFull };
 }
 
 struct CArcCommand {
   NCommandType::EEnum CommandType;
 
   bool IsFromExtractGroup() const;
-  bool IsFromUpdateGroup() const;
   bool IsTestCommand() const { return CommandType == NCommandType::kTest; }
   NExtract::NPathMode::EEnum GetPathMode() const;
 };
 
-enum {
-  k_OutStream_disabled = 0,
-  k_OutStream_stdout = 1,
-  k_OutStream_stderr = 2
-};
+enum { k_OutStream_disabled = 0, k_OutStream_stdout = 1, k_OutStream_stderr = 2 };
 
 struct CArcCmdLineOptions {
   bool HelpMode;
 
-  bool LargePages;
+  // bool LargePages;
   bool CaseSensitiveChange;
   bool CaseSensitive;
 
@@ -59,7 +42,7 @@ struct CArcCmdLineOptions {
   bool StdOutMode;
   bool EnableHeaders;
 
-  bool YesToAll;
+  static constexpr bool YesToAll = true;
   bool ShowDialog;
   NWildcard::CCensor Censor;
 
@@ -91,8 +74,6 @@ struct CArcCmdLineOptions {
   CBoolPair HardLinks;
   CBoolPair SymLinks;
 
-  CUpdateOptions UpdateOptions;
-  CHashOptions HashOptions;
   UString ArcType;
   UStringVector ExcludedArcTypes;
 
@@ -107,34 +88,26 @@ struct CArcCmdLineOptions {
   UInt32 NumIterations;
 
   CArcCmdLineOptions() :
-    LargePages(false),
-    CaseSensitiveChange(false),
-    CaseSensitive(false),
+      // LargePages(false),
+      CaseSensitiveChange(false),
+      CaseSensitive(false),
 
-    StdInMode(false),
-    StdOutMode(false),
+      StdInMode(false),
+      StdOutMode(false),
 
-    Number_for_Out(k_OutStream_stdout),
-    Number_for_Errors(k_OutStream_stderr),
-    Number_for_Percents(k_OutStream_stdout),
+      Number_for_Out(k_OutStream_stdout),
+      Number_for_Errors(k_OutStream_stderr),
+      Number_for_Percents(k_OutStream_stdout),
 
-    LogLevel(0) {};
+      LogLevel(0){};
 };
 
 class CArcCmdLineParser {
   NCommandLineParser::CParser parser;
-public:
-  void Parse1(const UStringVector &commandStrings, CArcCmdLineOptions &options);
-  void Parse2(CArcCmdLineOptions &options);
-};
 
-HRESULT EnumerateDirItemsAndSort(
-  NWildcard::CCensor &censor,
-  NWildcard::ECensorPathMode pathMode,
-  const UString &addPathPrefix,
-  UStringVector &sortedPaths,
-  UStringVector &sortedFullPaths,
-  CDirItemsStat &st,
-  IDirItemsCallback *callback);
+ public:
+  void Parse1(const UStringVector& commandStrings, CArcCmdLineOptions& options);
+  void Parse2(CArcCmdLineOptions& options);
+};
 
 #endif

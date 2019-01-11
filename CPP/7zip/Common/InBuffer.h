@@ -7,14 +7,16 @@
 #include "../IStream.h"
 
 #ifndef _NO_EXCEPTIONS
-struct CInBufferException : public CSystemException {
-  CInBufferException(HRESULT errorCode) : CSystemException(errorCode) {}
+struct CInBufferException: public CSystemException
+{
+  CInBufferException(HRESULT errorCode): CSystemException(errorCode) {}
 };
 #endif
 
-class CInBufferBase {
+class CInBufferBase
+{
 protected:
-  Byte * _buf;
+  Byte *_buf;
   Byte *_bufLim;
   Byte *_bufBase;
 
@@ -29,9 +31,9 @@ protected:
   Byte ReadByte_FromNewBlock();
 
 public:
-#ifdef _NO_EXCEPTIONS
+  #ifdef _NO_EXCEPTIONS
   HRESULT ErrorCode;
-#endif
+  #endif
   UInt32 NumExtraBytes;
 
   CInBufferBase() throw();
@@ -42,32 +44,35 @@ public:
 
   void SetStream(ISequentialInStream *stream) { _stream = stream; }
 
-  void SetBuf(Byte *buf, size_t bufSize, size_t end, size_t pos) {
+  void SetBuf(Byte *buf, size_t bufSize, size_t end, size_t pos)
+  {
     _bufBase = buf;
     _bufSize = bufSize;
     _processedSize = 0;
     _buf = buf + pos;
     _bufLim = buf + end;
     _wasFinished = false;
-#ifdef _NO_EXCEPTIONS
+    #ifdef _NO_EXCEPTIONS
     ErrorCode = S_OK;
-#endif
+    #endif
     NumExtraBytes = 0;
   }
 
   void Init() throw();
 
   MY_FORCE_INLINE
-    bool ReadByte(Byte &b) {
-    if(_buf >= _bufLim)
+  bool ReadByte(Byte &b)
+  {
+    if (_buf >= _bufLim)
       return ReadByte_FromNewBlock(b);
     b = *_buf++;
     return true;
   }
 
   MY_FORCE_INLINE
-    Byte ReadByte() {
-    if(_buf >= _bufLim)
+  Byte ReadByte()
+  {
+    if (_buf >= _bufLim)
       return ReadByte_FromNewBlock();
     return *_buf++;
   }
@@ -76,7 +81,8 @@ public:
   size_t Skip(size_t size);
 };
 
-class CInBuffer : public CInBufferBase {
+class CInBuffer: public CInBufferBase
+{
 public:
   ~CInBuffer() { Free(); }
   bool Create(size_t bufSize) throw(); // only up to 32-bits values now are supported!

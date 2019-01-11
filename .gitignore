@@ -2,3 +2,7 @@
 *.aps
 bin/
 obj/
+Debug/
+DebugU/
+Release/
+ReleaseU/

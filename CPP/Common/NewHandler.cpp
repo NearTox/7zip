@@ -1,6 +1,6 @@
 // NewHandler.cpp
 
-#include "StdAfx.h"
+#include "../Common/Common.h"
 
 #include <stdlib.h>
 
@@ -10,7 +10,7 @@
 
 #ifndef DEBUG_MEMORY_LEAK
 
-#ifdef _7ZIP_REDEFINE_OPERATOR_NEW
+#  ifdef _7ZIP_REDEFINE_OPERATOR_NEW
 
 /*
 void * my_new(size_t size)
@@ -38,23 +38,22 @@ void * my_Realloc(void *p, size_t newSize, size_t oldSize)
 }
 */
 
-void *
-#ifdef _MSC_VER
-__cdecl
-#endif
-operator new(size_t size) {
+void*
+#    ifdef _MSC_VER
+    __cdecl
+#    endif
+    operator new(size_t size) {
   // void *p = ::HeapAlloc(::GetProcessHeap(), 0, size);
-  void *p = ::malloc(size);
-  if(p == 0)
-    throw CNewException();
+  void* p = ::malloc(size);
+  if (p == 0) throw CNewException();
   return p;
 }
 
 void
-#ifdef _MSC_VER
-__cdecl
-#endif
-operator delete(void *p) throw() {
+#    ifdef _MSC_VER
+    __cdecl
+#    endif
+    operator delete(void* p) throw() {
   // if (p == 0) return; ::HeapFree(::GetProcessHeap(), 0, p);
   ::free(p);
 }
@@ -84,47 +83,43 @@ operator delete[](void *p) throw()
 }
 */
 
-#endif
+#  endif
 
 #else
 
-#include <stdio.h>
+#  include <stdio.h>
 
 // #pragma init_seg(lib)
 const int kDebugSize = 1000000;
-static void *a[kDebugSize];
+static void* a[kDebugSize];
 static int index = 0;
 
 static int numAllocs = 0;
-void * __cdecl operator new(size_t size) {
+void* __cdecl operator new(size_t size) {
   numAllocs++;
-  void *p = HeapAlloc(GetProcessHeap(), 0, size);
-  if(index < kDebugSize) {
+  void* p = HeapAlloc(GetProcessHeap(), 0, size);
+  if (index < kDebugSize) {
     a[index] = p;
     index++;
   }
-  if(p == 0)
-    throw CNewException();
+  if (p == 0) throw CNewException();
   printf("Alloc %6d, size = %8u\n", numAllocs, (unsigned)size);
   return p;
 }
 
 class CC {
-public:
+ public:
   CC() {
-    for(int i = 0; i < kDebugSize; i++)
-      a[i] = 0;
+    for (int i = 0; i < kDebugSize; i++) a[i] = 0;
   }
   ~CC() {
-    for(int i = 0; i < kDebugSize; i++)
-      if(a[i] != 0)
-        return;
+    for (int i = 0; i < kDebugSize; i++)
+      if (a[i] != 0) return;
   }
 } g_CC;
 
-void __cdecl operator delete(void *p) {
-  if(p == 0)
-    return;
+void __cdecl operator delete(void* p) {
+  if (p == 0) return;
   /*
   for (int i = 0; i < index; i++)
     if (a[i] == p)

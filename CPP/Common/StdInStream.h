@@ -9,11 +9,12 @@
 #include "MyTypes.h"
 
 class CStdInStream {
-  FILE *_stream;
+  FILE* _stream;
   bool _streamIsOpen;
-public:
-  CStdInStream() : _stream(0), _streamIsOpen(false) {};
-  CStdInStream(FILE *stream) : _stream(stream), _streamIsOpen(false) {};
+
+ public:
+  CStdInStream() : _stream(0), _streamIsOpen(false){};
+  CStdInStream(FILE* stream) : _stream(stream), _streamIsOpen(false){};
   ~CStdInStream() { Close(); }
 
   bool Open(LPCTSTR fileName) throw();
@@ -22,8 +23,8 @@ public:
   // returns:
   //   false, if ZERO character in stream
   //   true, if EOF or '\n'
-  bool ScanAStringUntilNewLine(AString &s);
-  bool ScanUStringUntilNewLine(UString &s);
+  bool ScanAStringUntilNewLine(AString& s);
+  bool ScanUStringUntilNewLine(UString& s);
   // bool ReadToString(AString &resultString);
 
   bool Eof() const throw() { return (feof(_stream) != 0); }

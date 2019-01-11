@@ -12,12 +12,12 @@
 #define STREAM_INTERFACE(i, x) STREAM_INTERFACE_SUB(i, IUnknown, x)
 
 STREAM_INTERFACE(ISequentialInStream, 0x01) {
-  STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize) PURE;
+  STDMETHOD(Read)(void* data, UInt32 size, UInt32* processedSize) PURE;
 
   /*
-  The requirement for caller: (processedSize != nullptr).
-  The callee can allow (processedSize == nullptr) for compatibility reasons.
-
+  The requirement for caller: (processedSize != NULL).
+  The callee can allow (processedSize == NULL) for compatibility reasons.
+    
   if (size == 0), this function returns S_OK and (*processedSize) is set to 0.
 
   if (size != 0)
@@ -30,7 +30,7 @@ STREAM_INTERFACE(ISequentialInStream, 0x01) {
 
   If seek pointer before Read() call was changed to position past the end of stream:
     if (seek_pointer >= stream_size), this function returns S_OK and (*processedSize) is set to 0.
-
+  
   ERROR CASES:
     If the function returns error code, then (*processedSize) is size of
     data written to (data) buffer (it can be data before error or data with errors).
@@ -41,11 +41,11 @@ STREAM_INTERFACE(ISequentialInStream, 0x01) {
 };
 
 STREAM_INTERFACE(ISequentialOutStream, 0x02) {
-  STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize) PURE;
+  STDMETHOD(Write)(const void* data, UInt32 size, UInt32* processedSize) PURE;
 
   /*
-  The requirement for caller: (processedSize != nullptr).
-  The callee can allow (processedSize == nullptr) for compatibility reasons.
+  The requirement for caller: (processedSize != NULL).
+  The callee can allow (processedSize == NULL) for compatibility reasons.
 
   if (size != 0)
   {
@@ -61,40 +61,38 @@ STREAM_INTERFACE(ISequentialOutStream, 0x02) {
 };
 
 #ifdef __HRESULT_FROM_WIN32
-#define HRESULT_WIN32_ERROR_NEGATIVE_SEEK __HRESULT_FROM_WIN32(ERROR_NEGATIVE_SEEK)
+#  define HRESULT_WIN32_ERROR_NEGATIVE_SEEK __HRESULT_FROM_WIN32(ERROR_NEGATIVE_SEEK)
 #else
-#define HRESULT_WIN32_ERROR_NEGATIVE_SEEK   HRESULT_FROM_WIN32(ERROR_NEGATIVE_SEEK)
+#  define HRESULT_WIN32_ERROR_NEGATIVE_SEEK HRESULT_FROM_WIN32(ERROR_NEGATIVE_SEEK)
 #endif
 
 /*  Seek() Function
   If you seek before the beginning of the stream, Seek() function returns error code:
       Recommended error code is __HRESULT_FROM_WIN32(ERROR_NEGATIVE_SEEK).
       or STG_E_INVALIDFUNCTION
-
+      
   It is allowed to seek past the end of the stream.
+
 
   if Seek() returns error, then the value of *newPosition is undefined.
 */
 
 STREAM_INTERFACE_SUB(IInStream, ISequentialInStream, 0x03) {
-  STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition) PURE;
+  STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 * newPosition) PURE;
 };
 
 STREAM_INTERFACE_SUB(IOutStream, ISequentialOutStream, 0x04) {
-  STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition) PURE;
+  STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 * newPosition) PURE;
   STDMETHOD(SetSize)(UInt64 newSize) PURE;
 };
 
-STREAM_INTERFACE(IStreamGetSize, 0x06) {
-  STDMETHOD(GetSize)(UInt64 *size) PURE;
-};
+STREAM_INTERFACE(IStreamGetSize, 0x06) { STDMETHOD(GetSize)(UInt64 * size) PURE; };
 
-STREAM_INTERFACE(IOutStreamFinish, 0x07) {
-  STDMETHOD(OutStreamFinish)() PURE;
-};
+STREAM_INTERFACE(IOutStreamFinish, 0x07) { STDMETHOD(OutStreamFinish)() PURE; };
 
 STREAM_INTERFACE(IStreamGetProps, 0x08) {
-  STDMETHOD(GetProps)(UInt64 *size, FILETIME *cTime, FILETIME *aTime, FILETIME *mTime, UInt32 *attrib) PURE;
+  STDMETHOD(GetProps)
+  (UInt64 * size, FILETIME * cTime, FILETIME * aTime, FILETIME * mTime, UInt32 * attrib) PURE;
 };
 
 struct CStreamFileProps {
@@ -109,8 +107,6 @@ struct CStreamFileProps {
   FILETIME MTime;
 };
 
-STREAM_INTERFACE(IStreamGetProps2, 0x09) {
-  STDMETHOD(GetProps2)(CStreamFileProps *props) PURE;
-};
+STREAM_INTERFACE(IStreamGetProps2, 0x09) { STDMETHOD(GetProps2)(CStreamFileProps * props) PURE; };
 
 #endif

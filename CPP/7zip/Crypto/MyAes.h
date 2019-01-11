@@ -11,12 +11,11 @@
 
 namespace NCrypto {
 
-class CAesCbcCoder:
-  public ICompressFilter,
-  public ICryptoProperties,
-  public ICompressSetCoderProperties,
-  public CMyUnknownImp
-{
+class CAesCbcCoder
+    : public ICompressFilter
+    , public ICryptoProperties
+    , public ICompressSetCoderProperties
+    , public CMyUnknownImp {
   AES_CODE_FUNC _codeFunc;
   unsigned _offset;
   unsigned _keySize;
@@ -27,31 +26,29 @@ class CAesCbcCoder:
 
   bool SetFunctions(UInt32 algo);
 
-public:
+ public:
   CAesCbcCoder(bool encodeMode, unsigned keySize);
-  
-  virtual ~CAesCbcCoder() {};   // we need virtual destructor for derived classes
-  
+
+  virtual ~CAesCbcCoder(){};  // we need virtual destructor for derived classes
+
   MY_UNKNOWN_IMP3(ICompressFilter, ICryptoProperties, ICompressSetCoderProperties)
-  
+
   INTERFACE_ICompressFilter(;)
-  
-  STDMETHOD(SetKey)(const Byte *data, UInt32 size);
-  STDMETHOD(SetInitVector)(const Byte *data, UInt32 size);
-  
-  STDMETHOD(SetCoderProperties)(const PROPID *propIDs, const PROPVARIANT *props, UInt32 numProps);
+
+      STDMETHOD(SetKey)(const Byte* data, UInt32 size);
+  STDMETHOD(SetInitVector)(const Byte* data, UInt32 size);
+
+  STDMETHOD(SetCoderProperties)(const PROPID* propIDs, const PROPVARIANT* props, UInt32 numProps);
 };
 
-struct CAesCbcEncoder: public CAesCbcCoder
-{
-  CAesCbcEncoder(unsigned keySize = 0): CAesCbcCoder(true, keySize) {}
+struct CAesCbcEncoder : public CAesCbcCoder {
+  CAesCbcEncoder(unsigned keySize = 0) : CAesCbcCoder(true, keySize) {}
 };
 
-struct CAesCbcDecoder: public CAesCbcCoder
-{
-  CAesCbcDecoder(unsigned keySize = 0): CAesCbcCoder(false, keySize) {}
+struct CAesCbcDecoder : public CAesCbcCoder {
+  CAesCbcDecoder(unsigned keySize = 0) : CAesCbcCoder(false, keySize) {}
 };
 
-}
+}  // namespace NCrypto
 
 #endif

@@ -16,21 +16,19 @@
 #include "OpenCallbackConsole.h"
 
 class CExtractScanConsole : public IDirItemsCallback {
-  CStdOutStream *_so;
-  CStdOutStream *_se;
+  CStdOutStream* _so;
+  CStdOutStream* _se;
   CPercentPrinter _percent;
 
-  bool NeedPercents() const { return _percent._so != nullptr; }
+  bool NeedPercents() const { return _percent._so != NULL; }
 
   void ClosePercentsAndFlush() {
-    if(NeedPercents())
-      _percent.ClosePrint(true);
-    if(_so)
-      _so->Flush();
+    if (NeedPercents()) _percent.ClosePrint(true);
+    if (_so) _so->Flush();
   }
 
-public:
-  void Init(CStdOutStream *outStream, CStdOutStream *errorStream, CStdOutStream *percentStream) {
+ public:
+  void Init(CStdOutStream* outStream, CStdOutStream* errorStream, CStdOutStream* percentStream) {
     _so = outStream;
     _se = errorStream;
     _percent._so = percentStream;
@@ -42,62 +40,61 @@ public:
 
   INTERFACE_IDirItemsCallback(;)
 
-    void CloseScanning() {
-    if(NeedPercents())
-      _percent.ClosePrint(true);
+      void CloseScanning() {
+    if (NeedPercents()) _percent.ClosePrint(true);
   }
 
-  void PrintStat(const CDirItemsStat &st);
+  void PrintStat(const CDirItemsStat& st);
 };
 
-class CExtractCallbackConsole :
-  public IExtractCallbackUI,
-  // public IArchiveExtractCallbackMessage,
-  public IFolderArchiveExtractCallback2,
+class CExtractCallbackConsole
+    : public IExtractCallbackUI
+    ,
+      // public IArchiveExtractCallbackMessage,
+      public IFolderArchiveExtractCallback2
+    ,
 #ifndef _NO_CRYPTO
-  public ICryptoGetTextPassword,
+      public ICryptoGetTextPassword
+    ,
 #endif
-  public COpenCallbackConsole,
-  public CMyUnknownImp {
+      public COpenCallbackConsole
+    , public CMyUnknownImp {
   AString _tempA;
   UString _tempU;
 
   UString _currentName;
 
   void ClosePercents_for_so() {
-    if(NeedPercents() && _so == _percent._so)
-      _percent.ClosePrint(false);
+    if (NeedPercents() && _so == _percent._so) _percent.ClosePrint(false);
   }
 
   void ClosePercentsAndFlush() {
-    if(NeedPercents())
-      _percent.ClosePrint(true);
-    if(_so)
-      _so->Flush();
+    if (NeedPercents()) _percent.ClosePrint(true);
+    if (_so) _so->Flush();
   }
 
-public:
+ public:
   MY_QUERYINTERFACE_BEGIN2(IFolderArchiveExtractCallback)
   // MY_QUERYINTERFACE_ENTRY(IArchiveExtractCallbackMessage)
-    MY_QUERYINTERFACE_ENTRY(IFolderArchiveExtractCallback2)
+  MY_QUERYINTERFACE_ENTRY(IFolderArchiveExtractCallback2)
 #ifndef _NO_CRYPTO
-    MY_QUERYINTERFACE_ENTRY(ICryptoGetTextPassword)
+  MY_QUERYINTERFACE_ENTRY(ICryptoGetTextPassword)
 #endif
-    MY_QUERYINTERFACE_END
-    MY_ADDREF_RELEASE
+  MY_QUERYINTERFACE_END
+  MY_ADDREF_RELEASE
 
-    STDMETHOD(SetTotal)(UInt64 total);
-  STDMETHOD(SetCompleted)(const UInt64 *completeValue);
+  STDMETHOD(SetTotal)(UInt64 total);
+  STDMETHOD(SetCompleted)(const UInt64* completeValue);
 
   INTERFACE_IFolderArchiveExtractCallback(;)
 
-    INTERFACE_IExtractCallbackUI(;)
-    // INTERFACE_IArchiveExtractCallbackMessage(;)
-    INTERFACE_IFolderArchiveExtractCallback2(;)
+      INTERFACE_IExtractCallbackUI(;)
+      // INTERFACE_IArchiveExtractCallbackMessage(;)
+      INTERFACE_IFolderArchiveExtractCallback2(;)
 
 #ifndef _NO_CRYPTO
 
-    STDMETHOD(CryptoGetTextPassword)(BSTR *password);
+          STDMETHOD(CryptoGetTextPassword)(BSTR* password);
 
 #endif
 
@@ -121,14 +118,11 @@ public:
   unsigned PercentsNameLevel;
   unsigned LogLevel;
 
-  CExtractCallbackConsole() :
-    NeedFlush(false),
-    PercentsNameLevel(1),
-    LogLevel(0) {}
+  CExtractCallbackConsole() : NeedFlush(false), PercentsNameLevel(1), LogLevel(0) {}
 
   void SetWindowWidth(unsigned width) { _percent.MaxLen = width - 1; }
 
-  void Init(CStdOutStream *outStream, CStdOutStream *errorStream, CStdOutStream *percentStream) {
+  void Init(CStdOutStream* outStream, CStdOutStream* errorStream, CStdOutStream* percentStream) {
     COpenCallbackConsole::Init(outStream, errorStream, percentStream);
 
     NumTryArcs = 0;

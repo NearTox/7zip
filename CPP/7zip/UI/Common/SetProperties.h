@@ -5,6 +5,6 @@
 
 #include "Property.h"
 
-HRESULT SetProperties(IUnknown *unknown, const CObjectVector<CProperty> &properties);
+HRESULT SetProperties(IUnknown* unknown, const CObjectVector<CProperty>& properties);
 
 #endif

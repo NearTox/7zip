@@ -7,7 +7,8 @@
 #include "../../Common/MyBuffer.h"
 #include "../../Common/MyVector.h"
 
-struct CUniqBlocks {
+struct CUniqBlocks
+{
   CObjectVector<CByteBuffer> Bufs;
   CUIntVector Sorted;
   CUIntVector BufIndexToSortedIndex;
@@ -16,7 +17,8 @@ struct CUniqBlocks {
   UInt64 GetTotalSizeInBytes() const;
   void GetReverseMap();
 
-  bool IsOnlyEmpty() const {
+  bool IsOnlyEmpty() const
+  {
     return (Bufs.Size() == 0 || Bufs.Size() == 1 && Bufs[0].Size() == 0);
   }
 };

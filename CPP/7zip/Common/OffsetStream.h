@@ -7,9 +7,10 @@
 
 #include "../IStream.h"
 
-class COffsetOutStream :
+class COffsetOutStream:
   public IOutStream,
-  public CMyUnknownImp {
+  public CMyUnknownImp
+{
   UInt64 _offset;
   CMyComPtr<IOutStream> _stream;
 public:
@@ -17,7 +18,7 @@ public:
 
   MY_UNKNOWN_IMP
 
-    STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
+  STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize);
   STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
   STDMETHOD(SetSize)(UInt64 newSize);
 };

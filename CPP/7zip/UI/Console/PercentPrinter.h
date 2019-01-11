@@ -16,10 +16,7 @@ struct CPercentPrinterState {
 
   void ClearCurState();
 
-  CPercentPrinterState() :
-    Completed(0),
-    Total((UInt64)(Int64)-1),
-    Files(0) {}
+  CPercentPrinterState() : Completed(0), Total((UInt64)(Int64)-1), Files(0) {}
 };
 
 class CPercentPrinter : public CPercentPrinterState {
@@ -37,17 +34,17 @@ class CPercentPrinter : public CPercentPrinterState {
 
   void GetPercents();
 
-public:
-  CStdOutStream * _so;
+ public:
+  CStdOutStream* _so;
 
   bool NeedFlush;
   unsigned MaxLen;
 
   CPercentPrinter(UInt32 tickStep = 200) :
-    _tickStep(tickStep),
-    _prevTick(0),
-    NeedFlush(true),
-    MaxLen(80 - 1) {}
+      _tickStep(tickStep),
+      _prevTick(0),
+      NeedFlush(true),
+      MaxLen(80 - 1) {}
 
   ~CPercentPrinter();
 

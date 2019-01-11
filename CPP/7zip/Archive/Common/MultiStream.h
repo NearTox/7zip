@@ -8,29 +8,33 @@
 
 #include "../../IStream.h"
 
-class CMultiStream :
+class CMultiStream:
   public IInStream,
-  public CMyUnknownImp {
+  public CMyUnknownImp
+{
   UInt64 _pos;
   UInt64 _totalLength;
   unsigned _streamIndex;
 
 public:
 
-  struct CSubStreamInfo {
+  struct CSubStreamInfo
+  {
     CMyComPtr<IInStream> Stream;
     UInt64 Size;
     UInt64 GlobalOffset;
     UInt64 LocalPos;
 
-    CSubStreamInfo() : Size(0), GlobalOffset(0), LocalPos(0) {}
+    CSubStreamInfo(): Size(0), GlobalOffset(0), LocalPos(0) {}
   };
 
   CObjectVector<CSubStreamInfo> Streams;
 
-  HRESULT Init() {
+  HRESULT Init()
+  {
     UInt64 total = 0;
-    FOR_VECTOR(i, Streams) {
+    FOR_VECTOR (i, Streams)
+    {
       CSubStreamInfo &s = Streams[i];
       s.GlobalOffset = total;
       total += Streams[i].Size;
@@ -44,7 +48,7 @@ public:
 
   MY_UNKNOWN_IMP1(IInStream)
 
-    STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
+  STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
   STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
 };
 

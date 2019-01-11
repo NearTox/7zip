@@ -5,6 +5,6 @@
 
 #include "../../../Common/MyString.h"
 
-void SortFileNames(const UStringVector &strings, CUIntVector &indices);
+void SortFileNames(const UStringVector& strings, CUIntVector& indices);
 
 #endif

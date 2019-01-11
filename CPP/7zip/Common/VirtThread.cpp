@@ -1,41 +1,47 @@
 // VirtThread.cpp
 
-#include "StdAfx.h"
+#include "../../Common/Common.h"
 
 #include "VirtThread.h"
 
-static THREAD_FUNC_DECL CoderThread(void *p) {
-  for(;;) {
+static THREAD_FUNC_DECL CoderThread(void *p)
+{
+  for (;;)
+  {
     CVirtThread *t = (CVirtThread *)p;
     t->StartEvent.Lock();
-    if(t->Exit)
+    if (t->Exit)
       return 0;
     t->Execute();
     t->FinishedEvent.Set();
   }
 }
 
-WRes CVirtThread::Create() {
+WRes CVirtThread::Create()
+{
   RINOK(StartEvent.CreateIfNotCreated());
   RINOK(FinishedEvent.CreateIfNotCreated());
   StartEvent.Reset();
   FinishedEvent.Reset();
   Exit = false;
-  if(Thread.IsCreated())
+  if (Thread.IsCreated())
     return S_OK;
   return Thread.Create(CoderThread, this);
 }
 
-void CVirtThread::Start() {
+void CVirtThread::Start()
+{
   Exit = false;
   StartEvent.Set();
 }
 
-void CVirtThread::WaitThreadFinish() {
+void CVirtThread::WaitThreadFinish()
+{
   Exit = true;
-  if(StartEvent.IsCreated())
+  if (StartEvent.IsCreated())
     StartEvent.Set();
-  if(Thread.IsCreated()) {
+  if (Thread.IsCreated())
+  {
     Thread.Wait();
     Thread.Close();
   }

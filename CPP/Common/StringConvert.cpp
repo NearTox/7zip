@@ -1,11 +1,11 @@
 // Common/StringConvert.cpp
 
-#include "StdAfx.h"
+#include "../Common/Common.h"
 
 #include "StringConvert.h"
 
 #ifndef _WIN32
-#include <stdlib.h>
+#  include <stdlib.h>
 #endif
 
 static const char k_DefultChar = '_';
@@ -25,7 +25,8 @@ MultiByteToWideChar(CodePage, DWORD dwFlags,
 
   if (supplied buffer size was not large enough)
     return: 0. ERR: ERROR_INSUFFICIENT_BUFFER
-    The number of filled characters in lpWideCharStr can be smaller than cchWideChar (if last character is complex)
+    The number of filled characters in lpWideCharStr can be smaller than cchWideChar (if last
+character is complex)
 
   If there are illegal characters:
     if MB_ERR_INVALID_CHARS is set in dwFlags:
@@ -38,10 +39,9 @@ MultiByteToWideChar(CodePage, DWORD dwFlags,
                     character is converted to U+FFFD, which is REPLACEMENT CHARACTER.
 */
 
-void MultiByteToUnicodeString2(UString &dest, const AString &src, UINT codePage) {
+void MultiByteToUnicodeString2(UString& dest, const AString& src, UINT codePage) {
   dest.Empty();
-  if(src.IsEmpty())
-    return;
+  if (src.IsEmpty()) return;
   {
     /*
     wchar_t *d = dest.GetBuf(src.Len());
@@ -69,14 +69,12 @@ void MultiByteToUnicodeString2(UString &dest, const AString &src, UINT codePage)
     d[i] = 0;
     dest.ReleaseBuf_SetLen(i);
     */
-    unsigned len = MultiByteToWideChar(codePage, 0, src, src.Len(), nullptr, 0);
-    if(len == 0) {
-      if(GetLastError() != 0)
-        throw 282228;
+    unsigned len = MultiByteToWideChar(codePage, 0, src, src.Len(), NULL, 0);
+    if (len == 0) {
+      if (GetLastError() != 0) throw 282228;
     } else {
       len = MultiByteToWideChar(codePage, 0, src, src.Len(), dest.GetBuf(len), len);
-      if(len == 0)
-        throw 282228;
+      if (len == 0) throw 282228;
       dest.ReleaseBuf_SetEnd(len);
     }
   }
@@ -89,22 +87,22 @@ void MultiByteToUnicodeString2(UString &dest, const AString &src, UINT codePage)
       LPSTR lpMultiByteStr, int cbMultiByte,
       LPCSTR lpDefaultChar, LPBOOL lpUsedDefaultChar);
 
-if (lpDefaultChar == nullptr),
+if (lpDefaultChar == NULL),
   - it uses system default value.
 
 if (CodePage == CP_UTF7 || CodePage == CP_UTF8)
-  if (lpDefaultChar != nullptr || lpUsedDefaultChar != nullptr)
+  if (lpDefaultChar != NULL || lpUsedDefaultChar != NULL)
     return: 0. ERR: ERROR_INVALID_PARAMETER.
 
-The function operates most efficiently, if (lpDefaultChar == nullptr && lpUsedDefaultChar == nullptr)
+The function operates most efficiently, if (lpDefaultChar == NULL && lpUsedDefaultChar == NULL)
 
 */
 
-static void UnicodeStringToMultiByte2(AString &dest, const UString &src, UINT codePage, char defaultChar, bool &defaultCharWasUsed) {
+static void UnicodeStringToMultiByte2(
+    AString& dest, const UString& src, UINT codePage, char defaultChar, bool& defaultCharWasUsed) {
   dest.Empty();
   defaultCharWasUsed = false;
-  if(src.IsEmpty())
-    return;
+  if (src.IsEmpty()) return;
   {
     /*
     unsigned numRequiredBytes = src.Len() * 2;
@@ -128,8 +126,8 @@ static void UnicodeStringToMultiByte2(AString &dest, const UString &src, UINT co
       bool isUtf = (codePage == CP_UTF8 || codePage == CP_UTF7);
       unsigned len = WideCharToMultiByte(codePage, 0, s + i, src.Len() - i,
           d + i, numRequiredBytes + 1 - i,
-          (isUtf ? nullptr : &defaultChar),
-          (isUtf ? nullptr : &defUsed));
+          (isUtf ? NULL : &defaultChar),
+          (isUtf ? NULL : &defUsed));
       defaultCharWasUsed = (defUsed != FALSE);
       if (len == 0)
         throw 282229;
@@ -169,23 +167,18 @@ static void UnicodeStringToMultiByte2(AString &dest, const UString &src, UINT co
     }
     */
 
-    unsigned len = WideCharToMultiByte(codePage, 0, src, src.Len(), nullptr, 0, nullptr, nullptr);
-    if(len == 0) {
-      if(GetLastError() != 0)
-        throw 282228;
+    unsigned len = WideCharToMultiByte(codePage, 0, src, src.Len(), NULL, 0, NULL, NULL);
+    if (len == 0) {
+      if (GetLastError() != 0) throw 282228;
     } else {
       BOOL defUsed = FALSE;
       bool isUtf = (codePage == CP_UTF8 || codePage == CP_UTF7);
       // defaultChar = defaultChar;
-      len = WideCharToMultiByte(codePage, 0, src, src.Len(),
-        dest.GetBuf(len), len,
-        (isUtf ? nullptr : &defaultChar),
-        (isUtf ? nullptr : &defUsed)
-      );
-      if(!isUtf)
-        defaultCharWasUsed = (defUsed != FALSE);
-      if(len == 0)
-        throw 282228;
+      len = WideCharToMultiByte(
+          codePage, 0, src, src.Len(), dest.GetBuf(len), len, (isUtf ? NULL : &defaultChar),
+          (isUtf ? NULL : &defUsed));
+      if (!isUtf) defaultCharWasUsed = (defUsed != FALSE);
+      if (len == 0) throw 282228;
       dest.ReleaseBuf_SetEnd(len);
     }
   }
@@ -206,26 +199,24 @@ AString SystemStringToOemString(const CSysString &src)
 
 #else
 
-void MultiByteToUnicodeString2(UString &dest, const AString &src, UINT /* codePage */) {
+void MultiByteToUnicodeString2(UString& dest, const AString& src, UINT /* codePage */) {
   dest.Empty();
-  if(src.IsEmpty())
-    return;
+  if (src.IsEmpty()) return;
 
   size_t limit = ((size_t)src.Len() + 1) * 2;
-  wchar_t *d = dest.GetBuf((unsigned)limit);
+  wchar_t* d = dest.GetBuf((unsigned)limit);
   size_t len = mbstowcs(d, src, limit);
-  if(len != (size_t)-1) {
+  if (len != (size_t)-1) {
     dest.ReleaseBuf_SetEnd((unsigned)len);
     return;
   }
 
   {
     unsigned i;
-    const char *s = (const char *)src;
-    for(i = 0;;) {
+    const char* s = (const char*)src;
+    for (i = 0;;) {
       Byte c = (Byte)s[i];
-      if(c == 0)
-        break;
+      if (c == 0) break;
       d[i++] = (wchar_t)c;
     }
     d[i] = 0;
@@ -233,28 +224,28 @@ void MultiByteToUnicodeString2(UString &dest, const AString &src, UINT /* codePa
   }
 }
 
-static void UnicodeStringToMultiByte2(AString &dest, const UString &src, UINT /* codePage */, char defaultChar, bool &defaultCharWasUsed) {
+static void UnicodeStringToMultiByte2(
+    AString& dest, const UString& src, UINT /* codePage */, char defaultChar,
+    bool& defaultCharWasUsed) {
   dest.Empty();
   defaultCharWasUsed = false;
-  if(src.IsEmpty())
-    return;
+  if (src.IsEmpty()) return;
 
   size_t limit = ((size_t)src.Len() + 1) * 6;
-  char *d = dest.GetBuf((unsigned)limit);
+  char* d = dest.GetBuf((unsigned)limit);
   size_t len = wcstombs(d, src, limit);
-  if(len != (size_t)-1) {
+  if (len != (size_t)-1) {
     dest.ReleaseBuf_SetEnd((unsigned)len);
     return;
   }
 
   {
-    const wchar_t *s = (const wchar_t *)src;
+    const wchar_t* s = (const wchar_t*)src;
     unsigned i;
-    for(i = 0;;) {
+    for (i = 0;;) {
       wchar_t c = s[i];
-      if(c == 0)
-        break;
-      if(c >= 0x100) {
+      if (c == 0) break;
+      if (c >= 0x100) {
         c = defaultChar;
         defaultCharWasUsed = true;
       }
@@ -267,28 +258,29 @@ static void UnicodeStringToMultiByte2(AString &dest, const UString &src, UINT /*
 
 #endif
 
-UString MultiByteToUnicodeString(const AString &src, UINT codePage) {
+UString MultiByteToUnicodeString(const AString& src, UINT codePage) {
   UString dest;
   MultiByteToUnicodeString2(dest, src, codePage);
   return dest;
 }
 
-UString MultiByteToUnicodeString(const char *src, UINT codePage) {
+UString MultiByteToUnicodeString(const char* src, UINT codePage) {
   return MultiByteToUnicodeString(AString(src), codePage);
 }
 
-void UnicodeStringToMultiByte2(AString &dest, const UString &src, UINT codePage) {
+void UnicodeStringToMultiByte2(AString& dest, const UString& src, UINT codePage) {
   bool defaultCharWasUsed;
   UnicodeStringToMultiByte2(dest, src, codePage, k_DefultChar, defaultCharWasUsed);
 }
 
-AString UnicodeStringToMultiByte(const UString &src, UINT codePage, char defaultChar, bool &defaultCharWasUsed) {
+AString UnicodeStringToMultiByte(
+    const UString& src, UINT codePage, char defaultChar, bool& defaultCharWasUsed) {
   AString dest;
   UnicodeStringToMultiByte2(dest, src, codePage, defaultChar, defaultCharWasUsed);
   return dest;
 }
 
-AString UnicodeStringToMultiByte(const UString &src, UINT codePage) {
+AString UnicodeStringToMultiByte(const UString& src, UINT codePage) {
   AString dest;
   bool defaultCharWasUsed;
   UnicodeStringToMultiByte2(dest, src, codePage, k_DefultChar, defaultCharWasUsed);

@@ -77,7 +77,7 @@ public:
   {
     if (newSize == _size)
       return;
-    T *newBuffer = nullptr;
+    T *newBuffer = NULL;
     if (newSize != 0)
     {
       newBuffer = new T[newSize];
@@ -226,7 +226,7 @@ public:
   {
     if (size == _size)
       return;
-    T *newBuffer = nullptr;
+    T *newBuffer = NULL;
     if (size != 0)
     {
       MY_ARRAY_NEW(newBuffer, T, size)

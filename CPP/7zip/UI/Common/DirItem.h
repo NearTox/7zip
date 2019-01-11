@@ -18,9 +18,9 @@ struct CDirItemsStat
   UInt64 NumAltStreams;
   UInt64 FilesSize;
   UInt64 AltStreamsSize;
-  
+
   UInt64 NumErrors;
-  
+
   // UInt64 Get_NumItems() const { return NumDirs + NumFiles + NumAltStreams; }
   UInt64 Get_NumDataItems() const { return NumFiles + NumAltStreams; }
   UInt64 GetTotalBytes() const { return FilesSize + AltStreamsSize; }
@@ -32,7 +32,7 @@ struct CDirItemsStat
         && 0 == FilesSize
         && 0 == AltStreamsSize
         && 0 == NumErrors; }
-  
+
   CDirItemsStat():
       NumDirs(0),
       NumFiles(0),
@@ -49,7 +49,7 @@ struct CDirItemsStat2: public CDirItemsStat
   UInt64 Anti_NumDirs;
   UInt64 Anti_NumFiles;
   UInt64 Anti_NumAltStreams;
-  
+
   // UInt64 Get_NumItems() const { return Anti_NumDirs + Anti_NumFiles + Anti_NumAltStreams + CDirItemsStat::Get_NumItems(); }
   UInt64 Get_NumDataItems2() const { return Anti_NumFiles + Anti_NumAltStreams + CDirItemsStat::Get_NumDataItems(); }
 
@@ -57,7 +57,7 @@ struct CDirItemsStat2: public CDirItemsStat
         && 0 == Anti_NumDirs
         && 0 == Anti_NumFiles
         && 0 == Anti_NumAltStreams; }
-  
+
   CDirItemsStat2():
       Anti_NumDirs(0),
       Anti_NumFiles(0),
@@ -83,7 +83,7 @@ struct CDirItem
   FILETIME ATime;
   FILETIME MTime;
   UString Name;
-  
+
   #if defined(_WIN32) && !defined(UNDER_CE)
   // UString ShortName;
   CByteBuffer ReparseData;
@@ -91,14 +91,14 @@ struct CDirItem
 
   bool AreReparseData() const { return ReparseData.Size() != 0 || ReparseData2.Size() != 0; }
   #endif
-  
+
   UInt32 Attrib;
   int PhyParent;
   int LogParent;
   int SecureIndex;
 
   bool IsAltStream;
-  
+
   CDirItem(): PhyParent(-1), LogParent(-1), SecureIndex(-1), IsAltStream(false) {}
   bool IsDir() const { return (Attrib & FILE_ATTRIBUTE_DIRECTORY) != 0 ; }
 };
@@ -119,7 +119,7 @@ public:
   bool SymLinks;
 
   bool ScanAltStreams;
-  
+
   CDirItemsStat Stat;
 
   #ifndef UNDER_CE
@@ -134,7 +134,7 @@ public:
   CByteBuffer TempSecureBuf;
   bool _saclEnabled;
   bool ReadSecure;
-  
+
   HRESULT AddSecurityItem(const FString &path, int &secureIndex);
 
   #endif
@@ -157,7 +157,7 @@ public:
 
   unsigned AddPrefix(int phyParent, int logParent, const UString &prefix);
   void DeleteLastPrefix();
-  
+
   HRESULT EnumerateItems2(
     const FString &phyPrefix,
     const UString &logPrefix,
@@ -183,7 +183,7 @@ struct CArcItem
   bool Censored;
   UInt32 IndexInServer;
   int TimeType;
-  
+
   CArcItem(): IsDir(false), IsAltStream(false), SizeDefined(false), MTimeDefined(false), Censored(false), TimeType(-1) {}
 };
 

@@ -44,10 +44,10 @@ public:
       DWORD bufferLength, PTOKEN_PRIVILEGES previousState, PDWORD returnLength)
     { return BOOLToBool(::AdjustTokenPrivileges(_handle, BoolToBOOL(disableAllPrivileges),
       newState, bufferLength, previousState, returnLength)); }
-  
+
   bool AdjustPrivileges(bool disableAllPrivileges, PTOKEN_PRIVILEGES newState)
     { return AdjustPrivileges(disableAllPrivileges, newState, 0, NULL, NULL); }
-  
+
   bool AdjustPrivileges(PTOKEN_PRIVILEGES newState)
     { return AdjustPrivileges(false, newState); }
 
@@ -99,7 +99,7 @@ public:
       #endif
       (systemName, objectAttributes, desiredAccess, &_handle);
   }
-  
+
   NTSTATUS Close()
   {
     if (_handle == NULL)
@@ -123,7 +123,7 @@ public:
     _handle = NULL;
     return res;
   }
-  
+
   NTSTATUS EnumerateAccountsWithUserRight(PLSA_UNICODE_STRING userRights,
       PLSA_ENUMERATION_INFORMATION *enumerationBuffer, PULONG countReturned)
     { return LsaEnumerateAccountsWithUserRight(_handle, userRights, (void **)enumerationBuffer, countReturned); }

@@ -17,7 +17,7 @@ enum EEnum {
   kUserError     = 7,     // Command line option error
   kMemoryError   = 8,     // Not enough memory for operation
   // kCreateFileError = 9,     // Create file error
-  
+
   kUserBreak     = 255   // User stopped the process
 
 };

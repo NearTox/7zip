@@ -16,9 +16,9 @@ typedef struct {
   Byte buffer[64];
 } CSha256;
 
-void Sha256_Init(CSha256 *p);
-void Sha256_Update(CSha256 *p, const Byte *data, size_t size);
-void Sha256_Final(CSha256 *p, Byte *digest);
+void Sha256_Init(CSha256* p);
+void Sha256_Update(CSha256* p, const Byte* data, size_t size);
+void Sha256_Final(CSha256* p, Byte* digest);
 
 EXTERN_C_END
 

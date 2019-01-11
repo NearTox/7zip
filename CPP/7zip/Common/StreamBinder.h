@@ -19,7 +19,8 @@ writer thread:
 Can second call of _canWrite_Event.Set() be executed without memory barrier, if event is already set?
 */
 
-class CStreamBinder {
+class CStreamBinder
+{
   NWindows::NSynchronization::CAutoResetEvent _canWrite_Event;
   NWindows::NSynchronization::CManualResetEvent _canRead_Event;
   NWindows::NSynchronization::CManualResetEvent _readingWasClosed_Event;
@@ -41,14 +42,16 @@ public:
   HRESULT Read(void *data, UInt32 size, UInt32 *processedSize);
   HRESULT Write(const void *data, UInt32 size, UInt32 *processedSize);
 
-  void CloseRead() {
+  void CloseRead()
+  {
     _readingWasClosed_Event.Set();
     // _readingWasClosed = true;
     // _canWrite_Event.Set();
   }
 
-  void CloseWrite() {
-    _buf = nullptr;
+  void CloseWrite()
+  {
+    _buf = NULL;
     _bufSize = 0;
     _canRead_Event.Set();
   }

@@ -1,7 +1,9 @@
 // XzCrc64Init.cpp
 
-#include "StdAfx.h"
+#include "../Common/Common.h"
 
 #include "../../C/XzCrc64.h"
 
-static struct CCrc64Gen { CCrc64Gen() { Crc64GenerateTable(); } } g_Crc64TableInit;
+static struct CCrc64Gen {
+  CCrc64Gen() { Crc64GenerateTable(); }
+} g_Crc64TableInit;

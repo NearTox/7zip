@@ -6,7 +6,8 @@
 #include "../../Windows/Synchronization.h"
 #include "../../Windows/Thread.h"
 
-struct CVirtThread {
+struct CVirtThread
+{
   NWindows::NSynchronization::CAutoResetEvent StartEvent;
   NWindows::NSynchronization::CAutoResetEvent FinishedEvent;
   NWindows::CThread Thread;

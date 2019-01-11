@@ -3,26 +3,24 @@
 
 #include "Precomp.h"
 
-#include "CpuArch.h"
 #include "Bra.h"
+#include "CpuArch.h"
 
-SizeT ARM_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
-  Byte *p;
-  const Byte *lim;
+SizeT ARM_Convert(Byte* data, SizeT size, UInt32 ip, int encoding) {
+  Byte* p;
+  const Byte* lim;
   size &= ~(size_t)3;
   ip += 4;
   p = data;
   lim = data + size;
 
-  if(encoding)
+  if (encoding)
 
-    for(;;) {
-      for(;;) {
-        if(p >= lim)
-          return p - data;
+    for (;;) {
+      for (;;) {
+        if (p >= lim) return p - data;
         p += 4;
-        if(p[-1] == 0xEB)
-          break;
+        if (p[-1] == 0xEB) break;
       }
       {
         UInt32 v = GetUi32(p - 4);
@@ -35,13 +33,11 @@ SizeT ARM_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
       }
     }
 
-  for(;;) {
-    for(;;) {
-      if(p >= lim)
-        return p - data;
+  for (;;) {
+    for (;;) {
+      if (p >= lim) return p - data;
       p += 4;
-      if(p[-1] == 0xEB)
-        break;
+      if (p[-1] == 0xEB) break;
     }
     {
       UInt32 v = GetUi32(p - 4);
@@ -55,34 +51,29 @@ SizeT ARM_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
   }
 }
 
-SizeT ARMT_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
-  Byte *p;
-  const Byte *lim;
+SizeT ARMT_Convert(Byte* data, SizeT size, UInt32 ip, int encoding) {
+  Byte* p;
+  const Byte* lim;
   size &= ~(size_t)1;
   p = data;
   lim = data + size - 4;
 
-  if(encoding)
+  if (encoding)
 
-    for(;;) {
+    for (;;) {
       UInt32 b1;
-      for(;;) {
+      for (;;) {
         UInt32 b3;
-        if(p > lim)
-          return p - data;
+        if (p > lim) return p - data;
         b1 = p[1];
         b3 = p[3];
         p += 2;
         b1 ^= 8;
-        if((b3 & b1) >= 0xF8)
-          break;
+        if ((b3 & b1) >= 0xF8) break;
       }
       {
         UInt32 v =
-          ((UInt32)b1 << 19)
-          + (((UInt32)p[1] & 0x7) << 8)
-          + (((UInt32)p[-2] << 11))
-          + (p[0]);
+            ((UInt32)b1 << 19) + (((UInt32)p[1] & 0x7) << 8) + (((UInt32)p[-2] << 11)) + (p[0]);
 
         p += 2;
         {
@@ -97,25 +88,20 @@ SizeT ARMT_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
       }
     }
 
-  for(;;) {
+  for (;;) {
     UInt32 b1;
-    for(;;) {
+    for (;;) {
       UInt32 b3;
-      if(p > lim)
-        return p - data;
+      if (p > lim) return p - data;
       b1 = p[1];
       b3 = p[3];
       p += 2;
       b1 ^= 8;
-      if((b3 & b1) >= 0xF8)
-        break;
+      if ((b3 & b1) >= 0xF8) break;
     }
     {
       UInt32 v =
-        ((UInt32)b1 << 19)
-        + (((UInt32)p[1] & 0x7) << 8)
-        + (((UInt32)p[-2] << 11))
-        + (p[0]);
+          ((UInt32)b1 << 19) + (((UInt32)p[1] & 0x7) << 8) + (((UInt32)p[-2] << 11)) + (p[0]);
 
       p += 2;
       {
@@ -136,26 +122,24 @@ SizeT ARMT_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
   }
 }
 
-SizeT PPC_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
-  Byte *p;
-  const Byte *lim;
+SizeT PPC_Convert(Byte* data, SizeT size, UInt32 ip, int encoding) {
+  Byte* p;
+  const Byte* lim;
   size &= ~(size_t)3;
   ip -= 4;
   p = data;
   lim = data + size;
 
-  for(;;) {
-    for(;;) {
-      if(p >= lim)
-        return p - data;
+  for (;;) {
+    for (;;) {
+      if (p >= lim) return p - data;
       p += 4;
       /* if ((v & 0xFC000003) == 0x48000001) */
-      if((p[-4] & 0xFC) == 0x48 && (p[-1] & 3) == 1)
-        break;
+      if ((p[-4] & 0xFC) == 0x48 && (p[-1] & 3) == 1) break;
     }
     {
       UInt32 v = GetBe32(p - 4);
-      if(encoding)
+      if (encoding)
         v += ip + (UInt32)(p - data);
       else
         v -= ip + (UInt32)(p - data);
@@ -166,18 +150,17 @@ SizeT PPC_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
   }
 }
 
-SizeT SPARC_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
-  Byte *p;
-  const Byte *lim;
+SizeT SPARC_Convert(Byte* data, SizeT size, UInt32 ip, int encoding) {
+  Byte* p;
+  const Byte* lim;
   size &= ~(size_t)3;
   ip -= 4;
   p = data;
   lim = data + size;
 
-  for(;;) {
-    for(;;) {
-      if(p >= lim)
-        return p - data;
+  for (;;) {
+    for (;;) {
+      if (p >= lim) return p - data;
       /*
       v = GetBe32(p);
       p += 4;
@@ -188,14 +171,12 @@ SizeT SPARC_Convert(Byte *data, SizeT size, UInt32 ip, int encoding) {
         break;
       */
       p += 4;
-      if((p[-4] == 0x40 && (p[-3] & 0xC0) == 0) ||
-        (p[-4] == 0x7F && (p[-3] >= 0xC0)))
-        break;
+      if ((p[-4] == 0x40 && (p[-3] & 0xC0) == 0) || (p[-4] == 0x7F && (p[-3] >= 0xC0))) break;
     }
     {
       UInt32 v = GetBe32(p - 4);
       v <<= 2;
-      if(encoding)
+      if (encoding)
         v += ip + (UInt32)(p - data);
       else
         v -= ip + (UInt32)(p - data);

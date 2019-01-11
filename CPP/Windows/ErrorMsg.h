@@ -6,9 +6,11 @@
 #include "../Common/MyString.h"
 
 namespace NWindows {
-  namespace NError {
-    UString MyFormatMessage(DWORD errorCode);
-  }
+namespace NError {
+
+UString MyFormatMessage(DWORD errorCode);
+
 }
+}  // namespace NWindows
 
 #endif

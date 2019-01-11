@@ -8,14 +8,16 @@
 #include "../../Common/MyException.h"
 
 #ifndef _NO_EXCEPTIONS
-struct COutBufferException : public CSystemException {
-  COutBufferException(HRESULT errorCode) : CSystemException(errorCode) {}
+struct COutBufferException: public CSystemException
+{
+  COutBufferException(HRESULT errorCode): CSystemException(errorCode) {}
 };
 #endif
 
-class COutBuffer {
+class COutBuffer
+{
 protected:
-  Byte * _buf;
+  Byte *_buf;
   UInt32 _pos;
   UInt32 _limitPos;
   UInt32 _streamPos;
@@ -27,11 +29,11 @@ protected:
 
   HRESULT FlushPart() throw();
 public:
-#ifdef _NO_EXCEPTIONS
+  #ifdef _NO_EXCEPTIONS
   HRESULT ErrorCode;
-#endif
+  #endif
 
-  COutBuffer() : _buf(0), _pos(0), _stream(0), _buf2(0) {}
+  COutBuffer(): _buf(0), _pos(0), _stream(0), _buf2(0) {}
   ~COutBuffer() { Free(); }
 
   bool Create(UInt32 bufSize) throw();
@@ -43,16 +45,18 @@ public:
   HRESULT Flush() throw();
   void FlushWithCheck();
 
-  void WriteByte(Byte b) {
+  void WriteByte(Byte b)
+  {
     UInt32 pos = _pos;
     _buf[pos] = b;
     pos++;
     _pos = pos;
-    if(pos == _limitPos)
+    if (pos == _limitPos)
       FlushWithCheck();
   }
-  void WriteBytes(const void *data, size_t size) {
-    for(size_t i = 0; i < size; i++)
+  void WriteBytes(const void *data, size_t size)
+  {
+    for (size_t i = 0; i < size; i++)
       WriteByte(((const Byte *)data)[i]);
   }
 

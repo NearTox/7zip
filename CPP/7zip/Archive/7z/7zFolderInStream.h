@@ -12,47 +12,50 @@
 #include "../IArchive.h"
 
 namespace NArchive {
-  namespace N7z {
-    class CFolderInStream :
-      public ISequentialInStream,
-      public ICompressGetSubStreamSize,
-      public CMyUnknownImp {
-      CMyComPtr<ISequentialInStream> _stream;
-      UInt64 _pos;
-      UInt32 _crc;
-      bool _size_Defined;
-      UInt64 _size;
+namespace N7z {
 
-      const UInt32 *_indexes;
-      unsigned _numFiles;
-      unsigned _index;
+class CFolderInStream:
+  public ISequentialInStream,
+  public ICompressGetSubStreamSize,
+  public CMyUnknownImp
+{
+  CMyComPtr<ISequentialInStream> _stream;
+  UInt64 _pos;
+  UInt32 _crc;
+  bool _size_Defined;
+  UInt64 _size;
 
-      CMyComPtr<IArchiveUpdateCallback> _updateCallback;
+  const UInt32 *_indexes;
+  unsigned _numFiles;
+  unsigned _index;
 
-      HRESULT OpenStream();
-      void AddFileInfo(bool isProcessed);
+  CMyComPtr<IArchiveUpdateCallback> _updateCallback;
 
-    public:
-      CRecordVector<bool> Processed;
-      CRecordVector<UInt32> CRCs;
-      CRecordVector<UInt64> Sizes;
+  HRESULT OpenStream();
+  void AddFileInfo(bool isProcessed);
 
-      MY_UNKNOWN_IMP2(ISequentialInStream, ICompressGetSubStreamSize)
-        STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
-      STDMETHOD(GetSubStreamSize)(UInt64 subStream, UInt64 *value);
+public:
+  CRecordVector<bool> Processed;
+  CRecordVector<UInt32> CRCs;
+  CRecordVector<UInt64> Sizes;
 
-      void Init(IArchiveUpdateCallback *updateCallback, const UInt32 *indexes, unsigned numFiles);
+  MY_UNKNOWN_IMP2(ISequentialInStream, ICompressGetSubStreamSize)
+  STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
+  STDMETHOD(GetSubStreamSize)(UInt64 subStream, UInt64 *value);
 
-      bool WasFinished() const { return _index == _numFiles; }
+  void Init(IArchiveUpdateCallback *updateCallback, const UInt32 *indexes, unsigned numFiles);
 
-      UInt64 GetFullSize() const {
-        UInt64 size = 0;
-        FOR_VECTOR(i, Sizes)
-          size += Sizes[i];
-        return size;
-      }
-    };
+  bool WasFinished() const { return _index == _numFiles; }
+
+  UInt64 GetFullSize() const
+  {
+    UInt64 size = 0;
+    FOR_VECTOR (i, Sizes)
+      size += Sizes[i];
+    return size;
   }
-}
+};
+
+}}
 
 #endif

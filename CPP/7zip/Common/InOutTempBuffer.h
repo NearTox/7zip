@@ -8,7 +8,8 @@
 
 #include "../IStream.h"
 
-class CInOutTempBuffer {
+class CInOutTempBuffer
+{
   NWindows::NFile::NDir::CTempFile _tempFile;
   NWindows::NFile::NIO::COutFile _outFile;
   Byte *_buf;
