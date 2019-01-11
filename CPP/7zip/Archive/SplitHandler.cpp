@@ -160,7 +160,7 @@ HRESULT CHandler::Open2(IInStream* stream, IArchiveOpenCallback* callback) {
     size = prop.uhVal.QuadPart;
     */
     RINOK(stream->Seek(0, STREAM_SEEK_END, &size));
-    RINOK(stream->Seek(0, STREAM_SEEK_SET, NULL));
+    RINOK(stream->Seek(0, STREAM_SEEK_SET, nullptr));
   }
 
   _totalSize += size;
@@ -169,7 +169,7 @@ HRESULT CHandler::Open2(IInStream* stream, IArchiveOpenCallback* callback) {
 
   {
     const UInt64 numFiles = _streams.Size();
-    RINOK(callback->SetCompleted(&numFiles, NULL));
+    RINOK(callback->SetCompleted(&numFiles, nullptr));
   }
 
   for (;;) {
@@ -189,14 +189,14 @@ HRESULT CHandler::Open2(IInStream* stream, IArchiveOpenCallback* callback) {
       size = prop.uhVal.QuadPart;
       */
       RINOK(nextStream->Seek(0, STREAM_SEEK_END, &size));
-      RINOK(nextStream->Seek(0, STREAM_SEEK_SET, NULL));
+      RINOK(nextStream->Seek(0, STREAM_SEEK_SET, nullptr));
     }
     _totalSize += size;
     _sizes.Add(size);
     _streams.Add(nextStream);
     {
       const UInt64 numFiles = _streams.Size();
-      RINOK(callback->SetCompleted(&numFiles, NULL));
+      RINOK(callback->SetCompleted(&numFiles, nullptr));
     }
   }
 
@@ -264,8 +264,8 @@ STDMETHODIMP CHandler::Extract(
     lps->InSize = lps->OutSize = currentTotalSize;
     RINOK(lps->SetCur());
     IInStream* inStream = _streams[i];
-    RINOK(inStream->Seek(0, STREAM_SEEK_SET, NULL));
-    RINOK(copyCoder->Code(inStream, outStream, NULL, NULL, progress));
+    RINOK(inStream->Seek(0, STREAM_SEEK_SET, nullptr));
+    RINOK(copyCoder->Code(inStream, outStream, nullptr, nullptr, progress));
     currentTotalSize += copyCoderSpec->TotalSize;
   }
   outStream.Release();
@@ -291,7 +291,7 @@ STDMETHODIMP CHandler::GetStream(UInt32 index, ISequentialInStream** stream) {
   COM_TRY_END
 }
 
-REGISTER_ARC_I_NO_SIG("Split", "001", 0, 0xEA, 0, 0, NULL)
+REGISTER_ARC_I_NO_SIG("Split", "001", 0, 0xEA, 0, 0, nullptr)
 
 }  // namespace NSplit
 }  // namespace NArchive

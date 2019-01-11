@@ -24,13 +24,13 @@ bool CLibrary::LoadEx(CFSTR path, DWORD flags) throw() {
   if (!Free()) return false;
 #ifndef _UNICODE
   if (!g_IsNT) {
-    _module = ::LoadLibraryEx(fs2fas(path), NULL, flags);
+    _module = ::LoadLibraryEx(fs2fas(path), nullptr, flags);
   } else
 #endif
   {
-    _module = ::LoadLibraryExW(fs2us(path), NULL, flags);
+    _module = ::LoadLibraryExW(fs2us(path), nullptr, flags);
   }
-  return (_module != NULL);
+  return (_module != nullptr);
 }
 
 bool CLibrary::Load(CFSTR path) throw() {
@@ -43,7 +43,7 @@ bool CLibrary::Load(CFSTR path) throw() {
   {
     _module = ::LoadLibraryW(fs2us(path));
   }
-  return (_module != NULL);
+  return (_module != nullptr);
 }
 
 bool MyGetModuleFileName(FString& path) {

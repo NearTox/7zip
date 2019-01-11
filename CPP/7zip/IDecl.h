@@ -3,7 +3,7 @@
 #ifndef __IDECL_H
 #define __IDECL_H
 
-#include "../Common/MyUnknown.h"
+#include "../Common/MyWindows.h"
 
 #define k_7zip_GUID_Data1 0x23170F69
 #define k_7zip_GUID_Data2 0x40C1

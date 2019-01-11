@@ -23,7 +23,7 @@ struct CDecoder {
   CXzStatInfo Stat;
 
   CDecoder() :
-      xz(NULL),
+      xz(nullptr),
       _tryMt(True),
       _numThreads(1),
       _memUsage((UInt64)(sizeof(size_t)) << 28),

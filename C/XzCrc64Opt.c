@@ -1,7 +1,7 @@
 /* XzCrc64Opt.c -- CRC64 calculation
 2017-06-30 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "CpuArch.h"
 

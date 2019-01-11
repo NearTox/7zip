@@ -18,12 +18,12 @@ class CMyComPtr {
   T* _p;
 
  public:
-  CMyComPtr() : _p(NULL) {}
+  CMyComPtr() : _p(nullptr) {}
   CMyComPtr(T* p) throw() {
-    if ((_p = p) != NULL) p->AddRef();
+    if ((_p = p) != nullptr) p->AddRef();
   }
   CMyComPtr(const CMyComPtr<T>& lp) throw() {
-    if ((_p = lp._p) != NULL) _p->AddRef();
+    if ((_p = lp._p) != nullptr) _p->AddRef();
   }
   ~CMyComPtr() {
     if (_p) _p->Release();
@@ -31,7 +31,7 @@ class CMyComPtr {
   void Release() {
     if (_p) {
       _p->Release();
-      _p = NULL;
+      _p = nullptr;
     }
   }
   operator T*() const { return (T*)_p; }
@@ -45,7 +45,7 @@ class CMyComPtr {
     return p;
   }
   T* operator=(const CMyComPtr<T>& lp) { return (*this = lp._p); }
-  bool operator!() const { return (_p == NULL); }
+  bool operator!() const { return (_p == nullptr); }
   // bool operator==(T* pT) const {  return _p == pT; }
   void Attach(T* p2) {
     Release();
@@ -53,22 +53,22 @@ class CMyComPtr {
   }
   T* Detach() {
     T* pt = _p;
-    _p = NULL;
+    _p = nullptr;
     return pt;
   }
 #ifdef _WIN32
   HRESULT CoCreateInstance(
-      REFCLSID rclsid, REFIID iid, LPUNKNOWN pUnkOuter = NULL, DWORD dwClsContext = CLSCTX_ALL) {
+      REFCLSID rclsid, REFIID iid, LPUNKNOWN pUnkOuter = nullptr, DWORD dwClsContext = CLSCTX_ALL) {
     return ::CoCreateInstance(rclsid, pUnkOuter, dwClsContext, iid, (void**)&_p);
   }
 #endif
   /*
-  HRESULT CoCreateInstance(LPCOLESTR szProgID, LPUNKNOWN pUnkOuter = NULL, DWORD dwClsContext =
+  HRESULT CoCreateInstance(LPCOLESTR szProgID, LPUNKNOWN pUnkOuter = nullptr, DWORD dwClsContext =
   CLSCTX_ALL)
   {
     CLSID clsid;
     HRESULT hr = CLSIDFromProgID(szProgID, &clsid);
-    ATLASSERT(_p == NULL);
+    ATLASSERT(_p == nullptr);
     if (SUCCEEDED(hr))
       hr = ::CoCreateInstance(clsid, pUnkOuter, dwClsContext, __uuidof(T), (void**)&_p);
     return hr;
@@ -91,17 +91,17 @@ class CMyComBSTR {
   BSTR m_str;
 
  public:
-  CMyComBSTR() : m_str(NULL) {}
+  CMyComBSTR() : m_str(nullptr) {}
   ~CMyComBSTR() { ::SysFreeString(m_str); }
   BSTR* operator&() { return &m_str; }
   operator LPCOLESTR() const { return m_str; }
-  // operator bool() const { return m_str != NULL; }
-  // bool operator!() const { return m_str == NULL; }
+  // operator bool() const { return m_str != nullptr; }
+  // bool operator!() const { return m_str == nullptr; }
  private:
   // operator BSTR() const { return m_str; }
 
   CMyComBSTR(LPCOLESTR src) { m_str = ::SysAllocString(src); }
-  // CMyComBSTR(int nSize) { m_str = ::SysAllocStringLen(NULL, nSize); }
+  // CMyComBSTR(int nSize) { m_str = ::SysAllocStringLen(nullptr, nSize); }
   // CMyComBSTR(int nSize, LPCOLESTR sz) { m_str = ::SysAllocStringLen(sz, nSize);  }
   CMyComBSTR(const CMyComBSTR& src) { m_str = src.MyCopy(); }
 
@@ -136,7 +136,7 @@ class CMyComBSTR {
     return ::SysAllocStringLen(m_str, ::SysStringLen(m_str));
     /*
     UINT byteLen = ::SysStringByteLen(m_str);
-    BSTR res = ::SysAllocStringByteLen(NULL, byteLen);
+    BSTR res = ::SysAllocStringByteLen(nullptr, byteLen);
     if (res && byteLen != 0 && m_str)
       memcpy(res, m_str, byteLen);
     return res;
@@ -148,14 +148,14 @@ class CMyComBSTR {
   BSTR Detach()
   {
     BSTR s = m_str;
-    m_str = NULL;
+    m_str = nullptr;
     return s;
   }
   */
 
   void Empty() {
     ::SysFreeString(m_str);
-    m_str = NULL;
+    m_str = nullptr;
   }
 };
 
@@ -184,7 +184,7 @@ class CMyUnknownImp {
 #define MY_QUERYINTERFACE_BEGIN             \
   STDMETHOD(QueryInterface)                 \
   (REFGUID iid, void** outObject) throw() { \
-    *outObject = NULL;
+    *outObject = nullptr;
 
 #define MY_QUERYINTERFACE_ENTRY(i) \
   else if (iid == IID_##i) {       \

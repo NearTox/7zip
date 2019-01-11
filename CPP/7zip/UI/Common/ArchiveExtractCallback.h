@@ -52,12 +52,12 @@ struct CExtractNtOptions {
   CBoolPair SymLinks;
   CBoolPair HardLinks;
   CBoolPair AltStreams;
-  bool ReplaceColonForAltStream;
-  bool WriteToAltStreamIfColon;
+  static constexpr bool ReplaceColonForAltStream = false;
+  static constexpr bool WriteToAltStreamIfColon = false;
 
   bool PreAllocateOutFile;
 
-  CExtractNtOptions() : ReplaceColonForAltStream(false), WriteToAltStreamIfColon(false) {
+  CExtractNtOptions() {
     SymLinks.Val = true;
     HardLinks.Val = true;
     AltStreams.Val = true;
@@ -306,7 +306,7 @@ class CArchiveExtractCallback
 
  public:
   // call PrepareHardLinks() after Init()
-  HRESULT PrepareHardLinks(const CRecordVector<UInt32>* realIndices);  // NULL means all items
+  HRESULT PrepareHardLinks(const CRecordVector<UInt32>* realIndices);  // nullptr means all items
 
 #endif
 
@@ -341,7 +341,7 @@ struct CArchiveExtractCallback_Closer {
     HRESULT res = S_OK;
     if (_ref) {
       res = _ref->CloseArc();
-      _ref = NULL;
+      _ref = nullptr;
     }
     return res;
   }

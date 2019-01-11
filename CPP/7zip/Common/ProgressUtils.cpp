@@ -47,5 +47,5 @@ STDMETHODIMP CLocalProgress::SetRatioInfo(const UInt64 *inSize, const UInt64 *ou
 
 HRESULT CLocalProgress::SetCur()
 {
-  return SetRatioInfo(NULL, NULL);
+  return SetRatioInfo(nullptr, nullptr);
 }

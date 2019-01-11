@@ -68,7 +68,7 @@ class CRecordVector {
     Clear();
     if (newCapacity > _capacity) {
       delete[] _items;
-      _items = NULL;
+      _items = nullptr;
       _capacity = 0;
       MY_ARRAY_NEW(_items, T, newCapacity)
       // _items = new T[newCapacity];
@@ -96,7 +96,7 @@ class CRecordVector {
 
   void ReserveDown() {
     if (_size == _capacity) return;
-    T* p = NULL;
+    T* p = nullptr;
     if (_size != 0) {
       p = new T[_size];
       memcpy(p, _items, (size_t)_size * sizeof(T));
@@ -110,7 +110,7 @@ class CRecordVector {
 
   void ClearAndFree() {
     delete[] _items;
-    _items = NULL;
+    _items = nullptr;
     _size = 0;
     _capacity = 0;
   }
@@ -154,7 +154,7 @@ class CRecordVector {
       delete[] _items;
       _capacity = 0;
       _size = 0;
-      _items = NULL;
+      _items = nullptr;
       _items = new T[size];
       _capacity = size;
     }

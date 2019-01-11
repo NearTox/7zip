@@ -1,7 +1,7 @@
 /* LzFindMt.c -- multithreaded Match finder for LZ algorithms
 2018-12-29 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "LzHash.h"
 
@@ -609,11 +609,11 @@ static UInt32 *MixMatches4(CMatchFinderMt *p, UInt32 matchMinPos, UInt32 *distan
   const Byte *cur = p->pointerToCurPos;
   UInt32 lzPos = p->lzPos;
   MT_HASH4_CALC
-      
+
   curMatch2 = hash[                h2];
   curMatch3 = (hash + kFix3HashSize)[h3];
   curMatch4 = (hash + kFix4HashSize)[h4];
-  
+
   hash[                h2] = lzPos;
   (hash + kFix3HashSize)[h3] = lzPos;
   (hash + kFix4HashSize)[h4] = lzPos;
@@ -629,7 +629,7 @@ static UInt32 *MixMatches4(CMatchFinderMt *p, UInt32 matchMinPos, UInt32 *distan
     distances[0] = 2;
     distances += 2;
   }
-  
+
   if (curMatch3 >= matchMinPos && cur[(ptrdiff_t)curMatch3 - lzPos] == cur[0])
   {
     distances[1] = lzPos - curMatch3 - 1;
@@ -651,7 +651,7 @@ static UInt32 *MixMatches4(CMatchFinderMt *p, UInt32 matchMinPos, UInt32 *distan
       *distances++ = 4;
       *distances++ = lzPos - curMatch4 - 1;
     }
-  
+
   return distances;
 }
 */

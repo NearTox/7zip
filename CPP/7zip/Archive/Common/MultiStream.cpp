@@ -143,7 +143,7 @@ STDMETHODIMP COutMultiStream::Write(const void *data, UInt32 size, UInt32 *proce
     {
       CMyComPtr<IOutStream> outStream;
       RINOK(subStream.Stream.QueryInterface(IID_IOutStream, &outStream));
-      RINOK(outStream->Seek(_offsetPos, STREAM_SEEK_SET, NULL));
+      RINOK(outStream->Seek(_offsetPos, STREAM_SEEK_SET, nullptr));
       subStream.Pos = _offsetPos;
     }
 

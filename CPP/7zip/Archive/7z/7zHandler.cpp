@@ -265,7 +265,7 @@ STDMETHODIMP CHandler::GetNumRawProps(UInt32* numProps) {
 }
 
 STDMETHODIMP CHandler::GetRawPropInfo(UInt32 /* index */, BSTR* name, PROPID* propID) {
-  *name = NULL;
+  *name = nullptr;
   *propID = kpidNtSecure;
   return S_OK;
 }
@@ -283,7 +283,7 @@ STDMETHODIMP CHandler::GetParent(UInt32 /* index */, UInt32* parent, UInt32* par
 
 STDMETHODIMP CHandler::GetRawProp(
     UInt32 index, PROPID propID, const void** data, UInt32* dataSize, UInt32* propType) {
-  *data = NULL;
+  *data = nullptr;
   *dataSize = 0;
   *propType = 0;
 
@@ -358,14 +358,14 @@ HRESULT CHandler::SetMethodToProp(CNum folderIndex, PROPVARIANT* prop) const {
     }
 
     CNum propsSize = 0;
-    const Byte* props = NULL;
+    const Byte* props = nullptr;
     if ((mainByte & 0x20) != 0) {
       propsSize = inByte.ReadNum();
       props = inByte.GetPtr();
       inByte.SkipDataNoCheck(propsSize);
     }
 
-    const char* name = NULL;
+    const char* name = nullptr;
     char s[32];
     s[0] = 0;
 

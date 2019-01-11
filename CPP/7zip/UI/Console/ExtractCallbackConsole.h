@@ -20,7 +20,7 @@ class CExtractScanConsole : public IDirItemsCallback {
   CStdOutStream* _se;
   CPercentPrinter _percent;
 
-  bool NeedPercents() const { return _percent._so != NULL; }
+  bool NeedPercents() const { return _percent._so != nullptr; }
 
   void ClosePercentsAndFlush() {
     if (NeedPercents()) _percent.ClosePrint(true);

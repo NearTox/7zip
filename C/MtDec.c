@@ -1,7 +1,7 @@
 /* MtDec.c -- Multi-thread Decoder
 2018-07-04 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 // #define SHOW_DEBUG_INFO
 

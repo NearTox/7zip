@@ -23,7 +23,7 @@ namespace NCompress {
 namespace NLzma {
 
 CDecoder::CDecoder() :
-    _inBuf(NULL),
+    _inBuf(nullptr),
     _lzmaStatus(LZMA_STATUS_NOT_SPECIFIED),
     FinishStream(false),
     _propsWereSet(false),
@@ -74,7 +74,7 @@ STDMETHODIMP CDecoder::SetDecoderProperties2(const Byte* prop, UInt32 size) {
 }
 
 void CDecoder::SetOutStreamSizeResume(const UInt64* outSize) {
-  _outSizeDefined = (outSize != NULL);
+  _outSizeDefined = (outSize != nullptr);
   _outSize = 0;
   if (_outSizeDefined) _outSize = *outSize;
   _outProcessed = 0;

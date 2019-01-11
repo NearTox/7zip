@@ -15,7 +15,7 @@ namespace NCompress {
 namespace NLzma2 {
 
 CDecoder::CDecoder() :
-    _dec(NULL),
+    _dec(nullptr),
     _inProcessed(0),
     _prop(0xFF),
     _finishMode(false),
@@ -143,7 +143,7 @@ STDMETHODIMP CDecoder::Code(
 
   res = Lzma2DecMt_Decode(
       _dec, _prop, &props, &outWrap.vt, outSize, _finishMode, &inWrap.vt, &inProcessed, &isMT,
-      progress ? &progressWrap.vt : NULL);
+      progress ? &progressWrap.vt : nullptr);
 
   /*
   cpuTicks = GetCpuTicks() - cpuTicks;

@@ -81,9 +81,6 @@
     <ClInclude Include="..\..\..\Common\Defs.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Common\DynamicBuffer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Common\IntToString.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -94,9 +91,6 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Common\MyException.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Common\MyGuidDef.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Common\MyInitGuid.h">
@@ -366,9 +360,6 @@
     <ClInclude Include="..\..\UI\Common\SortUtils.h">
       <Filter>UI Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\UI\Common\TempFiles.h">
-      <Filter>UI Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\UI\Common\Update.h">
       <Filter>UI Common</Filter>
     </ClInclude>
@@ -495,9 +486,6 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Common\MyString.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Common\MyVector.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Common\NewHandler.cpp">
@@ -774,12 +762,6 @@
       <Filter>UI Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\UI\Common\SortUtils.cpp">
-      <Filter>UI Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\UI\Common\TempFiles.cpp">
-      <Filter>UI Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\UI\Common\Update.cpp">
       <Filter>UI Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\C\Sha256.c">

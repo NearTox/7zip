@@ -68,7 +68,7 @@ bool IsSafePath(const UString& path);
 
 STDMETHODIMP COpenCallbackImp::GetStream(const wchar_t* name, IInStream** inStream) {
   COM_TRY_BEGIN
-  *inStream = NULL;
+  *inStream = nullptr;
 
   if (_subArchiveMode) return S_FALSE;
   if (Callback) { RINOK(Callback->Open_CheckBreak()); }

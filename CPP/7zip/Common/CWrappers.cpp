@@ -54,7 +54,7 @@ HRESULT SResToHRESULT(SRes res) throw()
 
 #define PROGRESS_UNKNOWN_VALUE ((UInt64)(Int64)-1)
 
-#define CONVERT_PR_VAL(x) (x == PROGRESS_UNKNOWN_VALUE ? NULL : &x)
+#define CONVERT_PR_VAL(x) (x == PROGRESS_UNKNOWN_VALUE ? nullptr : &x)
 
 
 static SRes CompressProgress(const ICompressProgress *pp, UInt64 inSize, UInt64 outSize) throw()

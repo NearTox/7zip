@@ -50,7 +50,7 @@ void RegisterCodec(const CCodecInfo* codecInfo) throw();
 
 #define REGISTER_CODEC_E(x, clsDec, clsEnc, id, name) \
   REGISTER_CODEC_CREATE(CreateDec, clsDec)            \
-  REGISTER_CODEC_2(x, CreateDec, NULL, id, name)
+  REGISTER_CODEC_2(x, CreateDec, nullptr, id, name)
 
 #define REGISTER_FILTER_CREATE(name, cls) REGISTER_CODEC_CREATE_2(name, cls, ICompressFilter)
 
@@ -64,7 +64,7 @@ void RegisterCodec(const CCodecInfo* codecInfo) throw();
 
 #define REGISTER_FILTER_E(x, clsDec, clsEnc, id, name) \
   REGISTER_FILTER_CREATE(CreateDec, clsDec)            \
-  REGISTER_FILTER(x, CreateDec, NULL, id, name)
+  REGISTER_FILTER(x, CreateDec, nullptr, id, name)
 
 struct CHasherInfo {
   IHasher* (*CreateHasher)();

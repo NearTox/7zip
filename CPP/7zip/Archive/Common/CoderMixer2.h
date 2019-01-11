@@ -313,7 +313,7 @@ struct CStBinderStream
   COutStreamCalcSize *OutStreamSpec;
   CMyComPtr<IUnknown> StreamRef;
 
-  CStBinderStream(): InStreamSpec(NULL), OutStreamSpec(NULL) {}
+  CStBinderStream(): InStreamSpec(nullptr), OutStreamSpec(nullptr) {}
 };
 
 

@@ -1,7 +1,7 @@
 /* Lzma2DecMt.c -- LZMA2 Decoder Multi-thread
 2018-07-04 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 // #define SHOW_DEBUG_INFO
 

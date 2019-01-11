@@ -13,7 +13,7 @@ class CFileMapping : public CHandle {
  public:
   WRes Create(DWORD protect, UInt64 maxSize, LPCTSTR name) {
     _handle = ::CreateFileMapping(
-        INVALID_HANDLE_VALUE, NULL, protect, (DWORD)(maxSize >> 32), (DWORD)maxSize, name);
+        INVALID_HANDLE_VALUE, nullptr, protect, (DWORD)(maxSize >> 32), (DWORD)maxSize, name);
     return ::GetLastError();
   }
 

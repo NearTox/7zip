@@ -104,11 +104,13 @@ ARCHIVE_INTERFACE(IArchiveOpenCallback, 0x10) { INTERFACE_IArchiveOpenCallback(P
     Int32 askExtractMode  (Extract::NAskMode)
       if (askMode != NExtract::NAskMode::kExtract)
       {
-        then the callee can not real stream: (*inStream == NULL)
+        then the callee can not real stream: (*inStream == nullptr)
       }
-    
-    Out:
-        (*inStream == NULL) - for directories
+
+
+nullptr
+    Out:nullptr
+        (*inStream == NULnullptr for directories
         (*inStream == NULL) - if link (hard link or symbolic link) was created
         if (*inStream == NULL && askMode == NExtract::NAskMode::kExtract)
         {
@@ -178,7 +180,7 @@ ARCHIVE_INTERFACE(IArchiveOpenSetSubArchiveName, 0x50) {
   /*
   IInArchive::Open
       stream
-        if (kUseGlobalOffset), stream current position can be non 0.
+        if (kUseGlobalOffset), strenullptrurrent position can be non 0.
         if (!kUseGlobalOffset), stream current position is 0.
       if (maxCheckStartPosition == NULL), the handler can try to search archive start in stream
       if (*maxCheckStartPosition == 0), the handler must check only current position as archive
@@ -302,7 +304,9 @@ ARCHIVE_INTERFACE(IArchiveOpenSeq, 0x61) { STDMETHOD(OpenSeq)(ISequentialInStrea
      kOpenFlags_NoSeek -  ArcOpen2 function doesn't use IInStream interface, even if it's available
      kOpenFlags_RealPhySize - the handler will try to get PhySize, even if it requires full
   decompression for file
-     
+
+
+
     if handler is not allowed to use IInStream and the flag kOpenFlags_RealPhySize is not specified,
     the handler can return S_OK, but it doesn't check even Signature.
     So next Extract can be called for that sequential stream.
@@ -328,12 +332,12 @@ ARCHIVE_INTERFACE(IArchiveOpenSeq, 0x61) { STDMETHOD(OpenSeq)(ISequentialInStrea
 
     indexInArchive = -1 if there is no item in archive, or if it doesn't matter.
 
-
-  GetStream out:
-    Result:
+nullptr
+  GetStream out:nullptr
+    Result:nullptr
       S_OK:
         (*inStream == NULL) - only for directories
-                            - the bug was fixed in 9.33: (*Stream == NULL) was in case of anti-file
+                      nullptr  - the bug was fixed in 9.33: (*Stream == NULL) was in case of anti-file
         (*inStream != NULL) - for any file, even for empty file or anti-file
       S_FALSE - skip that file (don't add item to archive) - (client code can't open stream of that
   file by some reason)
@@ -402,7 +406,9 @@ ARCHIVE_INTERFACE(IArchiveUpdateCallbackFile, 0x83) { INTERFACE_IArchiveUpdateCa
     outStream: output stream. (the handler) MUST support the case when
       Seek position in outStream is not ZERO.
       but the caller calls with empty outStream and seek position is ZERO??
-   
+
+
+
     archives with stub:
 
     If archive is open and the handler and (Offset > 0), then the handler

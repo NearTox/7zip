@@ -17,7 +17,7 @@ static const size_t kTempBufSize = (1 << 20);
 
 #define kTempFilePrefixString FTEXT("7zt")
 
-CInOutTempBuffer::CInOutTempBuffer(): _buf(NULL) { }
+CInOutTempBuffer::CInOutTempBuffer(): _buf(nullptr) { }
 
 void CInOutTempBuffer::Create()
 {

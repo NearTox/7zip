@@ -151,7 +151,7 @@ HRESULT CCodecs::Load() {
 #ifndef _SFX
 
     item.CreateOutArchive = arc.CreateOutArchive;
-    item.UpdateEnabled = (arc.CreateOutArchive != NULL);
+    item.UpdateEnabled = (arc.CreateOutArchive != nullptr);
     item.SignatureOffset = arc.SignatureOffset;
     // item.Version = MY_VER_MIX;
     item.NewInterface = true;

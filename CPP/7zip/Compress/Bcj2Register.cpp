@@ -11,7 +11,7 @@ namespace NBcj2 {
 
 REGISTER_CODEC_CREATE_2(CreateCodec, CDecoder(), ICompressCoder2)
 
-REGISTER_CODEC_VAR{CreateCodec, NULL, 0x303011B, "BCJ2", 4, false};
+REGISTER_CODEC_VAR{CreateCodec, nullptr, 0x303011B, "BCJ2", 4, false};
 
 REGISTER_CODEC(BCJ2)
 

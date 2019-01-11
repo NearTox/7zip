@@ -127,7 +127,7 @@ CDirItems::CDirItems() :
     ReadSecure(false)
 #endif
     ,
-    Callback(NULL) {
+    Callback(nullptr) {
 #ifdef _USE_SECURITY_CODE
   _saclEnabled = InitLocalPrivileges();
 #endif

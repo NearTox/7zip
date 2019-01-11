@@ -10,9 +10,9 @@ namespace NWindows {
 namespace NCOM {
 
 BSTR AllocBstrFromAscii(const char* s) throw() {
-  if (!s) return NULL;
+  if (!s) return nullptr;
   UINT len = (UINT)strlen(s);
-  BSTR p = ::SysAllocStringLen(NULL, len);
+  BSTR p = ::SysAllocStringLen(nullptr, len);
   if (p) {
     for (UINT i = 0; i <= len; i++) p[i] = (Byte)s[i];
   }
@@ -20,7 +20,7 @@ BSTR AllocBstrFromAscii(const char* s) throw() {
 }
 
 HRESULT PropVarEm_Alloc_Bstr(PROPVARIANT* p, unsigned numChars) throw() {
-  p->bstrVal = ::SysAllocStringLen(NULL, numChars);
+  p->bstrVal = ::SysAllocStringLen(nullptr, numChars);
   if (!p->bstrVal) {
     p->vt = VT_ERROR;
     p->scode = E_OUTOFMEMORY;
@@ -112,7 +112,7 @@ CPropVariant& CPropVariant::operator=(const UString2& s) {
     wReserved1 = 0;
     bstrVal = ::SysAllocStringLen(s.GetRawPtr(), s.Len());
     if (!bstrVal) throw kMemException;
-    /* SysAllocStringLen probably appends a null-terminating character for NULL string.
+    /* SysAllocStringLen probably appends a null-terminating character for nullptr string.
        But it doesn't specified in MSDN.
        But we suppose that it works
 
@@ -122,7 +122,7 @@ CPropVariant& CPropVariant::operator=(const UString2& s) {
     }
     */
 
-    /* MSDN: Windows CE: SysAllocStringLen() : Passing invalid (and under some circumstances NULL)
+    /* MSDN: Windows CE: SysAllocStringLen() : Passing invalid (and under some circumstances nullptr)
                          pointers to this function causes  an unexpected termination of the
        application. Is it safe? Maybe we must chamnge the code for that case ? */
   }
@@ -155,7 +155,7 @@ BSTR CPropVariant::AllocBstr(unsigned numChars) {
   if (vt != VT_EMPTY) InternalClear();
   vt = VT_BSTR;
   wReserved1 = 0;
-  bstrVal = ::SysAllocStringLen(NULL, numChars);
+  bstrVal = ::SysAllocStringLen(nullptr, numChars);
   if (!bstrVal) {
     throw kMemException;
     // vt = VT_ERROR;

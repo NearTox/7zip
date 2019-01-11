@@ -1,7 +1,7 @@
 /* 7zCrc.c -- CRC32 init
 2017-06-06 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "7zCrc.h"
 #include "CpuArch.h"

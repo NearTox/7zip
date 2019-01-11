@@ -74,7 +74,7 @@ class CHandler
 
     RINOK(decoder.Decode(
         seqInStream, outStream,
-        NULL,  // *outSizeLimit
+        nullptr,  // *outSizeLimit
         true,  // finishStream
         progress));
 
@@ -108,10 +108,10 @@ class CHandler
   CHandler();
   ~CHandler();
 
-  HRESULT SeekToPackPos(UInt64 pos) { return _stream->Seek(pos, STREAM_SEEK_SET, NULL); }
+  HRESULT SeekToPackPos(UInt64 pos) { return _stream->Seek(pos, STREAM_SEEK_SET, nullptr); }
 };
 
-CHandler::CHandler() : _blocks(NULL), _blocksArraySize(0) {}
+CHandler::CHandler() : _blocks(nullptr), _blocksArraySize(0) {}
 
 CHandler::~CHandler() { MyFree(_blocks); }
 
@@ -160,7 +160,7 @@ static const CMethodNamePair g_NamePairs[] = {
     {XZ_ID_ARMT, "ARMT"},   {XZ_ID_SPARC, "SPARC"}, {XZ_ID_LZMA2, "LZMA2"}};
 
 static void AddMethodString(AString& s, const CXzFilter& f) {
-  const char* p = NULL;
+  const char* p = nullptr;
   for (unsigned i = 0; i < ARRAY_SIZE(g_NamePairs); i++)
     if (g_NamePairs[i].Id == f.id) {
       p = g_NamePairs[i].Name;
@@ -188,9 +188,9 @@ static void AddMethodString(AString& s, const CXzFilter& f) {
   }
 }
 
-static const char* const kChecks[] = {"NoCheck", "CRC32", NULL, NULL, "CRC64",  NULL,
-                                      NULL,      NULL,    NULL, NULL, "SHA256", NULL,
-                                      NULL,      NULL,    NULL, NULL};
+static const char* const kChecks[] = {"NoCheck", "CRC32", nullptr, nullptr, "CRC64",  nullptr,
+                                      nullptr,      nullptr,    nullptr, nullptr, "SHA256", nullptr,
+                                      nullptr,      nullptr,    nullptr, nullptr};
 
 static void AddCheckString(AString& s, const CXzs& xzs) {
   size_t i;
@@ -298,7 +298,7 @@ struct COpenCallbackWrap {
 
 static SRes OpenCallbackProgress(const ICompressProgress* pp, UInt64 inSize, UInt64 /* outSize */) {
   COpenCallbackWrap* p = CONTAINER_FROM_VTBL(pp, COpenCallbackWrap, vt);
-  if (p->OpenCallback) p->Res = p->OpenCallback->SetCompleted(NULL, &inSize);
+  if (p->OpenCallback) p->Res = p->OpenCallback->SetCompleted(nullptr, &inSize);
   return HRESULT_To_SRes(p->Res, SZ_ERROR_PROGRESS);
 }
 
@@ -318,7 +318,7 @@ struct CXzsCPP {
 
 struct CLookToRead2_CPP : public CLookToRead2 {
   CLookToRead2_CPP() {
-    buf = NULL;
+    buf = nullptr;
     LookToRead2_CreateVTable(
         this,
         True  // Lookahead ?
@@ -379,7 +379,7 @@ HRESULT CHandler::Open2(IInStream* inStream, /* UInt32 flags, */ IArchiveOpenCal
   }
 
   RINOK(inStream->Seek(0, STREAM_SEEK_END, &_stat.InSize));
-  if (callback) { RINOK(callback->SetTotal(NULL, &_stat.InSize)); }
+  if (callback) { RINOK(callback->SetTotal(nullptr, &_stat.InSize)); }
 
   CSeekInStreamWrap inStreamImp;
 
@@ -505,7 +505,7 @@ STDMETHODIMP CHandler::Close() {
   _seqStream.Release();
 
   MyFree(_blocks);
-  _blocks = NULL;
+  _blocks = nullptr;
   _blocksArraySize = 0;
   _maxBlocksSize = 0;
 
@@ -524,8 +524,8 @@ struct CXzUnpackerCPP2 {
 };
 
 CXzUnpackerCPP2::CXzUnpackerCPP2() :
-    InBuf(NULL)
-// , OutBuf(NULL)
+    InBuf(nullptr)
+// , OutBuf(nullptr)
 {
   XzUnpacker_Construct(&p, &g_Alloc);
 }
@@ -628,7 +628,7 @@ static HRESULT DecodeBlock(
     SRes res = XzUnpacker_Code(
         &xzu.p,
         // dest + outPos,
-        NULL, &outLen, xzu.InBuf + inPos, &inLen,
+        nullptr, &outLen, xzu.InBuf + inPos, &inLen,
         (inLen == 0),  // srcFinished
         CODER_FINISH_END, &status);
 
@@ -718,7 +718,7 @@ static const UInt64 kMaxBlockSize_for_GetStream = (UInt64)1 << 40;
 STDMETHODIMP CHandler::GetStream(UInt32 index, ISequentialInStream** stream) {
   COM_TRY_BEGIN
 
-  *stream = NULL;
+  *stream = nullptr;
 
   if (index != 0) return E_INVALIDARG;
 
@@ -796,7 +796,7 @@ STDMETHODIMP CHandler::Extract(
 
   if (_needSeekToStart) {
     if (!_stream) return E_FAIL;
-    RINOK(_stream->Seek(0, STREAM_SEEK_SET, NULL));
+    RINOK(_stream->Seek(0, STREAM_SEEK_SET, nullptr));
   } else
     _needSeekToStart = true;
 
@@ -841,6 +841,6 @@ STDMETHODIMP CHandler::SetProperties(
   COM_TRY_END
 }
 
-REGISTER_ARC_IO("xz", "xz txz", "* .tar", 0xC, XZ_SIG, 0, NArcInfoFlags::kKeepName, NULL)
+REGISTER_ARC_IO("xz", "xz txz", "* .tar", 0xC, XZ_SIG, 0, NArcInfoFlags::kKeepName, nullptr)
 }
 }

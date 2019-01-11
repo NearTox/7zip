@@ -21,7 +21,7 @@ class COpenCallbackConsole : public IOpenCallbackUI {
   // UInt64 _totalFiles;
   UInt64 _totalBytes;
 
-  bool NeedPercents() const { return _percent._so != NULL; }
+  bool NeedPercents() const { return _percent._so != nullptr; }
 
  public:
   bool MultiArcMode;

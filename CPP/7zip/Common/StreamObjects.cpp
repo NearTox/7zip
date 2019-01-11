@@ -80,7 +80,7 @@ STDMETHODIMP CBufInStream::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosi
 
 void Create_BufInStream_WithReference(const void *data, size_t size, IUnknown *ref, ISequentialInStream **stream)
 {
-  *stream = NULL;
+  *stream = nullptr;
   CBufInStream *inStreamSpec = new CBufInStream;
   CMyComPtr<ISequentialInStream> streamTemp = inStreamSpec;
   inStreamSpec->Init((const Byte *)data, size, ref);
@@ -89,7 +89,7 @@ void Create_BufInStream_WithReference(const void *data, size_t size, IUnknown *r
 
 void Create_BufInStream_WithNewBuffer(const void *data, size_t size, ISequentialInStream **stream)
 {
-  *stream = NULL;
+  *stream = nullptr;
   CBufferInStream *inStreamSpec = new CBufferInStream;
   CMyComPtr<ISequentialInStream> streamTemp = inStreamSpec;
   inStreamSpec->Buf.CopyFrom((const Byte *)data, size);
@@ -128,9 +128,9 @@ Byte *CDynBufSeqOutStream::GetBufPtrForWriting(size_t addSize)
 {
   addSize += _size;
   if (addSize < _size)
-    return NULL;
+    return nullptr;
   if (!_buffer.EnsureCapacity(addSize))
-    return NULL;
+    return nullptr;
   return (Byte *)_buffer + _size;
 }
 

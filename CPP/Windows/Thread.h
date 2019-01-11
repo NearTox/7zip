@@ -27,7 +27,7 @@ class CThread {
   void Attach(HANDLE handle) { thread = handle; }
   HANDLE Detach() {
     HANDLE h = thread;
-    thread = NULL;
+    thread = nullptr;
     return h;
   }
   DWORD Resume() { return ::ResumeThread(thread); }

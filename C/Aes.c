@@ -1,7 +1,7 @@
 /* Aes.c -- AES encryption / decryption
 2017-01-24 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "Aes.h"
 #include "CpuArch.h"

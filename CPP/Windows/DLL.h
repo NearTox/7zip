@@ -23,12 +23,12 @@ class CLibrary {
 
   // CLASS_NO_COPY(CLibrary);
  public:
-  CLibrary() : _module(NULL){};
+  CLibrary() : _module(nullptr){};
   ~CLibrary() { Free(); }
 
   operator HMODULE() const { return _module; }
   HMODULE* operator&() { return &_module; }
-  bool IsLoaded() const { return (_module != NULL); }
+  bool IsLoaded() const { return (_module != nullptr); }
 
   void Attach(HMODULE m) {
     Free();
@@ -36,7 +36,7 @@ class CLibrary {
   }
   HMODULE Detach() {
     HMODULE m = _module;
-    _module = NULL;
+    _module = nullptr;
     return m;
   }
 

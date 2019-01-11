@@ -26,9 +26,9 @@ class CBaseEvent {
   WRes Close() { return Event_Close(&_object); }
 #ifdef _WIN32
   WRes Create(
-      bool manualReset, bool initiallyOwn, LPCTSTR name = NULL, LPSECURITY_ATTRIBUTES sa = NULL) {
+      bool manualReset, bool initiallyOwn, LPCTSTR name = nullptr, LPSECURITY_ATTRIBUTES sa = nullptr) {
     _object = ::CreateEvent(sa, BoolToBOOL(manualReset), BoolToBOOL(initiallyOwn), name);
-    if (name == NULL && _object != 0) return 0;
+    if (name == nullptr && _object != 0) return 0;
     return ::GetLastError();
   }
   WRes Open(DWORD desiredAccess, bool inheritHandle, LPCTSTR name) {
@@ -79,9 +79,9 @@ class CObject : public CHandle {
 };
 class CMutex : public CObject {
  public:
-  WRes Create(bool initiallyOwn, LPCTSTR name = NULL, LPSECURITY_ATTRIBUTES sa = NULL) {
+  WRes Create(bool initiallyOwn, LPCTSTR name = nullptr, LPSECURITY_ATTRIBUTES sa = nullptr) {
     _handle = ::CreateMutex(sa, BoolToBOOL(initiallyOwn), name);
-    if (name == NULL && _handle != 0) return 0;
+    if (name == nullptr && _handle != 0) return 0;
     return ::GetLastError();
   }
 #  ifndef UNDER_CE

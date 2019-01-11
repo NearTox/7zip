@@ -330,7 +330,7 @@ STDMETHODIMP CExtractCallbackConsole::MessageError(const wchar_t* message) {
 
 void SetExtractErrorMessage(Int32 opRes, Int32 encrypted, AString& dest) {
   dest.Empty();
-  const char* s = NULL;
+  const char* s = nullptr;
 
   switch (opRes) {
     case NArchive::NExtract::NOperationResult::kUnsupportedMethod: s = kUnsupportedMethod; break;

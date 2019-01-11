@@ -74,15 +74,15 @@ bool SetDirTime(CFSTR path, const FILETIME* cTime, const FILETIME* aTime, const 
   HANDLE hDir = INVALID_HANDLE_VALUE;
   IF_USE_MAIN_PATH
   hDir = ::CreateFileW(
-      fs2us(path), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-      FILE_FLAG_BACKUP_SEMANTICS, NULL);
+      fs2us(path), GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+      FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 #ifdef WIN_LONG_PATH
   if (hDir == INVALID_HANDLE_VALUE && USE_SUPER_PATH) {
     UString superPath;
     if (GetSuperPath(path, superPath, USE_MAIN_PATH))
       hDir = ::CreateFileW(
-          superPath, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-          FILE_FLAG_BACKUP_SEMANTICS, NULL);
+          superPath, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+          FILE_FLAG_BACKUP_SEMANTICS, nullptr);
   }
 #endif
 
@@ -172,7 +172,7 @@ bool MyCreateHardLink(CFSTR newFileName, CFSTR existFileName) {
     SetLastError(ERROR_CALL_NOT_IMPLEMENTED);
     return false;
     /*
-    if (::CreateHardLink(fs2fas(newFileName), fs2fas(existFileName), NULL))
+    if (::CreateHardLink(fs2fas(newFileName), fs2fas(existFileName), nullptr))
       return true;
     */
   } else
@@ -182,12 +182,12 @@ bool MyCreateHardLink(CFSTR newFileName, CFSTR existFileName) {
         ::GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW");
     if (!my_CreateHardLinkW) return false;
     IF_USE_MAIN_PATH_2(newFileName, existFileName)
-    if (my_CreateHardLinkW(fs2us(newFileName), fs2us(existFileName), NULL)) return true;
+    if (my_CreateHardLinkW(fs2us(newFileName), fs2us(existFileName), nullptr)) return true;
 #  ifdef WIN_LONG_PATH
     if (USE_SUPER_PATH_2) {
       UString d1, d2;
       if (GetSuperPaths(newFileName, existFileName, d1, d2, USE_MAIN_PATH_2))
-        return BOOLToBool(my_CreateHardLinkW(d1, d2, NULL));
+        return BOOLToBool(my_CreateHardLinkW(d1, d2, nullptr));
     }
 #  endif
   }
@@ -222,17 +222,17 @@ WinXP-64 CreateDir():
 bool CreateDir(CFSTR path) {
 #ifndef _UNICODE
   if (!g_IsNT) {
-    if (::CreateDirectory(fs2fas(path), NULL)) return true;
+    if (::CreateDirectory(fs2fas(path), nullptr)) return true;
   } else
 #endif
   {
     IF_USE_MAIN_PATH
-    if (::CreateDirectoryW(fs2us(path), NULL)) return true;
+    if (::CreateDirectoryW(fs2us(path), nullptr)) return true;
 #ifdef WIN_LONG_PATH
     if ((!USE_MAIN_PATH || ::GetLastError() != ERROR_ALREADY_EXISTS) && USE_SUPER_PATH) {
       UString superPath;
       if (GetSuperPath(path, superPath, USE_MAIN_PATH))
-        return BOOLToBool(::CreateDirectoryW(superPath, NULL));
+        return BOOLToBool(::CreateDirectoryW(superPath, nullptr));
     }
 #endif
   }
@@ -251,17 +251,17 @@ bool CreateDir(CFSTR path) {
 static bool CreateDir2(CFSTR path) {
 #ifndef _UNICODE
   if (!g_IsNT) {
-    if (::CreateDirectory(fs2fas(path), NULL)) return true;
+    if (::CreateDirectory(fs2fas(path), nullptr)) return true;
   } else
 #endif
   {
     IF_USE_MAIN_PATH
-    if (::CreateDirectoryW(fs2us(path), NULL)) return true;
+    if (::CreateDirectoryW(fs2us(path), nullptr)) return true;
 #ifdef WIN_LONG_PATH
     if ((!USE_MAIN_PATH || ::GetLastError() != ERROR_ALREADY_EXISTS) && USE_SUPER_PATH) {
       UString superPath;
       if (GetSuperPath(path, superPath, USE_MAIN_PATH)) {
-        if (::CreateDirectoryW(superPath, NULL)) return true;
+        if (::CreateDirectoryW(superPath, nullptr)) return true;
         if (::GetLastError() != ERROR_ALREADY_EXISTS) return false;
         NFind::CFileInfo fi;
         if (!fi.Find(us2fs(superPath))) return false;
@@ -561,7 +561,7 @@ bool CTempDir::Create(CFSTR prefix) {
   if (!Remove()) return false;
   FString tempPath;
   if (!MyGetTempPath(tempPath)) return false;
-  if (!CreateTempFile(tempPath + prefix, true, _path, NULL)) return false;
+  if (!CreateTempFile(tempPath + prefix, true, _path, nullptr)) return false;
   _mustBeDeleted = true;
   return true;
 }

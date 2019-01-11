@@ -41,7 +41,7 @@ static const char* const kStopSwitchParsing = "--";
 
 static bool inline IsItSwitchChar(wchar_t c) { return (c == '-'); }
 
-CParser::CParser() : _switches(NULL), StopSwitchIndex(-1) {}
+CParser::CParser() : _switches(nullptr), StopSwitchIndex(-1) {}
 
 CParser::~CParser() { delete[] _switches; }
 
@@ -132,7 +132,7 @@ bool CParser::ParseStrings(
   ErrorLine.Empty();
   NonSwitchStrings.Clear();
   delete[] _switches;
-  _switches = NULL;
+  _switches = nullptr;
   _switches = new CSwitchResult[numSwitches];
 
   FOR_VECTOR(i, commandStrings) {

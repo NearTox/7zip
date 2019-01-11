@@ -327,7 +327,7 @@ STDMETHODIMP CHandler::Extract(const UInt32 *indices, UInt32 numItems,
 
     {
       HRESULT result = folderOutStream->Init(fileIndex,
-          allFilesMode ? NULL : indices + i,
+          allFilesMode ? nullptr : indices + i,
           numSolidFiles);
 
       i += numSolidFiles;
@@ -365,7 +365,7 @@ STDMETHODIMP CHandler::Extract(const UInt32 *indices, UInt32 numItems,
 
           outStream,
           progress,
-          NULL // *inStreamMainRes
+          nullptr // *inStreamMainRes
           , dataAfterEnd_Error
 
           _7Z_DECODER_CRYPRO_VARS

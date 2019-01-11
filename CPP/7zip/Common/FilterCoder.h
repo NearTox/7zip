@@ -23,7 +23,7 @@ struct CAlignedMidBuffer {
 
   Byte* _buf;
 
-  CAlignedMidBuffer() : _buf(NULL) {}
+  CAlignedMidBuffer() : _buf(nullptr) {}
   ~CAlignedMidBuffer() { ::MidFree(_buf); }
 
   void AllocAlignedMask(size_t size, size_t) {
@@ -36,12 +36,12 @@ struct CAlignedMidBuffer {
   Byte* _bufBase;
   Byte* _buf;
 
-  CAlignedMidBuffer() : _bufBase(NULL), _buf(NULL) {}
+  CAlignedMidBuffer() : _bufBase(nullptr), _buf(nullptr) {}
   ~CAlignedMidBuffer() { ::MidFree(_bufBase); }
 
   void AllocAlignedMask(size_t size, size_t alignMask) {
     ::MidFree(_bufBase);
-    _buf = NULL;
+    _buf = nullptr;
     _bufBase = (Byte*)::MidAlloc(size + alignMask);
 
     if (_bufBase) {
@@ -126,7 +126,7 @@ class CFilterCoder
   class C_InStream_Releaser {
    public:
     CFilterCoder* FilterCoder;
-    C_InStream_Releaser() : FilterCoder(NULL) {}
+    C_InStream_Releaser() : FilterCoder(nullptr) {}
     ~C_InStream_Releaser() {
       if (FilterCoder) FilterCoder->ReleaseInStream();
     }
@@ -135,7 +135,7 @@ class CFilterCoder
   class C_OutStream_Releaser {
    public:
     CFilterCoder* FilterCoder;
-    C_OutStream_Releaser() : FilterCoder(NULL) {}
+    C_OutStream_Releaser() : FilterCoder(nullptr) {}
     ~C_OutStream_Releaser() {
       if (FilterCoder) FilterCoder->ReleaseOutStream();
     }
@@ -144,7 +144,7 @@ class CFilterCoder
   class C_Filter_Releaser {
    public:
     CFilterCoder* FilterCoder;
-    C_Filter_Releaser() : FilterCoder(NULL) {}
+    C_Filter_Releaser() : FilterCoder(nullptr) {}
     ~C_Filter_Releaser() {
       if (FilterCoder) FilterCoder->Filter.Release();
     }

@@ -80,7 +80,7 @@ HRESULT CopyStream(
     ISequentialInStream* inStream, ISequentialOutStream* outStream,
     ICompressProgressInfo* progress) {
   CMyComPtr<ICompressCoder> copyCoder = new CCopyCoder;
-  return copyCoder->Code(inStream, outStream, NULL, NULL, progress);
+  return copyCoder->Code(inStream, outStream, nullptr, nullptr, progress);
 }
 
 HRESULT CopyStream_ExactSize(
@@ -88,7 +88,7 @@ HRESULT CopyStream_ExactSize(
     ICompressProgressInfo* progress) {
   NCompress::CCopyCoder* copyCoderSpec = new NCompress::CCopyCoder;
   CMyComPtr<ICompressCoder> copyCoder = copyCoderSpec;
-  RINOK(copyCoder->Code(inStream, outStream, NULL, &size, progress));
+  RINOK(copyCoder->Code(inStream, outStream, nullptr, &size, progress));
   return copyCoderSpec->TotalSize == size ? S_OK : E_FAIL;
 }
 

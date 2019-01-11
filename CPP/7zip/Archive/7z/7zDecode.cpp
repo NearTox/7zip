@@ -25,7 +25,7 @@ public:
 
 STDMETHODIMP CDecProgress::SetRatioInfo(const UInt64 * /* inSize */, const UInt64 *outSize)
 {
-  return _progress->SetRatioInfo(NULL, outSize);
+  return _progress->SetRatioInfo(nullptr, outSize);
 }
 
 static void Convert_FolderInfo_to_BindInfo(const CFolderEx &folder, CBindInfoEx &bi)
@@ -158,7 +158,7 @@ STDMETHODIMP CLockedSequentialInStreamMT::Read(void *data, UInt32 size, UInt32 *
 
   if (_pos != _glob->Pos)
   {
-    RINOK(_glob->Stream->Seek(_pos, STREAM_SEEK_SET, NULL));
+    RINOK(_glob->Stream->Seek(_pos, STREAM_SEEK_SET, nullptr));
     _glob->Pos = _pos;
   }
 
@@ -200,7 +200,7 @@ STDMETHODIMP CLockedSequentialInStreamST::Read(void *data, UInt32 size, UInt32 *
 {
   if (_pos != _glob->Pos)
   {
-    RINOK(_glob->Stream->Seek(_pos, STREAM_SEEK_SET, NULL));
+    RINOK(_glob->Stream->Seek(_pos, STREAM_SEEK_SET, nullptr));
     _glob->Pos = _pos;
   }
 
@@ -507,7 +507,7 @@ HRESULT CDecoder::Decode(
 
     if (folderInfo.PackStreams.Size() == 1)
     {
-      RINOK(inStream->Seek(packPos, STREAM_SEEK_SET, NULL));
+      RINOK(inStream->Seek(packPos, STREAM_SEEK_SET, nullptr));
       packStream = inStream;
     }
     else

@@ -14,23 +14,9 @@
 
 typedef CMessagePathException CArcCmdLineException;
 
-namespace NCommandType {
-enum EEnum { kTest = 0, kExtractFull };
-}
-
-struct CArcCommand {
-  NCommandType::EEnum CommandType;
-
-  bool IsFromExtractGroup() const;
-  bool IsTestCommand() const { return CommandType == NCommandType::kTest; }
-  NExtract::NPathMode::EEnum GetPathMode() const;
-};
-
 enum { k_OutStream_disabled = 0, k_OutStream_stdout = 1, k_OutStream_stderr = 2 };
 
 struct CArcCmdLineOptions {
-  bool HelpMode;
-
   // bool LargePages;
   bool CaseSensitiveChange;
   bool CaseSensitive;
@@ -38,24 +24,15 @@ struct CArcCmdLineOptions {
   bool IsInTerminal;
   bool IsStdOutTerminal;
   bool IsStdErrTerminal;
-  bool StdInMode;
-  bool StdOutMode;
-  bool EnableHeaders;
 
-  static constexpr bool YesToAll = true;
-  bool ShowDialog;
   NWildcard::CCensor Censor;
 
-  CArcCommand Command;
   UString ArchiveName;
 
 #ifndef _NO_CRYPTO
   bool PasswordEnabled;
   UString Password;
 #endif
-
-  bool TechMode;
-  bool ShowTime;
 
   UStringVector HashMethods;
 
@@ -91,9 +68,6 @@ struct CArcCmdLineOptions {
       // LargePages(false),
       CaseSensitiveChange(false),
       CaseSensitive(false),
-
-      StdInMode(false),
-      StdOutMode(false),
 
       Number_for_Out(k_OutStream_stdout),
       Number_for_Errors(k_OutStream_stderr),

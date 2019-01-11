@@ -251,7 +251,7 @@ static char* Utf16_To_Utf8(char* dest, const wchar_t* src, const wchar_t* srcLim
 bool ConvertUTF8ToUnicode(const AString& src, UString& dest) {
   dest.Empty();
   size_t destLen = 0;
-  Utf8_To_Utf16(NULL, &destLen, src, src.Ptr(src.Len()));
+  Utf8_To_Utf16(nullptr, &destLen, src, src.Ptr(src.Len()));
   bool res = Utf8_To_Utf16(dest.GetBuf((unsigned)destLen), &destLen, src, src.Ptr(src.Len()));
   dest.ReleaseBuf_SetEnd((unsigned)destLen);
   return res;

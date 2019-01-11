@@ -1,7 +1,7 @@
 /* BraIA64.c -- Converter for IA-64 code
 2017-01-26 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "Bra.h"
 #include "CpuArch.h"

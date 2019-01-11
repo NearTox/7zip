@@ -713,7 +713,7 @@ class UString2 {
   UString2(wchar_t c);
 
  public:
-  UString2() : _chars(NULL), _len(0) {}
+  UString2() : _chars(nullptr), _len(0) {}
   UString2(const wchar_t* s);
   UString2(const UString2& s);
   ~UString2() {

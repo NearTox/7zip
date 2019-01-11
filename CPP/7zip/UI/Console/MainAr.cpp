@@ -15,8 +15,8 @@
 
 using namespace NWindows;
 
-CStdOutStream* g_StdStream = NULL;
-CStdOutStream* g_ErrStream = NULL;
+CStdOutStream* g_StdStream = nullptr;
+CStdOutStream* g_ErrStream = nullptr;
 
 extern int Main2(
 #ifndef _WIN32

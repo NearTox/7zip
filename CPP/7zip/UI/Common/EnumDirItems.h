@@ -18,8 +18,8 @@ HRESULT EnumerateItems(
     const UString& addPathPrefix, CDirItems& dirItems);
 
 struct CMessagePathException : public UString {
-  CMessagePathException(const char* a, const wchar_t* u = NULL);
-  CMessagePathException(const wchar_t* a, const wchar_t* u = NULL);
+  CMessagePathException(const char* a, const wchar_t* u = nullptr);
+  CMessagePathException(const wchar_t* a, const wchar_t* u = nullptr);
 };
 
 HRESULT EnumerateDirItemsAndSort(

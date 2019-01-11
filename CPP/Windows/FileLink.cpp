@@ -365,7 +365,7 @@ bool SetReparseData(CFSTR path, bool isDir, const void* data, DWORD size) {
     return false;
 
   DWORD returnedSize;
-  if (!file.DeviceIoControl(my_FSCTL_SET_REPARSE_POINT, (void*)data, size, NULL, 0, &returnedSize))
+  if (!file.DeviceIoControl(my_FSCTL_SET_REPARSE_POINT, (void*)data, size, nullptr, 0, &returnedSize))
     return false;
   return true;
 }

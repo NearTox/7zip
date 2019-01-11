@@ -504,7 +504,7 @@ static bool GetSuperPathBase(CFSTR s, UString& res) {
 
   unsigned fixedSizeStart = 0;
   unsigned fixedSize = 0;
-  const char* superMarker = NULL;
+  const char* superMarker = nullptr;
   if (IsSuperPath(curDir)) {
     fixedSize = GetRootPrefixSize_Of_SuperPath(curDir);
     if (fixedSize == 0) return false;
@@ -666,7 +666,7 @@ bool GetFullPath(CFSTR dirPrefix, CFSTR s, FString& res) {
   return true;
 }
 
-bool GetFullPath(CFSTR path, FString& fullPath) { return GetFullPath(NULL, path, fullPath); }
+bool GetFullPath(CFSTR path, FString& fullPath) { return GetFullPath(nullptr, path, fullPath); }
 
 }  // namespace NName
 }  // namespace NFile

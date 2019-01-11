@@ -39,7 +39,7 @@ CInFileStream::CInFileStream():
   BufSize(0),
   #endif
   SupportHardLinks(false),
-  Callback(NULL),
+  Callback(nullptr),
   CallbackRef(0)
 {
 }
@@ -210,7 +210,7 @@ STDMETHODIMP CStdInFileStream::Read(void *data, UInt32 size, UInt32 *processedSi
   UInt32 sizeTemp = (1 << 20);
   if (sizeTemp > size)
     sizeTemp = size;
-  BOOL res = ::ReadFile(GetStdHandle(STD_INPUT_HANDLE), data, sizeTemp, &realProcessedSize, NULL);
+  BOOL res = ::ReadFile(GetStdHandle(STD_INPUT_HANDLE), data, sizeTemp, &realProcessedSize, nullptr);
   if (processedSize)
     *processedSize = realProcessedSize;
   if (res == FALSE && GetLastError() == ERROR_BROKEN_PIPE)
@@ -442,7 +442,7 @@ STDMETHODIMP CStdOutFileStream::Write(const void *data, UInt32 size, UInt32 *pro
     if (sizeTemp > size)
       sizeTemp = size;
     res = ::WriteFile(GetStdHandle(STD_OUTPUT_HANDLE),
-        data, sizeTemp, (DWORD *)&realProcessedSize, NULL);
+        data, sizeTemp, (DWORD *)&realProcessedSize, nullptr);
     _size += realProcessedSize;
     size -= realProcessedSize;
     data = (const void *)((const Byte *)data + realProcessedSize);

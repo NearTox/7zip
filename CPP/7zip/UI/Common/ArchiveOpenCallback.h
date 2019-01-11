@@ -86,7 +86,7 @@ class COpenCallbackImp
   CMyComPtr<IArchiveOpenCallback> ReOpenCallback;
   // UInt64 TotalSize;
 
-  COpenCallbackImp() : Callback(NULL), _subArchiveMode(false) {}
+  COpenCallbackImp() : Callback(nullptr), _subArchiveMode(false) {}
 
   void Init(const FString& folderPrefix, const FString& fileName) {
     _folderPrefix = folderPrefix;

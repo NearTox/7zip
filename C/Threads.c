@@ -1,7 +1,7 @@
 /* Threads.c -- multithreading library
 2017-06-26 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #ifndef UNDER_CE
 #  include <process.h>

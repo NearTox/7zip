@@ -247,14 +247,14 @@ void CHandler::AddItem(const CParseItem& item) {
 /*
 static const CStatProp kProps[] =
 {
-  { NULL, kpidPath, VT_BSTR},
-  { NULL, kpidSize, VT_UI8},
-  { NULL, kpidMTime, VT_FILETIME},
-  { NULL, kpidType, VT_BSTR},
-  { NULL, kpidComment, VT_BSTR},
-  { NULL, kpidOffset, VT_UI8},
-  { NULL, kpidUnpackSize, VT_UI8},
-//   { NULL, kpidNumSubDirs, VT_UI8},
+  { nullptr, kpidPath, VT_BSTR},
+  { nullptr, kpidSize, VT_UI8},
+  { nullptr, kpidMTime, VT_FILETIME},
+  { nullptr, kpidType, VT_BSTR},
+  { nullptr, kpidComment, VT_BSTR},
+  { nullptr, kpidOffset, VT_UI8},
+  { nullptr, kpidUnpackSize, VT_UI8},
+//   { nullptr, kpidNumSubDirs, VT_UI8},
 };
 */
 
@@ -384,9 +384,9 @@ HRESULT CHandler::Extract(
     outStreamSpec->Init(skipMode ? 0 : unpackSize, true);
 
     Int32 opRes = NExtract::NOperationResult::kOK;
-    RINOK(_stream->Seek(item.Offset, STREAM_SEEK_SET, NULL));
+    RINOK(_stream->Seek(item.Offset, STREAM_SEEK_SET, nullptr));
     streamSpec->Init(unpackSize);
-    RINOK(copyCoder->Code(inStream, outStream, NULL, NULL, progress));
+    RINOK(copyCoder->Code(inStream, outStream, nullptr, nullptr, progress));
 
     if (outStreamSpec->GetRem() != 0) opRes = NExtract::NOperationResult::kDataError;
     outStreamSpec->ReleaseStream();
@@ -1043,7 +1043,7 @@ STDMETHODIMP CArchiveOpenCallback_Offset::GetStream(const wchar_t* name, IInStre
 #endif
 
 UInt32 GetOpenArcErrorFlags(const NCOM::CPropVariant& prop, bool* isDefinedProp) {
-  if (isDefinedProp != NULL) *isDefinedProp = false;
+  if (isDefinedProp != nullptr) *isDefinedProp = false;
 
   switch (prop.vt) {
     case VT_UI8:
@@ -1274,7 +1274,7 @@ static HRESULT ReadParseItemProps(
 
 HRESULT CArc::CheckZerosTail(const COpenOptions& op, UInt64 offset) {
   if (!op.stream) return S_OK;
-  RINOK(op.stream->Seek(offset, STREAM_SEEK_SET, NULL));
+  RINOK(op.stream->Seek(offset, STREAM_SEEK_SET, nullptr));
   const UInt32 kBufSize = 1 << 11;
   Byte buf[kBufSize];
 
@@ -1514,7 +1514,7 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
 #ifndef _SFX
 
     if (op.stream && orderIndices.Size() >= 2) {
-      RINOK(op.stream->Seek(0, STREAM_SEEK_SET, NULL));
+      RINOK(op.stream->Seek(0, STREAM_SEEK_SET, nullptr));
       CByteBuffer byteBuffer;
       CIntVector orderIndices2;
       if (numFinded == 0 || IsExeExt(extension)) {
@@ -1551,10 +1551,10 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
           // 4) matched signuature
         */
 
-        MakeCheckOrder(op.codecs, orderIndices, numFinded, orderIndices2, NULL, 0);
+        MakeCheckOrder(op.codecs, orderIndices, numFinded, orderIndices2, nullptr, 0);
         MakeCheckOrder(
             op.codecs, orderIndices, numFinded, orderIndices2, byteBuffer, processedSize);
-        // MakeCheckOrder(op.codecs, orderIndices, orderIndices.Size(), orderIndices2, NULL, 0);
+        // MakeCheckOrder(op.codecs, orderIndices, orderIndices.Size(), orderIndices2, nullptr, 0);
         // MakeCheckOrder(op.codecs, orderIndices, orderIndices.Size(), orderIndices2, byteBuffer,
         // processedSize);
       }
@@ -1593,7 +1593,7 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
   UInt64 fileSize = 0;
   if (op.stream) {
     RINOK(op.stream->Seek(0, STREAM_SEEK_END, &fileSize));
-    RINOK(op.stream->Seek(0, STREAM_SEEK_SET, NULL));
+    RINOK(op.stream->Seek(0, STREAM_SEEK_SET, nullptr));
   }
   FileSize = fileSize;
 
@@ -1635,9 +1635,9 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
 #endif
 
       // Some handlers do not set total bytes. So we set it here
-      if (op.callback) RINOK(op.callback->SetTotal(NULL, &fileSize));
+      if (op.callback) RINOK(op.callback->SetTotal(nullptr, &fileSize));
 
-      if (op.stream) { RINOK(op.stream->Seek(0, STREAM_SEEK_SET, NULL)); }
+      if (op.stream) { RINOK(op.stream->Seek(0, STREAM_SEEK_SET, nullptr)); }
 
       CMyComPtr<IInArchive> archive;
 
@@ -1787,7 +1787,7 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
         endOfFile = true;
       }
       byteBuffer.Alloc(bufSize);
-      RINOK(op.stream->Seek(0, STREAM_SEEK_SET, NULL));
+      RINOK(op.stream->Seek(0, STREAM_SEEK_SET, nullptr));
       processedSize = bufSize;
       RINOK(ReadStream(op.stream, byteBuffer, &processedSize));
       if (processedSize == 0) return S_FALSE;
@@ -1845,9 +1845,9 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
       FormatIndex = sortedFormats[i];
       const CArcInfoEx& ai = op.codecs->Formats[FormatIndex];
 
-      if (op.callback) RINOK(op.callback->SetTotal(NULL, &fileSize));
+      if (op.callback) RINOK(op.callback->SetTotal(nullptr, &fileSize));
 
-      RINOK(op.stream->Seek(0, STREAM_SEEK_SET, NULL));
+      RINOK(op.stream->Seek(0, STREAM_SEEK_SET, nullptr));
 
       CMyComPtr<IInArchive> archive;
       RINOK(PrepareToOpen(op, FormatIndex, archive));
@@ -2030,13 +2030,13 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
       // canReturnTailArc = true;
     }
 
-    RINOK(op.stream->Seek(0, STREAM_SEEK_SET, NULL));
+    RINOK(op.stream->Seek(0, STREAM_SEEK_SET, nullptr));
 
     CLimitedCachedInStream* limitedStreamSpec = new CLimitedCachedInStream;
     CMyComPtr<IInStream> limitedStream = limitedStreamSpec;
     limitedStreamSpec->SetStream(op.stream);
 
-    CArchiveOpenCallback_Offset* openCallback_Offset_Spec = NULL;
+    CArchiveOpenCallback_Offset* openCallback_Offset_Spec = nullptr;
     CMyComPtr<IArchiveOpenCallback> openCallback_Offset;
     if (op.callback) {
       openCallback_Offset_Spec = new CArchiveOpenCallback_Offset;
@@ -2050,7 +2050,7 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
 #  endif
     }
 
-    if (op.callback) RINOK(op.callback->SetTotal(NULL, &fileSize));
+    if (op.callback) RINOK(op.callback->SetTotal(nullptr, &fileSize));
 
     CByteBuffer& byteBuffer = limitedStreamSpec->Buffer;
     byteBuffer.Alloc(kBufSize);
@@ -2084,7 +2084,7 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
           size_t processedSize = kBufSize - bytesInBuf;
           // printf("\nRead ask = %d", (unsigned)processedSize);
           UInt64 seekPos = bufPhyPos + bytesInBuf;
-          RINOK(op.stream->Seek(bufPhyPos + bytesInBuf, STREAM_SEEK_SET, NULL));
+          RINOK(op.stream->Seek(bufPhyPos + bytesInBuf, STREAM_SEEK_SET, nullptr));
           RINOK(ReadStream(op.stream, byteBuffer + bytesInBuf, &processedSize));
           // printf("   processed = %d", (unsigned)processedSize);
           if (processedSize == 0) {
@@ -2108,7 +2108,7 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
             continue;
           }
           // printf("\nSkip %d", (int)(skipSize - kBeforeSize));
-          // RINOK(op.stream->Seek(skipSize - kBeforeSize, STREAM_SEEK_CUR, NULL));
+          // RINOK(op.stream->Seek(skipSize - kBeforeSize, STREAM_SEEK_CUR, nullptr));
           bytesInBuf = 0;
           bufPhyPos = pos - kBeforeSize;
           continue;
@@ -2134,7 +2134,7 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
         useOffsetCallback = (!op.openType.CanReturnArc || handlerSpec->_items.Size() > 1);
 
         if (pos >= callbackPrev + (1 << 23)) {
-          RINOK(openCallback_Offset_Spec->SetCompleted(NULL, NULL));
+          RINOK(openCallback_Offset_Spec->SetCompleted(nullptr, nullptr));
           callbackPrev = pos;
         }
       }
@@ -2272,7 +2272,7 @@ HRESULT CArc::OpenStream2(const COpenOptions& op) {
 
         if (ai.Flags_UseGlobalOffset()) {
           limitedStreamSpec->InitAndSeek(0, fileSize);
-          limitedStream->Seek(startArcPos, STREAM_SEEK_SET, NULL);
+          limitedStream->Seek(startArcPos, STREAM_SEEK_SET, nullptr);
         } else {
           limitedStreamSpec->InitAndSeek(startArcPos, rem);
           arcStreamOffset = startArcPos;
@@ -2568,7 +2568,7 @@ static const unsigned k_ExeExt_Len = 0;
 HRESULT CArc::OpenStreamOrFile(COpenOptions& op) {
   CMyComPtr<IInStream> fileStream;
   CMyComPtr<ISequentialInStream> seqStream;
-  CInFileStream* fileStreamSpec = NULL;
+  CInFileStream* fileStreamSpec = nullptr;
 
   if (op.stdInMode) {
     seqStream = new CStdInFileStream;
@@ -2589,7 +2589,7 @@ HRESULT CArc::OpenStreamOrFile(COpenOptions& op) {
   {
     UInt64 fileSize;
     RINOK(op.stream->Seek(0, STREAM_SEEK_END, &fileSize));
-    RINOK(op.callback->SetTotal(NULL, &fileSize))
+    RINOK(op.callback->SetTotal(nullptr, &fileSize))
   }
   */
 
@@ -2815,7 +2815,6 @@ HRESULT CArchiveLink::Open(COpenOptions& op) {
     op2.openType = op.openType;
     op2.openType.ZerosTailIsAllowed = zerosTailIsAllowed;
     op2.excludedFormats = &excl;
-    op2.stdInMode = false;
     op2.stream = subStream;
     op2.filePath = arc2.Path;
     op2.callback = op.callback;
@@ -2879,7 +2878,7 @@ HRESULT CArc::ReOpen(const COpenOptions& op) {
   UInt64 fileSize = 0;
   if (op.stream) {
     RINOK(op.stream->Seek(0, STREAM_SEEK_END, &fileSize));
-    RINOK(op.stream->Seek(0, STREAM_SEEK_SET, NULL));
+    RINOK(op.stream->Seek(0, STREAM_SEEK_SET, nullptr));
   }
   FileSize = fileSize;
 
@@ -2923,15 +2922,14 @@ HRESULT CArchiveLink::ReOpen(COpenOptions& op) {
 
   op.types = &inc;
   op.excludedFormats = &excl;
-  op.stdInMode = false;
-  op.stream = NULL;
+  op.stream = nullptr;
   if (Arcs.Size() == 0)  // ???
-    return Open2(op, NULL);
+    return Open2(op, nullptr);
 
   COpenCallbackImp* openCallbackSpec = new COpenCallbackImp;
   CMyComPtr<IArchiveOpenCallback> openCallbackNew = openCallbackSpec;
 
-  openCallbackSpec->Callback = NULL;
+  openCallbackSpec->Callback = nullptr;
   openCallbackSpec->ReOpenCallback = op.callback;
   {
     FString dirPrefix, fileName;

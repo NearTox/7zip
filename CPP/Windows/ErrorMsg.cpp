@@ -22,7 +22,7 @@ static bool MyFormatMessage(DWORD errorCode, UString& message) {
     if (::FormatMessage(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                 FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, errorCode, 0, (LPTSTR)&msgBuf, 0, NULL) == 0)
+            nullptr, errorCode, 0, (LPTSTR)&msgBuf, 0, nullptr) == 0)
       return false;
     message = GetUnicodeString((LPCTSTR)msgBuf);
   } else
@@ -31,7 +31,7 @@ static bool MyFormatMessage(DWORD errorCode, UString& message) {
     if (::FormatMessageW(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                 FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, errorCode, 0, (LPWSTR)&msgBuf, 0, NULL) == 0)
+            nullptr, errorCode, 0, (LPWSTR)&msgBuf, 0, nullptr) == 0)
       return false;
     message = (LPCWSTR)msgBuf;
   }

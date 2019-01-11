@@ -13,7 +13,7 @@ namespace NBcj2 {
 
 CBaseCoder::CBaseCoder() {
   for (int i = 0; i < BCJ2_NUM_STREAMS + 1; i++) {
-    _bufs[i] = NULL;
+    _bufs[i] = nullptr;
     _bufsCurSizes[i] = 0;
     _bufsNewSizes[i] = (1 << 18);
   }
@@ -218,7 +218,7 @@ STDMETHODIMP CDecoder::ReleaseInStream2(UInt32 streamIndex) {
 }
 
 STDMETHODIMP CDecoder::SetOutStreamSize(const UInt64* outSize) {
-  _outSizeDefined = (outSize != NULL);
+  _outSizeDefined = (outSize != nullptr);
   _outSize = 0;
   if (_outSizeDefined) _outSize = *outSize;
 
@@ -227,7 +227,7 @@ STDMETHODIMP CDecoder::SetOutStreamSize(const UInt64* outSize) {
   HRESULT res = Alloc(false);
 
   InitCommon();
-  dec.destLim = dec.dest = NULL;
+  dec.destLim = dec.dest = nullptr;
 
   return res;
 }

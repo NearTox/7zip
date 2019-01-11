@@ -72,7 +72,7 @@ HRESULT CHashBundle::SetMethods( const UStringVector& hashMethods) {
     {
       CMyComPtr<ICompressSetCoderProperties> scp;
       hasher.QueryInterface(IID_ICompressSetCoderProperties, &scp);
-      if (scp) RINOK(m.SetCoderProps(scp, NULL));
+      if (scp) RINOK(m.SetCoderProps(scp, nullptr));
     }
     UInt32 digestSize = hasher->GetDigestSize();
     if (digestSize > k_HashCalc_DigestSize_Max) return E_NOTIMPL;

@@ -14,15 +14,15 @@ class CAccessToken
 {
   HANDLE _handle;
 public:
-  CAccessToken(): _handle(NULL) {};
+  CAccessToken(): _handle(nullptr) {};
   ~CAccessToken() { Close(); }
   bool Close()
   {
-    if (_handle == NULL)
+    if (_handle == nullptr)
       return true;
     bool res = BOOLToBool(::CloseHandle(_handle));
     if (res)
-      _handle = NULL;
+      _handle = nullptr;
     return res;
   }
 
@@ -46,7 +46,7 @@ public:
       newState, bufferLength, previousState, returnLength)); }
 
   bool AdjustPrivileges(bool disableAllPrivileges, PTOKEN_PRIVILEGES newState)
-    { return AdjustPrivileges(disableAllPrivileges, newState, 0, NULL, NULL); }
+    { return AdjustPrivileges(disableAllPrivileges, newState, 0, nullptr, nullptr); }
 
   bool AdjustPrivileges(PTOKEN_PRIVILEGES newState)
     { return AdjustPrivileges(false, newState); }
@@ -71,7 +71,7 @@ protected:
   #endif
 public:
   operator LSA_HANDLE() const { return _handle; }
-  CPolicy(): _handle(NULL)
+  CPolicy(): _handle(nullptr)
   {
     #ifndef _UNICODE
     hModule = GetModuleHandle(TEXT("Advapi32.dll"));
@@ -83,10 +83,10 @@ public:
       ACCESS_MASK desiredAccess)
   {
     #ifndef _UNICODE
-    if (hModule == NULL)
+    if (hModule == nullptr)
       return MY_STATUS_NOT_IMPLEMENTED;
     LsaOpenPolicyP lsaOpenPolicy = (LsaOpenPolicyP)GetProcAddress(hModule, "LsaOpenPolicy");
-    if (lsaOpenPolicy == NULL)
+    if (lsaOpenPolicy == nullptr)
       return MY_STATUS_NOT_IMPLEMENTED;
     #endif
 
@@ -102,14 +102,14 @@ public:
 
   NTSTATUS Close()
   {
-    if (_handle == NULL)
+    if (_handle == nullptr)
       return 0;
 
     #ifndef _UNICODE
-    if (hModule == NULL)
+    if (hModule == nullptr)
       return MY_STATUS_NOT_IMPLEMENTED;
     LsaCloseP lsaClose = (LsaCloseP)GetProcAddress(hModule, "LsaClose");
-    if (lsaClose == NULL)
+    if (lsaClose == nullptr)
       return MY_STATUS_NOT_IMPLEMENTED;
     #endif
 
@@ -120,7 +120,7 @@ public:
       lsaClose
       #endif
       (_handle);
-    _handle = NULL;
+    _handle = nullptr;
     return res;
   }
 
@@ -138,10 +138,10 @@ public:
   NTSTATUS AddAccountRights(PSID accountSid, PLSA_UNICODE_STRING userRights, ULONG countOfRights)
   {
     #ifndef _UNICODE
-    if (hModule == NULL)
+    if (hModule == nullptr)
       return MY_STATUS_NOT_IMPLEMENTED;
     LsaAddAccountRightsP lsaAddAccountRights = (LsaAddAccountRightsP)GetProcAddress(hModule, "LsaAddAccountRights");
-    if (lsaAddAccountRights == NULL)
+    if (lsaAddAccountRights == nullptr)
       return MY_STATUS_NOT_IMPLEMENTED;
     #endif
 

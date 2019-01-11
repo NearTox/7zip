@@ -64,7 +64,7 @@ struct CReparseAttr {
 namespace NIO {
 
 bool GetReparseData(
-    CFSTR path, CByteBuffer& reparseData, BY_HANDLE_FILE_INFORMATION* fileInfo = NULL);
+    CFSTR path, CByteBuffer& reparseData, BY_HANDLE_FILE_INFORMATION* fileInfo = nullptr);
 bool SetReparseData(CFSTR path, bool isDir, const void* data, DWORD size);
 
 class CFileBase {
@@ -78,14 +78,14 @@ class CFileBase {
  public:
   bool DeviceIoControl(
       DWORD controlCode, LPVOID inBuffer, DWORD inSize, LPVOID outBuffer, DWORD outSize,
-      LPDWORD bytesReturned, LPOVERLAPPED overlapped = NULL) const {
+      LPDWORD bytesReturned, LPOVERLAPPED overlapped = nullptr) const {
     return BOOLToBool(::DeviceIoControl(
         _handle, controlCode, inBuffer, inSize, outBuffer, outSize, bytesReturned, overlapped));
   }
 
   bool DeviceIoControlOut(
       DWORD controlCode, LPVOID outBuffer, DWORD outSize, LPDWORD bytesReturned) const {
-    return DeviceIoControl(controlCode, NULL, 0, outBuffer, outSize, bytesReturned);
+    return DeviceIoControl(controlCode, nullptr, 0, outBuffer, outSize, bytesReturned);
   }
 
   bool DeviceIoControlOut(DWORD controlCode, LPVOID outBuffer, DWORD outSize) const {

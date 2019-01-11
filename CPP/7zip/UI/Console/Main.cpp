@@ -77,63 +77,19 @@ static const char* const kHelpString =
 #else
     "a"
 #endif
-    " <command> [<switches>...] <archive_name> [<file_names>...]\n"
+    " [<switches>...] <archive_name> [<file_names>...]\n"
     "\n"
-    "<Commands>\n"
-    "  e : Extract files from archive (without using directory names)\n"
-    "  t : Test integrity of archive\n"
-    "  x : eXtract files with full paths\n"
+    "eXtract files with full paths\n"
     "\n"
     "<Switches>\n"
     "  -- : Stop switches parsing\n"
+    // TODO: Is this functional?
     "  @listfile : set path to listfile that contains file names\n"
-    "  -ai[r[-|0]]{@listfile|!wildcard} : Include archives\n"
-    "  -ax[r[-|0]]{@listfile|!wildcard} : eXclude archives\n"
-    "  -ao{a|s|t|u} : set Overwrite mode\n"
-    "  -an : disable archive_name field\n"
-    "  -bb[0-3] : set output log level\n"
-    "  -bd : disable progress indicator\n"
-    "  -bs{o|e|p}{0|1|2} : set output stream for output/error/progress line\n"
-    "  -bt : show execution time statistics\n"
-    "  -i[r[-|0]]{@listfile|!wildcard} : Include filenames\n"
-    "  -m{Parameters} : set compression Method\n"
-    "    -mmt[N] : set number of CPU threads\n"
-    "    -mx[N] : set compression level: -mx1 (fastest) ... -mx9 (ultra)\n"
     "  -o{Directory} : set Output directory\n"
 #ifndef _NO_CRYPTO
     "  -p{Password} : set Password\n"
 #endif
-    "  -r[-|0] : Recurse subdirectories\n"
-    "  -sa{a|e|s} : set Archive name mode\n"
-    "  -scc{UTF-8|WIN|DOS} : set charset for for console input/output\n"
-    "  -scs{UTF-8|UTF-16LE|UTF-16BE|WIN|DOS|{id}} : set charset for list files\n"
-    "  -scrc[CRC32|CRC64|SHA1|SHA256|*] : set hash function for x, e, h commands\n"
-    "  -sdel : delete files after compression\n"
-    "  -seml[.] : send archive by email\n"
-    "  -sfx[{name}] : Create SFX archive\n"
-    "  -si[{name}] : read data from stdin\n"
-    "  -slp : set Large Pages mode\n"
-    "  -slt : show technical information for l (List) command\n"
-    "  -snh : store hard links as links\n"
-    "  -snl : store symbolic links as links\n"
-    "  -sni : store NT security information\n"
-    "  -sns[-] : store NTFS alternate streams\n"
-    "  -so : write data to stdout\n"
-    "  -spd : disable wildcard matching for file names\n"
-    "  -spe : eliminate duplication of root folder for extract command\n"
-    "  -spf : use fully qualified file paths\n"
-    "  -ssc[-] : set sensitive case mode\n"
-    "  -sse : stop archive creating, if it can't open some input file\n"
-    "  -ssw : compress shared files\n"
-    "  -stl : set archive timestamp from the most recently modified file\n"
-    "  -stm{HexMask} : set CPU thread affinity mask (hexadecimal number)\n"
-    "  -stx{Type} : exclude archive type\n"
-    "  -t{Type} : Set type of archive\n"
-    "  -u[-][p#][q#][r#][x#][y#][z#][!newArchiveName] : Update options\n"
-    "  -v{Size}[b|k|m|g] : Create volumes\n"
-    "  -w[{path}] : assign Work directory. Empty path means a temporary directory\n"
-    "  -x[r[-|0]]{@listfile|!wildcard} : eXclude filenames\n"
-    "  -y : assume Yes on all queries\n";
+    ;
 
 // ---------------------------
 // exception messages
@@ -145,11 +101,6 @@ static const char* const kUnsupportedArcTypeMessage = "Unsupported archive type"
 // static const char * const kUnsupportedUpdateArcType = "Can't create archive for that type";
 
 #define kDefaultSfxModule "7zCon.sfx"
-
-static void ShowMessageAndThrowException(LPCSTR message, NExitCode::EEnum code) {
-  if (g_ErrStream) *g_ErrStream << endl << "ERROR: " << message << endl;
-  throw code;
-}
 
 #ifndef _WIN32
 static void GetArguments(int numArgs, const char* args[], UStringVector& parts) {
@@ -176,51 +127,9 @@ static void ThrowException_if_Error(HRESULT res) {
   if (res != S_OK) throw CSystemException(res);
 }
 
-static void PrintNum(UInt64 val, unsigned numDigits, char c = ' ') {
-  char temp[64];
-  char* p = temp + 32;
-  ConvertUInt64ToString(val, p);
-  unsigned len = MyStringLen(p);
-  for (; len < numDigits; len++) *--p = c;
-  *g_StdStream << p;
-}
-
-static void PrintTime(const char* s, UInt64 val, UInt64 total) {
-  *g_StdStream << endl << s << " Time =";
-  const UInt32 kFreq = 10000000;
-  UInt64 sec = val / kFreq;
-  PrintNum(sec, 6);
-  *g_StdStream << '.';
-  UInt32 ms = (UInt32)(val - (sec * kFreq)) / (kFreq / 1000);
-  PrintNum(ms, 3, '0');
-
-  while (val > ((UInt64)1 << 56)) {
-    val >>= 1;
-    total >>= 1;
-  }
-
-  UInt64 percent = 0;
-  if (total != 0) percent = val * 100 / total;
-  *g_StdStream << " =";
-  PrintNum(percent, 5);
-  *g_StdStream << '%';
-}
-
 #ifndef UNDER_CE
 
 #  define SHIFT_SIZE_VALUE(x, num) (((x) + (1 << (num)) - 1) >> (num))
-
-static void PrintMemUsage(const char* s, UInt64 val) {
-  *g_StdStream << "    " << s << " Memory =";
-  PrintNum(SHIFT_SIZE_VALUE(val, 20), 7);
-  *g_StdStream << " MB";
-
-#  ifdef _7ZIP_LARGE_PAGES
-  AString lp;
-  Add_LargePages_String(lp);
-  if (!lp.IsEmpty()) *g_StdStream << lp;
-#  endif
-}
 
 EXTERN_C_BEGIN
 typedef BOOL(WINAPI* Func_GetProcessMemoryInfo)(
@@ -232,93 +141,6 @@ EXTERN_C_END
 
 static inline UInt64 GetTime64(const FILETIME& t) {
   return ((UInt64)t.dwHighDateTime << 32) | t.dwLowDateTime;
-}
-
-static void PrintStat() {
-  FILETIME creationTimeFT, exitTimeFT, kernelTimeFT, userTimeFT;
-  if (!
-#ifdef UNDER_CE
-      ::GetThreadTimes(
-          ::GetCurrentThread()
-#else
-      // NT 3.5
-      ::GetProcessTimes(
-          ::GetCurrentProcess()
-#endif
-              ,
-          &creationTimeFT, &exitTimeFT, &kernelTimeFT, &userTimeFT))
-    return;
-  FILETIME curTimeFT;
-  NTime::GetCurUtcFileTime(curTimeFT);
-
-#ifndef UNDER_CE
-
-  PROCESS_MEMORY_COUNTERS m;
-  memset(&m, 0, sizeof(m));
-  BOOL memDefined = FALSE;
-  BOOL cycleDefined = FALSE;
-  ULONG64 cycleTime = 0;
-  {
-    /* NT 4.0: GetProcessMemoryInfo() in Psapi.dll
-       Win7: new function K32GetProcessMemoryInfo() in kernel32.dll
-       It's faster to call kernel32.dll code than Psapi.dll code
-       GetProcessMemoryInfo() requires Psapi.lib
-       Psapi.lib in SDK7+ can link to K32GetProcessMemoryInfo in kernel32.dll
-       The program with K32GetProcessMemoryInfo will not work on systems before Win7
-       // memDefined = GetProcessMemoryInfo(GetCurrentProcess(), &m, sizeof(m));
-    */
-
-    HMODULE kern = ::GetModuleHandleW(L"kernel32.dll");
-    Func_GetProcessMemoryInfo my_GetProcessMemoryInfo =
-        (Func_GetProcessMemoryInfo)::GetProcAddress(kern, "K32GetProcessMemoryInfo");
-    if (!my_GetProcessMemoryInfo) {
-      HMODULE lib = LoadLibraryW(L"Psapi.dll");
-      if (lib)
-        my_GetProcessMemoryInfo =
-            (Func_GetProcessMemoryInfo)::GetProcAddress(lib, "GetProcessMemoryInfo");
-    }
-    if (my_GetProcessMemoryInfo)
-      memDefined = my_GetProcessMemoryInfo(GetCurrentProcess(), &m, sizeof(m));
-    // FreeLibrary(lib);
-
-    Func_QueryProcessCycleTime my_QueryProcessCycleTime =
-        (Func_QueryProcessCycleTime)::GetProcAddress(kern, "QueryProcessCycleTime");
-    if (my_QueryProcessCycleTime)
-      cycleDefined = my_QueryProcessCycleTime(GetCurrentProcess(), &cycleTime);
-  }
-
-#endif
-
-  UInt64 curTime = GetTime64(curTimeFT);
-  UInt64 creationTime = GetTime64(creationTimeFT);
-  UInt64 kernelTime = GetTime64(kernelTimeFT);
-  UInt64 userTime = GetTime64(userTimeFT);
-
-  UInt64 totalTime = curTime - creationTime;
-
-  PrintTime("Kernel ", kernelTime, totalTime);
-
-#ifndef UNDER_CE
-  if (cycleDefined) {
-    *g_StdStream << " ";
-    PrintNum(cycleTime / 1000000, 22);
-    *g_StdStream << " MCycles";
-  }
-#endif
-
-  PrintTime("User   ", userTime, totalTime);
-
-  PrintTime("Process", kernelTime + userTime, totalTime);
-#ifndef UNDER_CE
-  if (memDefined) PrintMemUsage("Virtual ", m.PeakPagefileUsage);
-#endif
-
-  PrintTime("Global ", totalTime, totalTime);
-#ifndef UNDER_CE
-  if (memDefined) PrintMemUsage("Physical", m.PeakWorkingSetSize);
-#endif
-
-  *g_StdStream << endl;
 }
 
 int Main2(
@@ -357,22 +179,17 @@ int Main2(
   g_StdErr.IsTerminalMode = options.IsStdErrTerminal;
 
   if (options.Number_for_Out != k_OutStream_stdout)
-    g_StdStream = (options.Number_for_Out == k_OutStream_stderr ? &g_StdErr : NULL);
+    g_StdStream = (options.Number_for_Out == k_OutStream_stderr ? &g_StdErr : nullptr);
 
   if (options.Number_for_Errors != k_OutStream_stderr)
-    g_ErrStream = (options.Number_for_Errors == k_OutStream_stdout ? &g_StdOut : NULL);
+    g_ErrStream = (options.Number_for_Errors == k_OutStream_stdout ? &g_StdOut : nullptr);
 
-  CStdOutStream* percentsStream = NULL;
+  CStdOutStream* percentsStream = nullptr;
   if (options.Number_for_Percents != k_OutStream_disabled)
     percentsStream = (options.Number_for_Percents == k_OutStream_stderr) ? &g_StdErr : &g_StdOut;
   ;
 
-  if (options.HelpMode) {
-    ShowCopyrightAndHelp(g_StdStream, true);
-    return 0;
-  }
-
-  if (options.EnableHeaders) ShowCopyrightAndHelp(g_StdStream, false);
+  ShowCopyrightAndHelp(g_StdStream, false);
 
   parser.Parse2(options);
 
@@ -405,9 +222,7 @@ int Main2(
   codecs->CaseSensitive = options.CaseSensitive;
   ThrowException_if_Error(codecs->Load());
 
-  bool isExtractGroupCommand = options.Command.IsFromExtractGroup();
-
-  if (codecs->Formats.Size() == 0 && isExtractGroupCommand) { throw kNoFormats; }
+  if (codecs->Formats.Size() == 0) { throw kNoFormats; }
 
   CObjectVector<COpenType> types;
   if (!ParseOpenTypes(*codecs, options.ArcType, types)) throw kUnsupportedArcTypeMessage;
@@ -432,205 +247,164 @@ int Main2(
       options.TechMode)
     showStat = false;
   */
-  if (isExtractGroupCommand) {
-    UStringVector ArchivePathsSorted;
-    UStringVector ArchivePathsFullSorted;
 
-    if (options.StdInMode) {
-      ArchivePathsSorted.Add(options.ArcName_for_StdInMode);
-      ArchivePathsFullSorted.Add(options.ArcName_for_StdInMode);
+  UStringVector ArchivePathsSorted;
+  UStringVector ArchivePathsFullSorted;
+  {
+    CExtractScanConsole scan;
+
+    scan.Init(g_StdStream, g_ErrStream, percentsStream);
+    scan.SetWindowWidth(consoleWidth);
+
+    if (g_StdStream) *g_StdStream << "Scanning the drive for archives:" << endl;
+
+    CDirItemsStat st;
+
+    scan.StartScanning();
+
+    hresultMain = EnumerateDirItemsAndSort(
+        options.arcCensor, NWildcard::k_RelatPath,
+        UString(),  // addPathPrefix
+        ArchivePathsSorted, ArchivePathsFullSorted, st, &scan);
+
+    scan.CloseScanning();
+
+    if (hresultMain == S_OK) {
+      scan.PrintStat(st);
     } else {
-      CExtractScanConsole scan;
+      /*
+      if (res != E_ABORT)
+      {
+        throw CSystemException(res);
+        // errorInfo.Message = "Scanning error";
+      }
+      return res;
+      */
+    }
+  }
 
-      scan.Init(options.EnableHeaders ? g_StdStream : NULL, g_ErrStream, percentsStream);
-      scan.SetWindowWidth(consoleWidth);
+  if (hresultMain == S_OK) {
+    CExtractCallbackConsole* ecs = new CExtractCallbackConsole;
+    CMyComPtr<IFolderArchiveExtractCallback> extractCallback = ecs;
 
-      if (g_StdStream && options.EnableHeaders)
-        *g_StdStream << "Scanning the drive for archives:" << endl;
+#ifndef _NO_CRYPTO
+    ecs->PasswordIsDefined = options.PasswordEnabled;
+    ecs->Password = options.Password;
+#endif
 
-      CDirItemsStat st;
+    ecs->Init(g_StdStream, g_ErrStream, percentsStream);
+    ecs->MultiArcMode = (ArchivePathsSorted.Size() > 1);
 
-      scan.StartScanning();
+    ecs->LogLevel = options.LogLevel;
+    ecs->PercentsNameLevel = percentsNameLevel;
 
-      hresultMain = EnumerateDirItemsAndSort(
-          options.arcCensor, NWildcard::k_RelatPath,
-          UString(),  // addPathPrefix
-          ArchivePathsSorted, ArchivePathsFullSorted, st, &scan);
+    if (percentsStream) ecs->SetWindowWidth(consoleWidth);
 
-      scan.CloseScanning();
+    /*
+    COpenCallbackConsole openCallback;
+    openCallback.Init(g_StdStream, g_ErrStream);
 
-      if (hresultMain == S_OK) {
-        if (options.EnableHeaders) scan.PrintStat(st);
-      } else {
-        /*
-        if (res != E_ABORT)
-        {
-          throw CSystemException(res);
-          // errorInfo.Message = "Scanning error";
-        }
-        return res;
-        */
+    #ifndef _NO_CRYPTO
+    openCallback.PasswordIsDefined = options.PasswordEnabled;
+    openCallback.Password = options.Password;
+    #endif
+    */
+
+    CExtractOptions eo;
+    (CExtractOptionsBase&)eo = options.ExtractOptions;
+
+#ifndef _SFX
+    eo.Properties = options.Properties;
+#endif
+
+    UString errorMessage;
+    CDecompressStat stat;
+    CHashBundle hb;
+    IHashCalc* hashCalc = nullptr;
+
+    if (!options.HashMethods.IsEmpty()) {
+      hashCalc = &hb;
+      ThrowException_if_Error(hb.SetMethods(options.HashMethods));
+      // hb.Init();
+    }
+
+    hresultMain = Extract(
+        codecs, types, excludedFormats, ArchivePathsSorted, ArchivePathsFullSorted,
+        options.Censor.Pairs.Front().Head, eo, ecs, ecs, hashCalc, errorMessage, stat);
+
+    ecs->ClosePercents();
+
+    if (!errorMessage.IsEmpty()) {
+      if (g_ErrStream) *g_ErrStream << endl << "ERROR:" << endl << errorMessage << endl;
+      if (hresultMain == S_OK) hresultMain = E_FAIL;
+    }
+
+    CStdOutStream* so = g_StdStream;
+
+    bool isError = false;
+
+    if (so) {
+      *so << endl;
+
+      if (ecs->NumTryArcs > 1) {
+        *so << "Archives: " << ecs->NumTryArcs << endl;
+        *so << "OK archives: " << ecs->NumOkArcs << endl;
       }
     }
 
-    if (hresultMain == S_OK)
-      if (isExtractGroupCommand) {
-        CExtractCallbackConsole* ecs = new CExtractCallbackConsole;
-        CMyComPtr<IFolderArchiveExtractCallback> extractCallback = ecs;
+    if (ecs->NumCantOpenArcs != 0) {
+      isError = true;
+      if (so) *so << "Can't open as archive: " << ecs->NumCantOpenArcs << endl;
+    }
 
-#ifndef _NO_CRYPTO
-        ecs->PasswordIsDefined = options.PasswordEnabled;
-        ecs->Password = options.Password;
-#endif
+    if (ecs->NumArcsWithError != 0) {
+      isError = true;
+      if (so) *so << "Archives with Errors: " << ecs->NumArcsWithError << endl;
+    }
 
-        ecs->Init(g_StdStream, g_ErrStream, percentsStream);
-        ecs->MultiArcMode = (ArchivePathsSorted.Size() > 1);
+    if (so) {
+      if (ecs->NumArcsWithWarnings != 0)
+        *so << "Archives with Warnings: " << ecs->NumArcsWithWarnings << endl;
 
-        ecs->LogLevel = options.LogLevel;
-        ecs->PercentsNameLevel = percentsNameLevel;
+      if (ecs->NumOpenArcWarnings != 0) {
+        *so << endl;
+        if (ecs->NumOpenArcWarnings != 0) *so << "Warnings: " << ecs->NumOpenArcWarnings << endl;
+      }
+    }
 
-        if (percentsStream) ecs->SetWindowWidth(consoleWidth);
+    if (ecs->NumOpenArcErrors != 0) {
+      isError = true;
+      if (so) {
+        *so << endl;
+        if (ecs->NumOpenArcErrors != 0) *so << "Open Errors: " << ecs->NumOpenArcErrors << endl;
+      }
+    }
 
-        /*
-        COpenCallbackConsole openCallback;
-        openCallback.Init(g_StdStream, g_ErrStream);
+    if (isError) retCode = NExitCode::kFatalError;
 
-        #ifndef _NO_CRYPTO
-        openCallback.PasswordIsDefined = options.PasswordEnabled;
-        openCallback.Password = options.Password;
-        #endif
-        */
-
-        CExtractOptions eo;
-        (CExtractOptionsBase&)eo = options.ExtractOptions;
-
-        eo.StdInMode = options.StdInMode;
-        eo.StdOutMode = options.StdOutMode;
-        eo.YesToAll = options.YesToAll;
-        eo.TestMode = options.Command.IsTestCommand();
-
-#ifndef _SFX
-        eo.Properties = options.Properties;
-#endif
-
-        UString errorMessage;
-        CDecompressStat stat;
-        CHashBundle hb;
-        IHashCalc* hashCalc = NULL;
-
-        if (!options.HashMethods.IsEmpty()) {
-          hashCalc = &hb;
-          ThrowException_if_Error(hb.SetMethods(options.HashMethods));
-          // hb.Init();
-        }
-
-        hresultMain = Extract(
-            codecs, types, excludedFormats, ArchivePathsSorted, ArchivePathsFullSorted,
-            options.Censor.Pairs.Front().Head, eo, ecs, ecs, hashCalc, errorMessage, stat);
-
-        ecs->ClosePercents();
-
-        if (!errorMessage.IsEmpty()) {
-          if (g_ErrStream) *g_ErrStream << endl << "ERROR:" << endl << errorMessage << endl;
-          if (hresultMain == S_OK) hresultMain = E_FAIL;
-        }
-
-        CStdOutStream* so = g_StdStream;
-
-        bool isError = false;
-
-        if (so) {
+    if (so)
+      if (ecs->NumArcsWithError != 0 || ecs->NumFileErrors != 0) {
+        // if (ecs->NumArchives > 1)
+        {
           *so << endl;
-
-          if (ecs->NumTryArcs > 1) {
-            *so << "Archives: " << ecs->NumTryArcs << endl;
-            *so << "OK archives: " << ecs->NumOkArcs << endl;
-          }
+          if (ecs->NumFileErrors != 0) *so << "Sub items Errors: " << ecs->NumFileErrors << endl;
+        }
+      } else if (hresultMain == S_OK) {
+        if (stat.NumFolders != 0) *so << "Folders: " << stat.NumFolders << endl;
+        if (stat.NumFiles != 1 || stat.NumFolders != 0 || stat.NumAltStreams != 0)
+          *so << "Files: " << stat.NumFiles << endl;
+        if (stat.NumAltStreams != 0) {
+          *so << "Alternate Streams: " << stat.NumAltStreams << endl;
+          *so << "Alternate Streams Size: " << stat.AltStreams_UnpackSize << endl;
         }
 
-        if (ecs->NumCantOpenArcs != 0) {
-          isError = true;
-          if (so) *so << "Can't open as archive: " << ecs->NumCantOpenArcs << endl;
-        }
-
-        if (ecs->NumArcsWithError != 0) {
-          isError = true;
-          if (so) *so << "Archives with Errors: " << ecs->NumArcsWithError << endl;
-        }
-
-        if (so) {
-          if (ecs->NumArcsWithWarnings != 0)
-            *so << "Archives with Warnings: " << ecs->NumArcsWithWarnings << endl;
-
-          if (ecs->NumOpenArcWarnings != 0) {
-            *so << endl;
-            if (ecs->NumOpenArcWarnings != 0)
-              *so << "Warnings: " << ecs->NumOpenArcWarnings << endl;
-          }
-        }
-
-        if (ecs->NumOpenArcErrors != 0) {
-          isError = true;
-          if (so) {
-            *so << endl;
-            if (ecs->NumOpenArcErrors != 0) *so << "Open Errors: " << ecs->NumOpenArcErrors << endl;
-          }
-        }
-
-        if (isError) retCode = NExitCode::kFatalError;
-
-        if (so)
-          if (ecs->NumArcsWithError != 0 || ecs->NumFileErrors != 0) {
-            // if (ecs->NumArchives > 1)
-            {
-              *so << endl;
-              if (ecs->NumFileErrors != 0)
-                *so << "Sub items Errors: " << ecs->NumFileErrors << endl;
-            }
-          } else if (hresultMain == S_OK) {
-            if (stat.NumFolders != 0) *so << "Folders: " << stat.NumFolders << endl;
-            if (stat.NumFiles != 1 || stat.NumFolders != 0 || stat.NumAltStreams != 0)
-              *so << "Files: " << stat.NumFiles << endl;
-            if (stat.NumAltStreams != 0) {
-              *so << "Alternate Streams: " << stat.NumAltStreams << endl;
-              *so << "Alternate Streams Size: " << stat.AltStreams_UnpackSize << endl;
-            }
-
-            *so << "Size:       " << stat.UnpackSize << endl
-                << "Compressed: " << stat.PackSize << endl;
-            if (hashCalc) {
-              *so << endl;
-              PrintHashStat(*so, hb);
-            }
-          }
-      } else {
-        UInt64 numErrors = 0;
-        UInt64 numWarnings = 0;
-
-        // options.ExtractNtOptions.StoreAltStreams = true, if -sns[-] is not definmed
-
-        hresultMain = ListArchives(
-            codecs, types, excludedFormats, options.StdInMode, ArchivePathsSorted,
-            ArchivePathsFullSorted, options.ExtractOptions.NtOptions.AltStreams.Val,
-            options.AltStreams.Val,  // we don't want to show AltStreams by default
-            options.Censor.Pairs.Front().Head, options.EnableHeaders, options.TechMode,
-#ifndef _NO_CRYPTO
-            options.PasswordEnabled, options.Password,
-#endif
-            &options.Properties, numErrors, numWarnings);
-
-        if (options.EnableHeaders)
-          if (numWarnings > 0) g_StdOut << endl << "Warnings: " << numWarnings << endl;
-
-        if (numErrors > 0) {
-          if (options.EnableHeaders) g_StdOut << endl << "Errors: " << numErrors << endl;
-          retCode = NExitCode::kFatalError;
+        *so << "Size:       " << stat.UnpackSize << endl << "Compressed: " << stat.PackSize << endl;
+        if (hashCalc) {
+          *so << endl;
+          PrintHashStat(*so, hb);
         }
       }
-  } else
-    ShowMessageAndThrowException(kUserErrorMessage, NExitCode::kUserError);
-
-  if (options.ShowTime && g_StdStream) PrintStat();
+  }
 
   ThrowException_if_Error(hresultMain);
 

@@ -57,7 +57,7 @@ HRESULT COpenCallbackConsole::Open_Finished() {
 #ifndef _NO_CRYPTO
 
 HRESULT COpenCallbackConsole::Open_CryptoGetTextPassword(BSTR* password) {
-  *password = NULL;
+  *password = nullptr;
   RINOK(CheckBreak2());
 
   if (!PasswordIsDefined) {

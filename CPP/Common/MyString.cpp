@@ -1285,7 +1285,7 @@ UString2::UString2(const wchar_t* s) {
   wmemcpy(_chars, s, len + 1);
 }
 
-UString2::UString2(const UString2& s) : _chars(NULL), _len(0) {
+UString2::UString2(const UString2& s) : _chars(nullptr), _len(0) {
   if (s._chars) {
     SetStartLen(s._len);
     wmemcpy(_chars, s._chars, s._len + 1);

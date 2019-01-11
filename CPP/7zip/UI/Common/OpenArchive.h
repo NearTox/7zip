@@ -120,21 +120,20 @@ struct COpenOptions {
   OPEN_PROPS_DECL
   // bool openOnlySpecifiedByExtension,
 
-  bool stdInMode;
+  static const bool stdInMode = false;
   UString filePath;
 
   COpenOptions() :
-      codecs(NULL),
-      types(NULL),
-      excludedFormats(NULL),
-      stream(NULL),
-      seqStream(NULL),
-      callback(NULL),
-      callbackSpec(NULL),
-      stdInMode(false) {}
+      codecs(nullptr),
+      types(nullptr),
+      excludedFormats(nullptr),
+      stream(nullptr),
+      seqStream(nullptr),
+      callback(nullptr),
+      callbackSpec(nullptr) {}
 };
 
-UInt32 GetOpenArcErrorFlags(const NWindows::NCOM::CPropVariant& prop, bool* isDefinedProp = NULL);
+UInt32 GetOpenArcErrorFlags(const NWindows::NCOM::CPropVariant& prop, bool* isDefinedProp = nullptr);
 
 struct CArcErrorInfo {
   bool ThereIsTail;

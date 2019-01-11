@@ -2,7 +2,7 @@
 2017-04-03 : Igor Pavlov : Public domain
 This code is based on public domain code from Wei Dai's Crypto++ library. */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include <string.h>
 

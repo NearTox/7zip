@@ -126,11 +126,11 @@ struct CArcInfoEx {
 
   CArcInfoEx() :
       Flags(0),
-      CreateInArchive(NULL),
-      IsArcFunc(NULL)
+      CreateInArchive(nullptr),
+      IsArcFunc(nullptr)
 #ifndef _SFX
       ,
-      CreateOutArchive(NULL),
+      CreateOutArchive(nullptr),
       UpdateEnabled(false),
       NewInterface(false)
       // , Version(0)

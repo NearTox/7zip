@@ -10,8 +10,8 @@
 CODER_INTERFACE(ICompressProgressInfo, 0x04) {
   STDMETHOD(SetRatioInfo)(const UInt64* inSize, const UInt64* outSize) PURE;
 
-  /* (inSize) can be NULL, if unknown
-     (outSize) can be NULL, if unknown
+  /* (inSize) can be nullptr, if unknown
+     (outSize) can be nullptr, if unknown
 
   returns:
     S_OK
@@ -46,10 +46,10 @@ CODER_INTERFACE(ICompressCoder2, 0x18) {
   outStream function.
 
   Parameters:
-    (inStream != NULL)
-    (outStream != NULL)
+    (inStream != nullptr)
+    (outStream != nullptr)
 
-    if (inSize != NULL)
+    if (inSize != nullptr)
     {
       Encoders in 7-Zip ignore (inSize).
       Decoder can use (*inSize) to check that stream was decoded correctly.
@@ -59,13 +59,13 @@ CODER_INTERFACE(ICompressCoder2, 0x18) {
     If it's required to limit the reading from input stream (inStream), it can
       be done with ISequentialInStream implementation.
 
-    if (outSize != NULL)
+    if (outSize != nullptr)
     {
       Encoders in 7-Zip ignore (outSize).
       Decoder unpacks no more than (*outSize) bytes.
     }
 
-    (progress == NULL) is allowed.
+    (progress == nullptr) is allowed.
 
 
   Decoding with Code() function
@@ -84,7 +84,7 @@ CODER_INTERFACE(ICompressCoder2, 0x18) {
   If you need to decode only part of stream:
   {
     1) try to set partial_decoding mode with ICompressSetFinishMode::SetFinishMode(0);
-    2) Call the Code() function with specified (inSize = NULL) and specified (outSize).
+    2) Call the Code() function with specified (inSize = nullptr) and specified (outSize).
   }
 
   Encoding with Code() function
@@ -225,8 +225,8 @@ CODER_INTERFACE(ICompressSetOutStreamSize, 0x34) {
 
   /* That function initializes decoder structures.
      Call this function only for stream version of decoder.
-       if (outSize == NULL), then output size is unknown
-       if (outSize != NULL), then the decoder must stop decoding after (*outSize) bytes. */
+       if (outSize == nullptr), then output size is unknown
+       if (outSize != nullptr), then the decoder must stop decoding after (*outSize) bytes. */
 };
 
 CODER_INTERFACE(ICompressSetBufSize, 0x35) {
@@ -279,7 +279,7 @@ CODER_INTERFACE(ICompressCodecsInfo, 0x60) {
   STDMETHOD(GetNumMethods)(UInt32 * numMethods) PURE;
   STDMETHOD(GetProperty)(UInt32 index, PROPID propID, PROPVARIANT * value) PURE;
   STDMETHOD(CreateDecoder)(UInt32 index, const GUID* iid, void** coder) PURE;
-  STDMETHOD(CreateEncoder)(UInt32 index, const GUID* iid, void** coder) PURE;
+  // STDMETHOD(CreateEncoder)(UInt32 index, const GUID* iid, void** coder) PURE;
 };
 
 CODER_INTERFACE(ISetCompressCodecsInfo, 0x61) {

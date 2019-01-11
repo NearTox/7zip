@@ -73,7 +73,7 @@ bool InitLocalPrivileges() {
   tp.PrivilegeCount = 1;
   tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
-  if (!::LookupPrivilegeValue(NULL, SE_SECURITY_NAME, &tp.Privileges[0].Luid)) return false;
+  if (!::LookupPrivilegeValue(nullptr, SE_SECURITY_NAME, &tp.Privileges[0].Luid)) return false;
   if (!token.AdjustPrivileges(&tp)) return false;
   return (GetLastError() == ERROR_SUCCESS);
 }
@@ -160,7 +160,7 @@ HRESULT CArchiveExtractCallback::PrepareHardLinks(const CRecordVector<UInt32>* r
 #endif
 
 CArchiveExtractCallback::CArchiveExtractCallback() :
-    _arc(NULL),
+    _arc(nullptr),
     WriteCTime(true),
     WriteATime(true),
     WriteMTime(true),
@@ -490,7 +490,7 @@ struct CTempMidBuffer
 {
   void *Buf;
 
-  CTempMidBuffer(size_t size): Buf(NULL) { Buf = ::MidAlloc(size); }
+  CTempMidBuffer(size_t size): Buf(nullptr) { Buf = ::MidAlloc(size); }
   ~CTempMidBuffer() { ::MidFree(Buf); }
 };
 
@@ -529,7 +529,7 @@ STDMETHODIMP CArchiveExtractCallback::GetStream(
     UInt32 index, ISequentialOutStream** outStream, Int32 askExtractMode) {
   COM_TRY_BEGIN
 
-  *outStream = NULL;
+  *outStream = nullptr;
 
 #ifndef _SFX
   if (_hashStream) _hashStreamSpec->ReleaseStream();
@@ -1163,7 +1163,7 @@ STDMETHODIMP CArchiveExtractCallback::GetStream(
             }
 #endif
 
-            if (_isSplit) { RINOK(_outFileStreamSpec->Seek(_position, STREAM_SEEK_SET, NULL)); }
+            if (_isSplit) { RINOK(_outFileStreamSpec->Seek(_position, STREAM_SEEK_SET, nullptr)); }
 
             _outFileStream = outStreamLoc2;
           }
@@ -1242,9 +1242,9 @@ HRESULT CArchiveExtractCallback::CloseFile() {
 
   HRESULT hres = S_OK;
   _outFileStreamSpec->SetTime(
-      (WriteCTime && _fi.CTimeDefined) ? &_fi.CTime : NULL,
-      (WriteATime && _fi.ATimeDefined) ? &_fi.ATime : NULL,
-      (WriteMTime && _fi.MTimeDefined) ? &_fi.MTime : (_arc->MTimeDefined ? &_arc->MTime : NULL));
+      (WriteCTime && _fi.CTimeDefined) ? &_fi.CTime : nullptr,
+      (WriteATime && _fi.ATimeDefined) ? &_fi.ATime : nullptr,
+      (WriteMTime && _fi.MTimeDefined) ? &_fi.MTime : (_arc->MTimeDefined ? &_arc->MTime : nullptr));
 
   const UInt64 processedSize = _outFileStreamSpec->ProcessedSize;
   if (_fileLengthWasSet && _curSize > processedSize) {
@@ -1381,8 +1381,8 @@ void CDirPathSortPair::SetNumSlashes(const FChar* s) {
 
 bool CDirPathTime::SetDirTime() {
   return NDir::SetDirTime(
-      Path, CTimeDefined ? &CTime : NULL, ATimeDefined ? &ATime : NULL,
-      MTimeDefined ? &MTime : NULL);
+      Path, CTimeDefined ? &CTime : nullptr, ATimeDefined ? &ATime : nullptr,
+      MTimeDefined ? &MTime : nullptr);
 }
 
 HRESULT CArchiveExtractCallback::SetDirsTimes() {
@@ -1413,6 +1413,6 @@ HRESULT CArchiveExtractCallback::CloseArc() {
   HRESULT res = CloseFile();
   HRESULT res2 = SetDirsTimes();
   if (res == S_OK) res = res2;
-  _arc = NULL;
+  _arc = nullptr;
   return res;
 }

@@ -139,10 +139,10 @@ HRESULT CDecoder::Code(const CHeader &header, ISequentialOutStream *outStream,
   {
     RINOK(_filterCoder->SetOutStream(outStream));
     outStream = _bcjStream;
-    RINOK(_filterCoder->SetOutStreamSize(NULL));
+    RINOK(_filterCoder->SetOutStreamSize(nullptr));
   }
 
-  const UInt64 *Size = header.HasSize() ? &header.Size : NULL;
+  const UInt64 *Size = header.HasSize() ? &header.Size : nullptr;
   HRESULT res = _lzmaDecoderSpec->CodeResume(outStream, Size, progress);
 
   if (filteredMode)
@@ -497,7 +497,7 @@ STDMETHODIMP CHandler::Extract(const UInt32 *indices, UInt32 numItems,
   {
     if (!_stream)
       return E_FAIL;
-    RINOK(_stream->Seek(0, STREAM_SEEK_SET, NULL));
+    RINOK(_stream->Seek(0, STREAM_SEEK_SET, nullptr));
   }
   else
     _needSeekToStart = true;

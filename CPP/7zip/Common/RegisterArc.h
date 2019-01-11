@@ -42,10 +42,10 @@ void RegisterArc(const CArcInfo* arcInfo) throw();
 
 #define REGISTER_ARC_I_CLS(cls, n, e, ae, id, sig, offs, flags, isArc) \
   IMP_CreateArcIn_2(cls)                                               \
-      REGISTER_ARC_R(n, e, ae, id, ARRAY_SIZE(sig), sig, offs, flags, CreateArc, NULL, isArc)
+      REGISTER_ARC_R(n, e, ae, id, ARRAY_SIZE(sig), sig, offs, flags, CreateArc, nullptr, isArc)
 
 #define REGISTER_ARC_I_CLS_NO_SIG(cls, n, e, ae, id, offs, flags, isArc) \
-  IMP_CreateArcIn_2(cls) REGISTER_ARC_R(n, e, ae, id, 0, NULL, offs, flags, CreateArc, NULL, isArc)
+  IMP_CreateArcIn_2(cls) REGISTER_ARC_R(n, e, ae, id, 0, nullptr, offs, flags, CreateArc, nullptr, isArc)
 
 #define REGISTER_ARC_I(n, e, ae, id, sig, offs, flags, isArc) \
   REGISTER_ARC_I_CLS(CHandler(), n, e, ae, id, sig, offs, flags, isArc)
@@ -55,11 +55,11 @@ void RegisterArc(const CArcInfo* arcInfo) throw();
 
 #define REGISTER_ARC_IO(n, e, ae, id, sig, offs, flags, isArc) \
   IMP_CreateArcIn REGISTER_ARC_R(                              \
-      n, e, ae, id, ARRAY_SIZE(sig), sig, offs, flags, CreateArc, NULL, isArc)
+      n, e, ae, id, ARRAY_SIZE(sig), sig, offs, flags, CreateArc, nullptr, isArc)
 
 #define REGISTER_ARC_IO_DECREMENT_SIG(n, e, ae, id, sig, offs, flags, isArc) \
   IMP_CreateArcIn REGISTER_ARC_V(                                            \
-      n, e, ae, id, ARRAY_SIZE(sig), sig, offs, flags, CreateArc, NULL,      \
+      n, e, ae, id, ARRAY_SIZE(sig), sig, offs, flags, CreateArc, nullptr,      \
       isArc) struct CRegisterArcDecSig {                                     \
     CRegisterArcDecSig() {                                                   \
       sig[0]--;                                                              \

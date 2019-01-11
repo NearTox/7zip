@@ -602,7 +602,7 @@ bool MyGetLogicalDriveStrings(CObjectVector<FString>& driveStrings) {
 #  ifndef _UNICODE
   if (!g_IsNT) {
     driveStrings.Clear();
-    UINT32 size = GetLogicalDriveStrings(0, NULL);
+    UINT32 size = GetLogicalDriveStrings(0, nullptr);
     if (size == 0) return false;
     CObjArray<char> buf(size);
     UINT32 newSize = GetLogicalDriveStrings(size, buf);
@@ -620,7 +620,7 @@ bool MyGetLogicalDriveStrings(CObjectVector<FString>& driveStrings) {
   } else
 #  endif
   {
-    UINT32 size = GetLogicalDriveStringsW(0, NULL);
+    UINT32 size = GetLogicalDriveStringsW(0, nullptr);
     if (size == 0) return false;
     CObjArray<wchar_t> buf(size);
     UINT32 newSize = GetLogicalDriveStringsW(size, buf);

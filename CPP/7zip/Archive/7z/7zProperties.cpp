@@ -19,9 +19,9 @@ struct CPropMap
 
 static const CPropMap kPropMap[] =
 {
-  { NID::kName, { NULL, kpidPath, VT_BSTR } },
-  { NID::kSize, { NULL, kpidSize, VT_UI8 } },
-  { NID::kPackInfo, { NULL, kpidPackSize, VT_UI8 } },
+  { NID::kName, { nullptr, kpidPath, VT_BSTR } },
+  { NID::kSize, { nullptr, kpidSize, VT_UI8 } },
+  { NID::kPackInfo, { nullptr, kpidPackSize, VT_UI8 } },
 
   #ifdef _MULTI_PACK
   { 100, { "Pack0", kpidPackedSize0, VT_UI8 } },
@@ -31,22 +31,22 @@ static const CPropMap kPropMap[] =
   { 104, { "Pack4", kpidPackedSize4, VT_UI8 } },
   #endif
 
-  { NID::kCTime, { NULL, kpidCTime, VT_FILETIME } },
-  { NID::kMTime, { NULL, kpidMTime, VT_FILETIME } },
-  { NID::kATime, { NULL, kpidATime, VT_FILETIME } },
-  { NID::kWinAttrib, { NULL, kpidAttrib, VT_UI4 } },
-  { NID::kStartPos, { NULL, kpidPosition, VT_UI8 } },
+  { NID::kCTime, { nullptr, kpidCTime, VT_FILETIME } },
+  { NID::kMTime, { nullptr, kpidMTime, VT_FILETIME } },
+  { NID::kATime, { nullptr, kpidATime, VT_FILETIME } },
+  { NID::kWinAttrib, { nullptr, kpidAttrib, VT_UI4 } },
+  { NID::kStartPos, { nullptr, kpidPosition, VT_UI8 } },
 
-  { NID::kCRC, { NULL, kpidCRC, VT_UI4 } },
+  { NID::kCRC, { nullptr, kpidCRC, VT_UI4 } },
 
-//  { NID::kIsAux, { NULL, kpidIsAux, VT_BOOL } },
-  { NID::kAnti, { NULL, kpidIsAnti, VT_BOOL } }
+//  { NID::kIsAux, { nullptr, kpidIsAux, VT_BOOL } },
+  { NID::kAnti, { nullptr, kpidIsAnti, VT_BOOL } }
 
   #ifndef _SFX
   ,
-  { 97, { NULL, kpidEncrypted, VT_BOOL } },
-  { 98, { NULL, kpidMethod, VT_BSTR } },
-  { 99, { NULL, kpidBlock, VT_UI4 } }
+  { 97, { nullptr, kpidEncrypted, VT_BOOL } },
+  { 98, { nullptr, kpidMethod, VT_BSTR } },
+  { 99, { nullptr, kpidBlock, VT_UI4 } }
   #endif
 };
 
@@ -164,7 +164,7 @@ STDMETHODIMP CHandler::GetPropertyInfo(UInt32 index, BSTR *name, PROPID *propID,
         *name = ::SysAllocString(st.lpwstrName);
       else
       */
-        *name = NULL;
+        *name = nullptr;
       return S_OK;
     }
   }

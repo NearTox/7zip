@@ -1,7 +1,7 @@
 /* CpuArch.c -- CPU specific code
 2018-07-04: Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "CpuArch.h"
 

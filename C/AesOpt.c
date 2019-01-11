@@ -1,7 +1,7 @@
 /* AesOpt.c -- Intel's AES
 2017-06-08 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "CpuArch.h"
 

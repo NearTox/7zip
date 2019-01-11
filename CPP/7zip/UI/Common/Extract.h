@@ -27,19 +27,11 @@ struct CExtractOptionsBase {
 };
 
 struct CExtractOptions : public CExtractOptionsBase {
-  bool StdInMode;
-  bool StdOutMode;
-  bool YesToAll;
-  bool TestMode;
-
-// bool ShowDialog;
-// bool PasswordEnabled;
-// UString Password;
 #ifndef _SFX
   CObjectVector<CProperty> Properties;
 #endif
 
-  CExtractOptions() : TestMode(false), StdInMode(false), StdOutMode(false), YesToAll(false) {}
+  CExtractOptions() {}
 };
 
 struct CDecompressStat {

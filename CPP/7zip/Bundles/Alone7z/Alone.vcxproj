@@ -133,12 +133,10 @@
     <ClInclude Include="..\..\..\Common\CommandLineParser.h" />
     <ClInclude Include="..\..\..\Common\ComTry.h" />
     <ClInclude Include="..\..\..\Common\Defs.h" />
-    <ClInclude Include="..\..\..\Common\DynamicBuffer.h" />
     <ClInclude Include="..\..\..\Common\IntToString.h" />
     <ClInclude Include="..\..\..\Common\ListFileUtils.h" />
     <ClInclude Include="..\..\..\Common\MyCom.h" />
     <ClInclude Include="..\..\..\Common\MyException.h" />
-    <ClInclude Include="..\..\..\Common\MyGuidDef.h" />
     <ClInclude Include="..\..\..\Common\MyInitGuid.h" />
     <ClInclude Include="..\..\..\Common\MyString.h" />
     <ClInclude Include="..\..\..\Common\MyUnknown.h" />
@@ -235,7 +233,6 @@
     <ClInclude Include="..\..\UI\Common\PropIDUtils.h" />
     <ClInclude Include="..\..\UI\Common\SetProperties.h" />
     <ClInclude Include="..\..\UI\Common\SortUtils.h" />
-    <ClInclude Include="..\..\UI\Common\TempFiles.h" />
     <ClInclude Include="..\..\UI\Common\Update.h" />
     <ClInclude Include="..\..\UI\Console\ConsoleClose.h" />
     <ClInclude Include="..\..\UI\Console\ExtractCallbackConsole.h" />
@@ -411,7 +408,6 @@
     <ClCompile Include="..\..\..\Common\IntToString.cpp" />
     <ClCompile Include="..\..\..\Common\ListFileUtils.cpp" />
     <ClCompile Include="..\..\..\Common\MyString.cpp" />
-    <ClCompile Include="..\..\..\Common\MyVector.cpp" />
     <ClCompile Include="..\..\..\Common\NewHandler.cpp" />
     <ClCompile Include="..\..\..\Common\Sha256Reg.cpp" />
     <ClCompile Include="..\..\..\Common\StdInStream.cpp" />
@@ -507,8 +503,6 @@
     <ClCompile Include="..\..\UI\Common\PropIDUtils.cpp" />
     <ClCompile Include="..\..\UI\Common\SetProperties.cpp" />
     <ClCompile Include="..\..\UI\Common\SortUtils.cpp" />
-    <ClCompile Include="..\..\UI\Common\TempFiles.cpp" />
-    <ClCompile Include="..\..\UI\Common\Update.cpp" />
     <ClCompile Include="..\..\UI\Console\ConsoleClose.cpp" />
     <ClCompile Include="..\..\UI\Console\ExtractCallbackConsole.cpp" />
     <ClCompile Include="..\..\UI\Console\HashCon.cpp" />

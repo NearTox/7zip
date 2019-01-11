@@ -69,7 +69,7 @@ void MultiByteToUnicodeString2(UString& dest, const AString& src, UINT codePage)
     d[i] = 0;
     dest.ReleaseBuf_SetLen(i);
     */
-    unsigned len = MultiByteToWideChar(codePage, 0, src, src.Len(), NULL, 0);
+    unsigned len = MultiByteToWideChar(codePage, 0, src, src.Len(), nullptr, 0);
     if (len == 0) {
       if (GetLastError() != 0) throw 282228;
     } else {
@@ -87,14 +87,14 @@ void MultiByteToUnicodeString2(UString& dest, const AString& src, UINT codePage)
       LPSTR lpMultiByteStr, int cbMultiByte,
       LPCSTR lpDefaultChar, LPBOOL lpUsedDefaultChar);
 
-if (lpDefaultChar == NULL),
+if (lpDefaultChar == nullptr),
   - it uses system default value.
 
 if (CodePage == CP_UTF7 || CodePage == CP_UTF8)
-  if (lpDefaultChar != NULL || lpUsedDefaultChar != NULL)
+  if (lpDefaultChar != nullptr || lpUsedDefaultChar != nullptr)
     return: 0. ERR: ERROR_INVALID_PARAMETER.
 
-The function operates most efficiently, if (lpDefaultChar == NULL && lpUsedDefaultChar == NULL)
+The function operates most efficiently, if (lpDefaultChar == nullptr && lpUsedDefaultChar == nullptr)
 
 */
 
@@ -126,8 +126,8 @@ static void UnicodeStringToMultiByte2(
       bool isUtf = (codePage == CP_UTF8 || codePage == CP_UTF7);
       unsigned len = WideCharToMultiByte(codePage, 0, s + i, src.Len() - i,
           d + i, numRequiredBytes + 1 - i,
-          (isUtf ? NULL : &defaultChar),
-          (isUtf ? NULL : &defUsed));
+          (isUtf ? nullptr : &defaultChar),
+          (isUtf ? nullptr : &defUsed));
       defaultCharWasUsed = (defUsed != FALSE);
       if (len == 0)
         throw 282229;
@@ -167,7 +167,7 @@ static void UnicodeStringToMultiByte2(
     }
     */
 
-    unsigned len = WideCharToMultiByte(codePage, 0, src, src.Len(), NULL, 0, NULL, NULL);
+    unsigned len = WideCharToMultiByte(codePage, 0, src, src.Len(), nullptr, 0, nullptr, nullptr);
     if (len == 0) {
       if (GetLastError() != 0) throw 282228;
     } else {
@@ -175,8 +175,8 @@ static void UnicodeStringToMultiByte2(
       bool isUtf = (codePage == CP_UTF8 || codePage == CP_UTF7);
       // defaultChar = defaultChar;
       len = WideCharToMultiByte(
-          codePage, 0, src, src.Len(), dest.GetBuf(len), len, (isUtf ? NULL : &defaultChar),
-          (isUtf ? NULL : &defUsed));
+          codePage, 0, src, src.Len(), dest.GetBuf(len), len, (isUtf ? nullptr : &defaultChar),
+          (isUtf ? nullptr : &defUsed));
       if (!isUtf) defaultCharWasUsed = (defUsed != FALSE);
       if (len == 0) throw 282228;
       dest.ReleaseBuf_SetEnd(len);

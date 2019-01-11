@@ -220,7 +220,7 @@ void CCoder::SetCoderInfo(const UInt64 *unpackSize, const UInt64 * const *packSi
   else
   {
     UnpackSize = 0;
-    UnpackSizePointer = NULL;
+    UnpackSizePointer = nullptr;
   }
 
   PackSizes.ClearAndSetSize((unsigned)NumStreams);
@@ -236,7 +236,7 @@ void CCoder::SetCoderInfo(const UInt64 *unpackSize, const UInt64 * const *packSi
     else
     {
       PackSizes[i] = 0;
-      PackSizePointers[i] = NULL;
+      PackSizePointers[i] = nullptr;
     }
   }
 }
@@ -345,12 +345,12 @@ void CMixerST::AddCoder(const CCreatedCoder &cod)
     {
       CMyComPtr<ISequentialInStream> s;
       unk->QueryInterface(IID_ISequentialInStream, (void**)&s);
-      c2.CanRead = (s != NULL);
+      c2.CanRead = (s != nullptr);
     }
     {
       CMyComPtr<ISequentialOutStream> s;
       unk->QueryInterface(IID_ISequentialOutStream, (void**)&s);
-      c2.CanWrite = (s != NULL);
+      c2.CanWrite = (s != nullptr);
     }
   }
 }
@@ -865,7 +865,7 @@ void CCoderMT::Execute()
 {
   try
   {
-    Code(NULL);
+    Code(nullptr);
   }
   catch(...)
   {

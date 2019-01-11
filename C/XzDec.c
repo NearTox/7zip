@@ -1,7 +1,7 @@
 /* XzDec.c -- Xz Decode
 2018-12-29 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 // #include <stdio.h>
 

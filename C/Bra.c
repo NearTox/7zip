@@ -1,7 +1,7 @@
 /* Bra.c -- Converters for RISC code
 2017-04-04 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "Bra.h"
 #include "CpuArch.h"

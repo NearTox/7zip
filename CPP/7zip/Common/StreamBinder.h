@@ -51,7 +51,7 @@ public:
 
   void CloseWrite()
   {
-    _buf = NULL;
+    _buf = nullptr;
     _bufSize = 0;
     _canRead_Event.Set();
   }

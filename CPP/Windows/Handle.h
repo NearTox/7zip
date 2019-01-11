@@ -11,19 +11,19 @@ class CHandle {
 
  public:
   operator HANDLE() { return _handle; }
-  CHandle() : _handle(NULL) {}
+  CHandle() : _handle(nullptr) {}
   ~CHandle() { Close(); }
-  bool IsCreated() const { return (_handle != NULL); }
+  bool IsCreated() const { return (_handle != nullptr); }
   bool Close() {
-    if (_handle == NULL) return true;
+    if (_handle == nullptr) return true;
     if (!::CloseHandle(_handle)) return false;
-    _handle = NULL;
+    _handle = nullptr;
     return true;
   }
   void Attach(HANDLE handle) { _handle = handle; }
   HANDLE Detach() {
     HANDLE handle = _handle;
-    _handle = NULL;
+    _handle = nullptr;
     return handle;
   }
 };

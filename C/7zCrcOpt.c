@@ -1,7 +1,7 @@
 /* 7zCrcOpt.c -- CRC32 calculation
 2017-04-03 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "CpuArch.h"
 

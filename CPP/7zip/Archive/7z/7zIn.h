@@ -166,7 +166,7 @@ struct CDatabase: public CFolders
   const void* GetName(unsigned index) const
   {
     if (!NameOffsets || !NamesBuf)
-      return NULL;
+      return nullptr;
     return (void *)((const Byte *)NamesBuf + NameOffsets[index] * 2);
   };
   */

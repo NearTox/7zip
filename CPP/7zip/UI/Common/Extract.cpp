@@ -63,7 +63,7 @@ static HRESULT DecompressArchive(
 
   bool allFilesAreAllowed = wildcardCensor.AreAllAllowed();
 
-  if (!options.StdInMode) {
+  {
     UInt32 numItems;
     RINOK(archive->GetNumberOfItems(&numItems));
 
@@ -142,29 +142,20 @@ static HRESULT DecompressArchive(
   }
 
   ecs->Init(
-      options.NtOptions, options.StdInMode ? &wildcardCensor : NULL, &arc, callback,
-      options.StdOutMode, options.TestMode, outDir, removePathParts, false, packSize);
+      options.NtOptions, nullptr, &arc, callback, false, false, outDir, removePathParts, false,
+      packSize);
 
 #ifdef SUPPORT_LINKS
 
-  if (!options.StdInMode && !options.TestMode && options.NtOptions.HardLinks.Val) {
-    RINOK(ecs->PrepareHardLinks(&realIndices));
-  }
+  if (options.NtOptions.HardLinks.Val) { RINOK(ecs->PrepareHardLinks(&realIndices)); }
 
 #endif
 
   HRESULT result;
-  Int32 testMode = (options.TestMode && !calcCrc) ? 1 : 0;
 
   CArchiveExtractCallback_Closer ecsCloser(ecs);
 
-  if (options.StdInMode) {
-    result = archive->Extract(NULL, (UInt32)(Int32)-1, testMode, ecs);
-    NCOM::CPropVariant prop;
-    if (archive->GetArchiveProperty(kpidPhySize, &prop) == S_OK)
-      ConvertPropVariantToUInt64(prop, stdInProcessed);
-  } else
-    result = archive->Extract(&realIndices.Front(), realIndices.Size(), testMode, ecs);
+  result = archive->Extract(&realIndices.Front(), realIndices.Size(), 0, ecs);
 
   HRESULT res2 = ecsCloser.Close();
   if (result == S_OK) result = res2;
@@ -204,14 +195,14 @@ HRESULT Extract(
   UInt64 totalPackSize = 0;
   CRecordVector<UInt64> arcSizes;
 
-  unsigned numArcs = options.StdInMode ? 1 : arcPaths.Size();
+  unsigned numArcs = arcPaths.Size();
 
   unsigned i;
 
   for (i = 0; i < numArcs; i++) {
     NFind::CFileInfo fi;
     fi.Size = 0;
-    if (!options.StdInMode) {
+    {
       const FString& arcPath = us2fs(arcPaths[i]);
       if (!fi.Find(arcPath)) throw "there is no such archive";
       if (fi.IsDir()) throw "can't decompress folder";
@@ -243,10 +234,7 @@ HRESULT Extract(
 
     const UString& arcPath = arcPaths[i];
     NFind::CFileInfo fi;
-    if (options.StdInMode) {
-      fi.Size = 0;
-      fi.Attrib = 0;
-    } else {
+    {
       if (!fi.Find(us2fs(arcPath)) || fi.IsDir()) throw "there is no such archive";
     }
 
@@ -256,7 +244,7 @@ HRESULT Extract(
     #endif
     */
 
-    RINOK(extractCallback->BeforeOpen(arcPath, options.TestMode));
+    RINOK(extractCallback->BeforeOpen(arcPath, false));
     CArchiveLink arcLink;
 
     CObjectVector<COpenType> types2 = types;
@@ -295,8 +283,7 @@ HRESULT Extract(
     op.codecs = codecs;
     op.types = &types2;
     op.excludedFormats = &excludedFormats;
-    op.stdInMode = options.StdInMode;
-    op.stream = NULL;
+    op.stream = nullptr;
     op.filePath = arcPath;
 
     HRESULT result = arcLink.Open_Strict(op, openCallback);
@@ -308,7 +295,7 @@ HRESULT Extract(
 
     if (result != S_OK) {
       thereAreNotOpenArcs = true;
-      if (!options.StdInMode) {
+      {
         NFind::CFileInfo fi2;
         if (fi2.Find(us2fs(arcPath)))
           if (!fi2.IsDir()) totalPackProcessed += fi2.Size;
@@ -316,7 +303,7 @@ HRESULT Extract(
       continue;
     }
 
-    if (!options.StdInMode) {
+    {
       // numVolumes += arcLink.VolumePaths.Size();
       // arcLink.VolumesSize;
 
@@ -357,13 +344,13 @@ HRESULT Extract(
     */
 
     CArc& arc = arcLink.Arcs.Back();
-    arc.MTimeDefined = (!options.StdInMode && !fi.IsDevice);
+    arc.MTimeDefined = !fi.IsDevice;
     arc.MTime = fi.MTime;
 
     UInt64 packProcessed;
     bool calcCrc =
 #ifndef _SFX
-        (hash != NULL);
+        (hash != nullptr);
 #else
         false;
 #endif
@@ -372,7 +359,7 @@ HRESULT Extract(
         codecs, arcLink, fi.Size + arcLink.VolumesSize, wildcardCensor, options, calcCrc,
         extractCallback, ecs, errorMessage, packProcessed));
 
-    if (!options.StdInMode) packProcessed = fi.Size + arcLink.VolumesSize;
+    packProcessed = fi.Size + arcLink.VolumesSize;
     totalPackProcessed += packProcessed;
     ecs->LocalProgressSpec->InSize += packProcessed;
     ecs->LocalProgressSpec->OutSize = ecs->UnpackSize;

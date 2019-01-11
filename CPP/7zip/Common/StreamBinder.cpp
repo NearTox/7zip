@@ -56,7 +56,7 @@ void CStreamBinder::ReInit()
 
   _waitWrite = true;
   _bufSize = 0;
-  _buf = NULL;
+  _buf = nullptr;
   ProcessedSize = 0;
   // WritingWasCut = false;
 }
@@ -69,7 +69,7 @@ void CStreamBinder::CreateStreams(ISequentialInStream **inStream, ISequentialOut
 
   _waitWrite = true;
   _bufSize = 0;
-  _buf = NULL;
+  _buf = nullptr;
   ProcessedSize = 0;
   // WritingWasCut = false;
 

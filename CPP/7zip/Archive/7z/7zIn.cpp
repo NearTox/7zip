@@ -328,7 +328,7 @@ HRESULT CInArchive::FindAndReadSignature(IInStream *stream, const UInt64 *search
       {
         memcpy(_header, p, kHeaderSize);
         _arhiveBeginStreamPosition += offset + pos;
-        return stream->Seek(_arhiveBeginStreamPosition + kHeaderSize, STREAM_SEEK_SET, NULL);
+        return stream->Seek(_arhiveBeginStreamPosition + kHeaderSize, STREAM_SEEK_SET, nullptr);
       }
     }
 
@@ -344,7 +344,7 @@ HRESULT CInArchive::Open(IInStream *stream, const UInt64 *searchHeaderSizeLimit)
   Close();
   RINOK(stream->Seek(0, STREAM_SEEK_CUR, &_arhiveBeginStreamPosition))
   RINOK(stream->Seek(0, STREAM_SEEK_END, &_fileEndPosition))
-  RINOK(stream->Seek(_arhiveBeginStreamPosition, STREAM_SEEK_SET, NULL))
+  RINOK(stream->Seek(_arhiveBeginStreamPosition, STREAM_SEEK_SET, nullptr))
   RINOK(FindAndReadSignature(stream, searchHeaderSizeLimit));
   _stream = stream;
   return S_OK;
@@ -1079,7 +1079,7 @@ HRESULT CInArchive::ReadAndDecodePackedStreams(
   CRecordVector<UInt64> unpackSizes;
   CUInt32DefVector  digests;
 
-  ReadStreamsInfo(NULL,
+  ReadStreamsInfo(nullptr,
     dataOffset,
     folders,
     unpackSizes,
@@ -1106,12 +1106,12 @@ HRESULT CInArchive::ReadAndDecodePackedStreams(
 
         _stream, baseOffset + dataOffset,
         folders, i,
-        NULL, // *unpackSize
+        nullptr, // *unpackSize
 
         outStream,
-        NULL, // *compressProgress
+        nullptr, // *compressProgress
 
-        NULL  // **inStreamMainRes
+        nullptr  // **inStreamMainRes
         , dataAfterEnd_Error
 
         _7Z_DECODER_CRYPRO_VARS
@@ -1525,7 +1525,7 @@ HRESULT CInArchive::ReadDatabase2(
       checkSize = (unsigned)(rem);
     if (checkSize < 3)
       return S_FALSE;
-    RINOK(_stream->Seek(fileSize - checkSize, STREAM_SEEK_SET, NULL));
+    RINOK(_stream->Seek(fileSize - checkSize, STREAM_SEEK_SET, nullptr));
     RINOK(ReadStream_FALSE(_stream, buf, (size_t)checkSize));
 
     if (buf[checkSize - 1] != 0)
@@ -1543,7 +1543,7 @@ HRESULT CInArchive::ReadDatabase2(
     nextHeaderSize = checkSize - i;
     nextHeaderOffset = rem - nextHeaderSize;
     nextHeaderCRC = CrcCalc(buf + i, (size_t)nextHeaderSize);
-    RINOK(_stream->Seek(cur, STREAM_SEEK_SET, NULL));
+    RINOK(_stream->Seek(cur, STREAM_SEEK_SET, nullptr));
     db.StartHeaderWasRecovered = true;
   }
   else
@@ -1578,7 +1578,7 @@ HRESULT CInArchive::ReadDatabase2(
     db.UnexpectedEnd = true;
     return S_FALSE;
   }
-  RINOK(_stream->Seek(nextHeaderOffset, STREAM_SEEK_CUR, NULL));
+  RINOK(_stream->Seek(nextHeaderOffset, STREAM_SEEK_CUR, nullptr));
 
   size_t nextHeaderSize_t = (size_t)nextHeaderSize;
   if (nextHeaderSize_t != nextHeaderSize)

@@ -44,7 +44,7 @@ class CLimitedInStream:
   UInt64 _size;
   UInt64 _startOffset;
 
-  HRESULT SeekToPhys() { return _stream->Seek(_physPos, STREAM_SEEK_SET, NULL); }
+  HRESULT SeekToPhys() { return _stream->Seek(_physPos, STREAM_SEEK_SET, nullptr); }
 public:
   void SetStream(IInStream *stream) { _stream = stream; }
   HRESULT InitAndSeek(UInt64 startOffset, UInt64 size)
@@ -61,7 +61,7 @@ public:
   STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
   STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
 
-  HRESULT SeekToStart() { return Seek(0, STREAM_SEEK_SET, NULL); }
+  HRESULT SeekToStart() { return Seek(0, STREAM_SEEK_SET, nullptr); }
 };
 
 HRESULT CreateLimitedInStream(IInStream *inStream, UInt64 pos, UInt64 size, ISequentialInStream **resStream);
@@ -80,7 +80,7 @@ public:
   CRecordVector<UInt32> Vector;
   UInt64 StartOffset;
 
-  HRESULT SeekToPhys() { return Stream->Seek(_physPos, STREAM_SEEK_SET, NULL); }
+  HRESULT SeekToPhys() { return Stream->Seek(_physPos, STREAM_SEEK_SET, nullptr); }
 
   HRESULT InitAndSeek()
   {
@@ -115,7 +115,7 @@ class CExtentsStream:
   UInt64 _virtPos;
   bool _needStartSeek;
 
-  HRESULT SeekToPhys() { return Stream->Seek(_phyPos, STREAM_SEEK_SET, NULL); }
+  HRESULT SeekToPhys() { return Stream->Seek(_phyPos, STREAM_SEEK_SET, nullptr); }
 
 public:
   CMyComPtr<IInStream> Stream;
@@ -177,7 +177,7 @@ public:
   STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
   STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
 
-  HRESULT SeekToStart() { return Stream->Seek(Offset, STREAM_SEEK_SET, NULL); }
+  HRESULT SeekToStart() { return Stream->Seek(Offset, STREAM_SEEK_SET, nullptr); }
 };
 
 class CLimitedCachedInStream:
@@ -195,7 +195,7 @@ class CLimitedCachedInStream:
   size_t _cachePhyPos;
 
 
-  HRESULT SeekToPhys() { return _stream->Seek(_physPos, STREAM_SEEK_SET, NULL); }
+  HRESULT SeekToPhys() { return _stream->Seek(_physPos, STREAM_SEEK_SET, nullptr); }
 public:
   CByteBuffer Buffer;
 
@@ -221,7 +221,7 @@ public:
   STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
   STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
 
-  HRESULT SeekToStart() { return Seek(0, STREAM_SEEK_SET, NULL); }
+  HRESULT SeekToStart() { return Seek(0, STREAM_SEEK_SET, nullptr); }
 };
 
 class CTailOutStream:

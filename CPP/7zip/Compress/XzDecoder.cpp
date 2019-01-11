@@ -70,7 +70,7 @@ HRESULT CDecoder::Decode(
 
   SRes res = XzDecMt_Decode(
       xz, &props, outSizeLimit, finishStream, &outWrap.vt, &inWrap.vt, &Stat, &isMT,
-      progress ? &progressWrap.vt : NULL);
+      progress ? &progressWrap.vt : nullptr);
 
   MainDecodeSRes = res;
 

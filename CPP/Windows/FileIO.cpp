@@ -57,22 +57,22 @@ bool CFileBase::Create(
 #ifndef _UNICODE
   if (!g_IsNT) {
     _handle = ::CreateFile(
-        fs2fas(path), desiredAccess, shareMode, (LPSECURITY_ATTRIBUTES)NULL, creationDisposition,
-        flagsAndAttributes, (HANDLE)NULL);
+        fs2fas(path), desiredAccess, shareMode, (LPSECURITY_ATTRIBUTES)nullptr, creationDisposition,
+        flagsAndAttributes, (HANDLE)nullptr);
   } else
 #endif
   {
     IF_USE_MAIN_PATH
     _handle = ::CreateFileW(
-        fs2us(path), desiredAccess, shareMode, (LPSECURITY_ATTRIBUTES)NULL, creationDisposition,
-        flagsAndAttributes, (HANDLE)NULL);
+        fs2us(path), desiredAccess, shareMode, (LPSECURITY_ATTRIBUTES)nullptr, creationDisposition,
+        flagsAndAttributes, (HANDLE)nullptr);
 #ifdef WIN_LONG_PATH
     if (_handle == INVALID_HANDLE_VALUE && USE_SUPER_PATH) {
       UString superPath;
       if (GetSuperPath(path, superPath, USE_MAIN_PATH))
         _handle = ::CreateFileW(
-            superPath, desiredAccess, shareMode, (LPSECURITY_ATTRIBUTES)NULL, creationDisposition,
-            flagsAndAttributes, (HANDLE)NULL);
+            superPath, desiredAccess, shareMode, (LPSECURITY_ATTRIBUTES)nullptr, creationDisposition,
+            flagsAndAttributes, (HANDLE)nullptr);
     }
 #endif
   }
@@ -301,7 +301,7 @@ static UInt32 kChunkSizeMax = (1 << 22);
 
 bool CInFile::Read1(void* data, UInt32 size, UInt32& processedSize) throw() {
   DWORD processedLoc = 0;
-  bool res = BOOLToBool(::ReadFile(_handle, data, size, &processedLoc, NULL));
+  bool res = BOOLToBool(::ReadFile(_handle, data, size, &processedLoc, nullptr));
   processedSize = (UInt32)processedLoc;
   return res;
 }
@@ -354,12 +354,12 @@ bool COutFile::SetTime(
   return BOOLToBool(::SetFileTime(_handle, cTime, aTime, mTime));
 }
 
-bool COutFile::SetMTime(const FILETIME* mTime) throw() { return SetTime(NULL, NULL, mTime); }
+bool COutFile::SetMTime(const FILETIME* mTime) throw() { return SetTime(nullptr, nullptr, mTime); }
 
 bool COutFile::WritePart(const void* data, UInt32 size, UInt32& processedSize) throw() {
   if (size > kChunkSizeMax) size = kChunkSizeMax;
   DWORD processedLoc = 0;
-  bool res = BOOLToBool(::WriteFile(_handle, data, size, &processedLoc, NULL));
+  bool res = BOOLToBool(::WriteFile(_handle, data, size, &processedLoc, nullptr));
   processedSize = (UInt32)processedLoc;
   return res;
 }

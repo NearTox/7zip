@@ -1,7 +1,7 @@
 /* LzFind.c -- Match finder for LZ algorithms
 2018-07-08 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include <string.h>
 
@@ -681,7 +681,7 @@ static UInt32 Bt5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
     offset = 2;
     d2 = d3;
   }
-  
+
   if (d2 != d4 && d4 < p->cyclicBufferSize
       && *(cur - d4) == *cur
       && *(cur - d4 + 3) == *(cur + 3))
@@ -691,7 +691,7 @@ static UInt32 Bt5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
     offset += 2;
     d2 = d4;
   }
-  
+
   if (offset != 0)
   {
     UPDATE_maxLen
@@ -705,7 +705,7 @@ static UInt32 Bt5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
 
   if (maxLen < 4)
     maxLen = 4;
-  
+
   GET_MATCHES_FOOTER(offset, maxLen)
 }
 */
@@ -772,7 +772,8 @@ static UInt32 Hc5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
 
   hash = p->hash;
   pos = p->pos;
-  
+
+
   d2 = pos - hash                  [h2];
   d3 = pos - (hash + kFix3HashSize)[h3];
   d4 = pos - (hash + kFix4HashSize)[h4];
@@ -809,7 +810,7 @@ static UInt32 Hc5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
     offset = 2;
     d2 = d3;
   }
-  
+
   if (d2 != d4 && d4 < p->cyclicBufferSize
       && *(cur - d4) == *cur
       && *(cur - d4 + 3) == *(cur + 3))
@@ -819,7 +820,7 @@ static UInt32 Hc5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
     offset += 2;
     d2 = d4;
   }
-  
+
   if (offset != 0)
   {
     UPDATE_maxLen
@@ -830,7 +831,7 @@ static UInt32 Hc5_MatchFinder_GetMatches(CMatchFinder *p, UInt32 *distances)
       MOVE_POS_RET;
     }
   }
-  
+
   if (maxLen < 4)
     maxLen = 4;
 

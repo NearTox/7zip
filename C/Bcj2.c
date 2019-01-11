@@ -1,7 +1,7 @@
 /* Bcj2.c -- BCJ2 Decoder (Converter for x86 code)
 2018-04-28 : Igor Pavlov : Public domain */
 
-#include "Precomp.h"
+#include "Compiler.h"
 
 #include "Bcj2.h"
 #include "CpuArch.h"
@@ -70,12 +70,12 @@ SRes Bcj2Dec_Decode(CBcj2Dec* p) {
     if (cur == p->lims[p->state])
       return SZ_OK;
     p->bufs[p->state] = cur + 4;
-    
+
     {
       UInt32 val;
       Byte *dest;
       SizeT rem;
-      
+
       p->ip += 4;
       val = GetBe32(cur) - p->ip;
       dest = p->dest;
